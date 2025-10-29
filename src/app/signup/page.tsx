@@ -1,24 +1,23 @@
-
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
-import { Loader2, ArrowLeft, ArrowRight, Info } from 'lucide-react';
-import { app } from '@/lib/firebase';
+import {useToast} from '@/hooks/use-toast';
+import {useRouter} from 'next/navigation';
+import {Loader2, ArrowLeft, ArrowRight, Info} from 'lucide-react';
+import {app} from '@/lib/firebase';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
   sendEmailVerification,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Progress } from '@/components/ui/progress';
+import {getFirestore, doc, setDoc, serverTimestamp} from 'firebase/firestore';
+import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
+import {Progress} from '@/components/ui/progress';
 import {
   Card,
   CardContent,
@@ -27,7 +26,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { motion, AnimatePresence } from 'framer-motion';
+import {motion, AnimatePresence} from 'framer-motion';
 
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -41,7 +40,7 @@ const individualSteps = [
   {
     field: 'displayName',
     title: 'What is your name?',
-    description: "This will be used to personalize your experience.",
+    description: 'This will be used to personalize your experience.',
   },
   {
     field: 'email',
@@ -60,22 +59,22 @@ const msmeSteps = [
   {
     field: 'msmeName',
     title: 'What is your MSME Name?',
-    description: "Your official business or brand name.",
+    description: 'Your official business or brand name.',
   },
   {
     field: 'msmeService',
     title: 'What service/product do you offer?',
-    description: "A brief description of what your business does.",
+    description: 'A brief description of what your business does.',
   },
   {
     field: 'msmeLocation',
     title: 'Where is your business located?',
-    description: "e.g., Pune, Maharashtra",
+    description: 'e.g., Pune, Maharashtra',
   },
   {
     field: 'ownerContact',
     title: 'What is your contact number?',
-    description: "This will be shared with potential clients.",
+    description: 'This will be shared with potential clients.',
   },
   {
     field: 'msmeWebsite',
@@ -100,7 +99,7 @@ export default function SignUpPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [direction, setDirection] = useState(1);
-  const { toast } = useToast();
+  const {toast} = useToast();
   const router = useRouter();
 
   const steps = formData.role === 'msme' ? msmeSteps : individualSteps;
@@ -111,14 +110,16 @@ export default function SignUpPage() {
     // Validation
     const currentField = currentStepData.field as keyof typeof formData;
     if (!formData[currentField]) {
-        toast({ variant: 'destructive', description: "Please fill in the field."});
-        return;
+      toast({variant: 'destructive', description: 'Please fill in the field.'});
+      return;
     }
-     if (currentField === 'password' && formData.password.length < 6) {
-        toast({ variant: 'destructive', description: "Password must be at least 6 characters."});
-        return;
+    if (currentField === 'password' && formData.password.length < 6) {
+      toast({
+        variant: 'destructive',
+        description: 'Password must be at least 6 characters.',
+      });
+      return;
     }
-
 
     if (currentStep < steps.length - 1) {
       setDirection(1);
@@ -132,7 +133,7 @@ export default function SignUpPage() {
       setCurrentStep(currentStep - 1);
     }
   };
-  
+
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({...prev, [field]: value}));
   };
@@ -140,8 +141,11 @@ export default function SignUpPage() {
   const handleSignUp = async () => {
     const finalField = currentStepData.field as keyof typeof formData;
     if (!formData[finalField]) {
-        toast({ variant: 'destructive', description: "Please fill in the final field."});
-        return;
+      toast({
+        variant: 'destructive',
+        description: 'Please fill in the final field.',
+      });
+      return;
     }
 
     setIsLoading(true);
@@ -153,8 +157,8 @@ export default function SignUpPage() {
         formData.password
       );
       const user = userCredential.user;
-      await updateProfile(user, { displayName: formData.displayName });
-      
+      await updateProfile(user, {displayName: formData.displayName});
+
       // Send verification email
       await sendEmailVerification(user);
 
@@ -180,11 +184,11 @@ export default function SignUpPage() {
 
       toast({
         title: 'Account Created',
-        description: "Welcome! A verification email has been sent. Please check your inbox.",
+        description:
+          'Welcome! A verification email has been sent. Please check your inbox.',
       });
-      
+
       // The AuthProvider will handle redirection.
-      
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -194,42 +198,90 @@ export default function SignUpPage() {
       setIsLoading(false);
     }
   };
-  
+
   const renderInput = () => {
     switch (currentStepData.field) {
-        case 'role':
-            return (
-                <RadioGroup
-                    defaultValue={formData.role}
-                    onValueChange={(value: 'individual' | 'msme') => handleChange('role', value)}
-                    className="flex gap-4 pt-2"
+      case 'role':
+        return (
+          <RadioGroup
+            defaultValue={formData.role}
+            onValueChange={(value: 'individual' | 'msme') =>
+              handleChange('role', value)
+            }
+            className="flex gap-4 pt-2"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="individual" id="individual" />
+              <Label htmlFor="individual" className="text-base">
+                Individual
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="msme" id="msme" />
+              <Label htmlFor="msme" className="text-base">
+                MSME
+              </Label>
+            </div>
+          </RadioGroup>
+        );
+      case 'password':
+        return (
+          <Input
+            id={currentStepData.field}
+            type="password"
+            value={formData[currentStepData.field as keyof typeof formData]}
+            onChange={e =>
+              handleChange(
+                currentStepData.field as keyof typeof formData,
+                e.target.value
+              )
+            }
+          />
+        );
+      case 'msmeWebsite':
+        return (
+          <div className="space-y-4">
+            <Input
+              id={currentStepData.field}
+              value={formData[currentStepData.field as keyof typeof formData]}
+              onChange={e =>
+                handleChange(
+                  currentStepData.field as keyof typeof formData,
+                  e.target.value
+                )
+              }
+              placeholder="e.g., www.mybusiness.com"
+            />
+            <div className="flex items-start gap-2 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800">
+              <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
+              <p className="text-xs">
+                No website? No problem! Create a professional one easily with{' '}
+                <a
+                  href="https://www.zoho.com/sites/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold underline"
                 >
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="individual" id="individual" />
-                        <Label htmlFor="individual" className="text-base">Individual</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="msme" id="msme" />
-                        <Label htmlFor="msme" className="text-base">MSME</Label>
-                    </div>
-                </RadioGroup>
-            );
-        case 'password':
-            return <Input id={currentStepData.field} type="password" value={formData[currentStepData.field as keyof typeof formData]} onChange={(e) => handleChange(currentStepData.field as keyof typeof formData, e.target.value)} />;
-        case 'msmeWebsite':
-             return (
-                <div className="space-y-4">
-                    <Input id={currentStepData.field} value={formData[currentStepData.field as keyof typeof formData]} onChange={(e) => handleChange(currentStepData.field as keyof typeof formData, e.target.value)} placeholder="e.g., www.mybusiness.com" />
-                    <div className="flex items-start gap-2 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800">
-                        <Info className="h-5 w-5 mt-0.5 flex-shrink-0"/>
-                        <p className="text-xs">
-                            No website? No problem! Create a professional one easily with <a href="https://www.zoho.com/sites/" target="_blank" rel="noopener noreferrer" className="font-bold underline">Zoho Sites</a>. It's a great way to build credibility.
-                        </p>
-                    </div>
-                </div>
-            );
-        default:
-            return <Input id={currentStepData.field} value={formData[currentStepData.field as keyof typeof formData]} onChange={(e) => handleChange(currentStepData.field as keyof typeof formData, e.target.value)} />;
+                  Zoho Sites
+                </a>
+                . It's a great way to build credibility.
+              </p>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <Input
+            id={currentStepData.field}
+            value={formData[currentStepData.field as keyof typeof formData]}
+            onChange={e =>
+              handleChange(
+                currentStepData.field as keyof typeof formData,
+                e.target.value
+              )
+            }
+          />
+        );
     }
   };
 
@@ -255,60 +307,84 @@ export default function SignUpPage() {
       <div className="w-full max-w-md space-y-4">
         <div className="text-center mb-6">
           <div className="mb-4 flex justify-center">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-primary">
-              <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              <path d="M12 22V12M12 12L3 7L12 2L21 7L12 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-12 w-12 text-primary"
+            >
+              <path
+                d="M12 2L3 7V17L12 22L21 17V7L12 2Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M12 22V12M12 12L3 7L12 2L21 7L12 12Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
           <h1 className="text-3xl font-bold">Create an Account</h1>
         </div>
 
         <Card className="overflow-hidden">
-           <Progress value={progress} className="w-full h-1 rounded-none bg-primary/20 [&>div]:bg-primary" />
-           <div className="relative h-64">
-             <AnimatePresence initial={false} custom={direction}>
-                  <motion.div
-                    key={currentStep}
-                    custom={direction}
-                    variants={variants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                        x: { type: 'spring', stiffness: 300, damping: 30 },
-                        opacity: { duration: 0.2 },
-                    }}
-                    className="absolute w-full"
-                  >
-                     <CardHeader>
-                        <CardTitle>{currentStepData.title}</CardTitle>
-                        <CardDescription>{currentStepData.description}</CardDescription>
-                     </CardHeader>
-                     <CardContent>
-                        {renderInput()}
-                     </CardContent>
-                  </motion.div>
-              </AnimatePresence>
-           </div>
-           <CardFooter className="flex justify-between border-t pt-4">
-                <Button variant="ghost" onClick={handleBack} disabled={currentStep === 0 || isLoading}>
-                    <ArrowLeft className="mr-2"/>
-                    Back
-                </Button>
+          <Progress
+            value={progress}
+            className="w-full h-1 rounded-none bg-primary/20 [&>div]:bg-primary"
+          />
+          <div className="relative h-64">
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={currentStep}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: {type: 'spring', stiffness: 300, damping: 30},
+                  opacity: {duration: 0.2},
+                }}
+                className="absolute w-full"
+              >
+                <CardHeader>
+                  <CardTitle>{currentStepData.title}</CardTitle>
+                  <CardDescription>{currentStepData.description}</CardDescription>
+                </CardHeader>
+                <CardContent>{renderInput()}</CardContent>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <CardFooter className="flex justify-between border-t pt-4">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={currentStep === 0 || isLoading}
+            >
+              <ArrowLeft className="mr-2" />
+              Back
+            </Button>
 
-                 {currentStep < steps.length - 1 ? (
-                    <Button onClick={handleNext}>
-                        Next <ArrowRight className="ml-2"/>
-                    </Button>
-                ) : (
-                    <Button onClick={handleSignUp} disabled={isLoading}>
-                         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                         {isLoading ? 'Creating Account...' : 'Sign Up'}
-                    </Button>
-                )}
-           </CardFooter>
+            {currentStep < steps.length - 1 ? (
+              <Button onClick={handleNext}>
+                Next <ArrowRight className="ml-2" />
+              </Button>
+            ) : (
+              <Button onClick={handleSignUp} disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
+              </Button>
+            )}
+          </CardFooter>
         </Card>
-        
+
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}
           <Link href="/login" className="underline hover:text-primary">

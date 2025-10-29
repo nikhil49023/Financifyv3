@@ -1,25 +1,24 @@
-
 'use server';
 
 /**
- * @fileOverview This file defines a function for generating investment idea analysis using Sarvam AI.
+ * @fileOverview This file defines a function for generating investment idea analysis using Genkit and Gemini.
  */
 
-import type {
-  GenerateInvestmentIdeaAnalysisInput,
-  GenerateInvestmentIdeaAnalysisOutput,
+import {ai} from '@/ai/genkit';
+import {
+  GenerateInvestmentIdeaAnalysisInputSchema,
+  GenerateInvestmentIdeaAnalysisOutputSchema,
+  type GenerateInvestmentIdeaAnalysisInput,
+  type GenerateInvestmentIdeaAnalysisOutput,
 } from '@/ai/schemas/investment-idea-analysis';
-import fetch from 'node-fetch';
 
-const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
-const API_URL = 'https://api.sarvam.ai/v1/chat/completions';
-
-export async function generateInvestmentIdeaAnalysis(
-  input: GenerateInvestmentIdeaAnalysisInput
-): Promise<GenerateInvestmentIdeaAnalysisOutput> {
-  const prompt = `You are a specialized financial mentor for early-stage entrepreneurs in India.
+const ideaAnalysisPrompt = ai.definePrompt({
+  name: 'ideaAnalyzer',
+  input: {schema: GenerateInvestmentIdeaAnalysisInputSchema},
+  output: {schema: GenerateInvestmentIdeaAnalysisOutputSchema},
+  prompt: `You are a specialized financial mentor for early-stage entrepreneurs in India.
 Your task is to provide a detailed, structured, and organized analysis of the following business idea:
-"${input.idea}"
+"{{idea}}"
 
 CRITICAL: You MUST output ONLY a valid JSON object that conforms to the specified output schema. Do not include any extra text, markdown, or explanations outside of the JSON structure.
 
@@ -31,51 +30,17 @@ Use the following guidelines for each section of the JSON output:
 - **roi**: Provide a realistic projection of potential revenue and profit. Explain the factors that influence profitability and a possible timeline to break even and achieve profitability. Use simple, easy-to-understand language.
 - **futureProofing**: Discuss the long-term viability of the business. Cover aspects like scalability, potential for product diversification, market trends, and a competitive landscape. Use simple, easy-to-understand language and use markdown for **bolding** important keywords and phrases.
 - **relevantSchemes**: Identify 2-3 relevant Indian government schemes (e.g., Startup India, MUDRA, CGTMSE) that could support this business. For each scheme, briefly explain its benefits and eligibility criteria. Use simple, easy-to-understand language and use markdown for **bolding** important keywords and phrases.
-`;
+`,
+});
 
-  const headers = {
-    Authorization: `Bearer ${SARVAM_API_KEY}`,
-    'Content-Type': 'application/json',
-  };
-  const data = {
-    model: 'sarvam-m', // Use deeper reasoning model for analysis
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are a helpful AI for Indian startup analysis.',
-      },
-      { role: 'user', content: prompt },
-    ],
-    temperature: 0.7,
-  };
-
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Sarvam AI Error Body:", errorBody);
-        throw new Error(`Sarvam AI API request failed with status: ${response.status}`);
-    }
-
-    const responseJson: any = await response.json();
-    const message = responseJson.choices[0].message.content;
-    const jsonString = message
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const parsedOutput = JSON.parse(jsonString);
-    return parsedOutput;
-  } catch (error: any) {
-    console.error('Sarvam AI (generateInvestmentIdeaAnalysis) Error:', error);
+export async function generateInvestmentIdeaAnalysis(
+  input: GenerateInvestmentIdeaAnalysisInput
+): Promise<GenerateInvestmentIdeaAnalysisOutput> {
+  const {output} = await ideaAnalysisPrompt(input);
+  if (!output) {
     throw new Error(
-      `Failed to generate investment idea analysis: ${error.message}`
+      'Failed to generate investment idea analysis: No output from AI.'
     );
   }
+  return output;
 }

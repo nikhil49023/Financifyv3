@@ -1,6 +1,5 @@
-
-import { generateDprFromElaboration } from '@/ai/flows/generate-dpr-from-elaboration';
-import { NextResponse } from 'next/server';
+import {generateDprFromElaboration} from '@/ai/flows/generate-dpr-from-elaboration';
+import {NextResponse} from 'next/server';
 
 export async function POST(req: Request) {
   try {
@@ -11,8 +10,8 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error('Error in full DPR generation API:', error);
     return NextResponse.json(
-      { message: `Failed to generate full DPR: ${error.message}` },
-      { status: 500 }
+      {message: `Failed to generate full DPR: ${error.message}`},
+      {status: 500}
     );
   }
 }

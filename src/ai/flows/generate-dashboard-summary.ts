@@ -1,17 +1,15 @@
-
 'use server';
 
 /**
- * @fileOverview A function for generating a dashboard summary from transaction data using Sarvam AI.
+ * @fileOverview A function for generating a dashboard summary from transaction data using Genkit and Gemini.
  */
 
-import type { z } from 'zod';
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
 import {
   GenerateDashboardSummaryInputSchema,
   GenerateDashboardSummaryOutputSchema,
 } from '../schemas/dashboard-summary';
-import fetch from 'node-fetch';
-
 
 type GenerateDashboardSummaryInput = z.infer<
   typeof GenerateDashboardSummaryInputSchema
@@ -20,15 +18,50 @@ type GenerateDashboardSummaryOutput = z.infer<
   typeof GenerateDashboardSummaryOutputSchema
 >;
 
-const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
-const API_URL = 'https://api.sarvam.ai/v1/chat/completions';
+// Define the prompt for generating only the suggestion
+const suggestionPrompt = ai.definePrompt({
+  name: 'suggestionGenerator',
+  input: {
+    schema: z.object({
+      summary: z.object({
+        totalIncome: z.number(),
+        totalExpenses: z.number(),
+        savingsRate: z.number(),
+      }),
+      transactionSample: z.string(),
+    }),
+  },
+  output: {
+    schema: z.object({
+      suggestion: z.string(),
+    }),
+  },
+  prompt: `You are "FIn-Box," a financial analyst. Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response MUST be a valid JSON object with a "suggestion" key.
 
+Example Output:
+\`\`\`json
+{
+  "suggestion": "Your spending on subscriptions is high. Consider reviewing them."
+}
+\`\`\`
 
+Financial Summary:
+- Total Income: {{summary.totalIncome}}
+- Total Expenses: {{summary.totalExpenses}}
+- Savings Rate: {{summary.savingsRate}}%
+
+Transaction List (sample):
+{{transactionSample}}
+`,
+});
+
+// Helper to safely parse currency strings
 function parseCurrency(amount: string | number): number {
   if (typeof amount === 'number') {
     return amount;
   }
   if (typeof amount === 'string') {
+    // Remove currency symbols, commas, and keep only numbers and decimal points
     const sanitizedAmount = amount.replace(/[^0-9.-]+/g, '');
     const parsed = parseFloat(sanitizedAmount);
     return isNaN(parsed) ? 0 : parsed;
@@ -39,7 +72,7 @@ function parseCurrency(amount: string | number): number {
 export async function generateDashboardSummary(
   input: GenerateDashboardSummaryInput
 ): Promise<GenerateDashboardSummaryOutput> {
-  const { transactions } = input;
+  const {transactions} = input;
 
   if (!transactions || transactions.length === 0) {
     return {
@@ -51,6 +84,7 @@ export async function generateDashboardSummary(
     };
   }
 
+  // 1. Calculate totals server-side
   let totalIncome = 0;
   let totalExpenses = 0;
 
@@ -68,87 +102,30 @@ export async function generateDashboardSummary(
       ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100)
       : 0;
 
+  const summary = {totalIncome, totalExpenses, savingsRate};
+
+  // 2. Generate a sample of transactions for the AI prompt
   const transactionSample = transactions
-    .slice(0, 15)
+    .slice(0, 15) // Use a sample of up to 15 transactions
     .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
     .join('\n');
 
-  const prompt = `You are "FIn-Box," a financial analyst. Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response MUST be a valid JSON object with a "suggestion" key.
-
-Example Output:
-\`\`\`json
-{
-  "suggestion": "Your spending on subscriptions is high. Consider reviewing them."
-}
-\`\`\`
-
-Financial Summary:
-- Total Income: ${totalIncome}
-- Total Expenses: ${totalExpenses}
-- Savings Rate: ${savingsRate}%
-
-Transaction List (sample):
-${transactionSample}
-`;
-
-  const headers = {
-    Authorization: `Bearer ${SARVAM_API_KEY}`,
-    'Content-Type': 'application/json',
-  };
-
-  const data = {
-    model: 'sarvam-1',
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are a helpful AI assistant that provides financial tips.',
-      },
-      { role: 'user', content: prompt },
-    ],
-    temperature: 0.7,
-  };
-
-
+  // 3. Call the AI to get just the suggestion
+  let suggestion =
+    'Review your spending to find potential savings opportunities.';
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Sarvam AI Error Body:", errorBody);
-        throw new Error(`Sarvam AI API request failed with status: ${response.status}`);
+    const {output} = await suggestionPrompt({summary, transactionSample});
+    if (output?.suggestion) {
+      suggestion = output.suggestion;
     }
-    
-    const responseJson: any = await response.json();
-    const message = responseJson.choices[0].message.content;
-
-    const jsonString = message
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-    const parsedOutput = JSON.parse(jsonString);
-
-    return {
-      totalIncome,
-      totalExpenses,
-      savingsRate,
-      suggestion:
-        parsedOutput?.suggestion ||
-        'Review your spending to find potential savings opportunities.',
-    };
   } catch (e: any) {
     console.error('Failed to generate dashboard suggestion from AI:', e.message);
-    // Fallback suggestion
-    return {
-      totalIncome,
-      totalExpenses,
-      savingsRate,
-      suggestion:
-        'Review your spending to find potential savings opportunities.',
-    };
+    // Fallback to the default suggestion if AI fails
   }
+
+  // 4. Return the combined result
+  return {
+    ...summary,
+    suggestion,
+  };
 }

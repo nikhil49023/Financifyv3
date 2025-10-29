@@ -1,18 +1,24 @@
-
 'use client';
 
-import { useState, useRef, useEffect, type ElementRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Send, Sparkles, User, Loader2 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import type { ExtractedTransaction } from '@/ai/schemas/transactions';
-import { useAuth } from '@/context/auth-provider';
-import { useLanguage } from '@/hooks/use-language';
-import { getFirestore, collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
-import { app } from '@/lib/firebase';
+import {useState, useRef, useEffect, type ElementRef} from 'react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Send, Sparkles, User, Loader2} from 'lucide-react';
+import {Avatar, AvatarFallback} from '@/components/ui/avatar';
+import {motion, AnimatePresence} from 'framer-motion';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import type {ExtractedTransaction} from '@/ai/schemas/transactions';
+import {useAuth} from '@/context/auth-provider';
+import {useLanguage} from '@/hooks/use-language';
+import {
+  getFirestore,
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
+import {app} from '@/lib/firebase';
 
 const db = getFirestore(app);
 
@@ -28,31 +34,30 @@ type AIAdvisorChatProps = {
 
 const getUniqueMessageId = () => `msg-${Date.now()}-${Math.random()}`;
 
-export default function AIAdvisorChat({
-  initialMessage,
-}: AIAdvisorChatProps) {
+export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<ElementRef<typeof ScrollArea>>(null);
 
-  const { user, loading: loadingAuth } = useAuth();
+  const {user, loading: loadingAuth} = useAuth();
   const [transactions, setTransactions] = useState<ExtractedTransaction[]>([]);
-  const { translations } = useLanguage();
+  const {translations} = useLanguage();
 
   useEffect(() => {
     if (user) {
-        const transactionsRef = collection(db, 'users', user.uid, 'transactions');
-        // Get the last 20 transactions to use as context
-        const q = query(transactionsRef, orderBy('date', 'desc'), limit(20));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const fetchedTransactions = snapshot.docs.map(doc => doc.data()) as ExtractedTransaction[];
-            setTransactions(fetchedTransactions);
-        });
-        return () => unsubscribe();
+      const transactionsRef = collection(db, 'users', user.uid, 'transactions');
+      // Get the last 20 transactions to use as context
+      const q = query(transactionsRef, orderBy('date', 'desc'), limit(20));
+      const unsubscribe = onSnapshot(q, snapshot => {
+        const fetchedTransactions = snapshot.docs.map(
+          doc => doc.data() as ExtractedTransaction
+        );
+        setTransactions(fetchedTransactions);
+      });
+      return () => unsubscribe();
     }
   }, [user]);
-
 
   useEffect(() => {
     const welcomeMessage: Message = {
@@ -122,35 +127,41 @@ export default function AIAdvisorChat({
     setIsLoading(true);
 
     try {
-        const response = await fetch('/api/rag-answer', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ query: queryText, transactions: transactions })
-        });
-        
-        const result = await response.json();
+      const response = await fetch('/api/rag-answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({query: queryText, transactions: transactions}),
+      });
 
-        if (response.ok) {
-            const newAiMessage: Message = {
-                id: getUniqueMessageId(),
-                text: result.answer,
-                sender: 'ai',
-            };
-            setMessages(prev => [...prev, newAiMessage]);
-        } else {
-            throw new Error(result.message || 'Failed to get a response from the AI.');
+      if (!response.ok) {
+        let errorMsg = 'Failed to get a response from the AI.';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || errorMsg;
+        } catch {
+          // fallback if error is not JSON
         }
+        throw new Error(errorMsg);
+      }
 
-    } catch (error) {
-        console.error('Error calling RAG API:', error);
-        const errorAiMessage: Message = {
-            id: getUniqueMessageId(),
-            text: translations.aiAdvisor.error,
-            sender: 'ai',
-        };
-        setMessages(prev => [...prev, errorAiMessage]);
+      const result = await response.json();
+
+      const newAiMessage: Message = {
+        id: getUniqueMessageId(),
+        text: result.answer,
+        sender: 'ai',
+      };
+      setMessages(prev => [...prev, newAiMessage]);
+    } catch (error: any) {
+      console.error('Error calling RAG API:', error);
+      const errorAiMessage: Message = {
+        id: getUniqueMessageId(),
+        text: error.message || translations.aiAdvisor.error,
+        sender: 'ai',
+      };
+      setMessages(prev => [...prev, errorAiMessage]);
     }
 
     setIsLoading(false);
@@ -164,10 +175,10 @@ export default function AIAdvisorChat({
             {messages.map(message => (
               <motion.div
                 key={message.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                initial={{opacity: 0, y: 10}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -10}}
+                transition={{duration: 0.3}}
                 className={`flex items-start gap-3 ${
                   message.sender === 'user' ? 'justify-end' : ''
                 }`}
@@ -200,9 +211,9 @@ export default function AIAdvisorChat({
           </AnimatePresence>
           {isLoading && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
+              initial={{opacity: 0, y: 10}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.3, delay: 0.2}}
               className="flex items-start gap-3"
             >
               <Avatar className="h-8 w-8 bg-primary/20 text-primary">
