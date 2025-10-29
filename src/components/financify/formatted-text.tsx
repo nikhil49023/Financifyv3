@@ -33,7 +33,7 @@ export function FormattedText({ text }: FormattedTextProps) {
     if (part.startsWith('VAR{') && part.endsWith('}')) {
       const varText = part.slice('VAR{'.length, -1);
       return (
-        <span key={index} className="text-red-500 font-semibold bg-red-100/50 px-1 py-0.5 rounded-sm">
+        <span key={index} className="text-red-500 font-bold">
           {varText}
         </span>
       );
