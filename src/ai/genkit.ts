@@ -5,18 +5,22 @@
  * It configures and exports a global `ai` object that is used by all AI flows.
  */
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-import { configureGenkit } from '@genkit-ai/next';
+import {genkit} from 'genkit';
+import {googleAI} from '@genkit-ai/google-genai';
+import {firebase} from '@genkit-ai/firebase';
+import {genkitEval} from '@genkit-ai/eval';
 
-// Configure Genkit with the Google AI plugin.
-// This makes the Gemini models available for use in the application.
-// The plugin will automatically use the GEMINI_API_KEY from your .env file.
-configureGenkit({
-  plugins: [googleAI()],
+// Initialize Genkit and export the 'ai' object.
+// The Google AI plugin is configured to use the GEMINI_API_KEY from the environment.
+export const ai = genkit({
+  plugins: [
+    firebase(),
+    googleAI(),
+    genkitEval({
+      judge: 'googleai/gemini-1.5-pro-latest',
+      metrics: ['reasoning'],
+    }),
+  ],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });
-
-// Export the configured ai object for use in other flows.
-export { genkit as ai };
