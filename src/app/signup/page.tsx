@@ -80,7 +80,7 @@ const msmeSteps = [
   {
     field: 'msmeWebsite',
     title: 'What is your business website?',
-    description: "Enter your URL. If you don't have one, we can help!",
+    description: 'Enter your website URL or a link to a social media profile (e.g., Instagram, 99acres).',
   },
 ];
 
@@ -256,7 +256,7 @@ export default function SignUpPage() {
             <div className="flex items-start gap-2 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800">
               <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
               <p className="text-xs">
-                No website? No problem! Create a professional one easily with{' '}
+                No website? No problem! You can use a social media profile link instead. For a professional site, check out{' '}
                 <a
                   href="https://www.zoho.com/sites/"
                   target="_blank"
@@ -265,7 +265,7 @@ export default function SignUpPage() {
                 >
                   Zoho Sites
                 </a>
-                . It's a great way to build credibility.
+                .
               </p>
             </div>
           </div>

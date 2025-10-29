@@ -30,6 +30,7 @@ import {
   Link as LinkIcon,
   Mail,
   MessageSquare,
+  Filter,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ import {
   DialogTrigger,
   DialogClose,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Sheet,
@@ -60,16 +62,18 @@ import { useLanguage } from '@/hooks/use-language';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import Autoplay from 'embla-carousel-autoplay';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { GenerateFinBiteOutput } from '@/ai/schemas/fin-bite';
-import { useAuth } from '@/context/auth-provider';
+import { useAuth, type UserProfile } from '@/context/auth-provider';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import { generateFinBiteAction } from '@/app/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 const db = getFirestore(app);
 
@@ -155,10 +159,13 @@ export default function GrowthHubPage() {
   const isMsme = userProfile?.role === 'msme';
   const { toast } = useToast();
 
-  const [msmeList, setMsmeList] = useState<any[]>([]);
+  const [msmeList, setMsmeList] = useState<(UserProfile & { id: string })[]>([]);
   const [isLoadingMsmes, setIsLoadingMsmes] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMsme, setSelectedMsme] = useState<any | null>(null);
+
+  const [filterService, setFilterService] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
   
   const fetchFinBite = useCallback(async () => {
     setIsLoadingFinBite(true);
@@ -196,7 +203,7 @@ export default function GrowthHubPage() {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('role', '==', 'msme'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msmes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const msmes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as (UserProfile & { id: string })[];
       setMsmeList(msmes);
       setIsLoadingMsmes(false);
     });
@@ -210,12 +217,29 @@ export default function GrowthHubPage() {
     }
     setSelectedMsme(msme);
   };
+  
+  const uniqueServices = useMemo(() => {
+    const services = new Set(msmeList.map(msme => msme.msmeService).filter(Boolean));
+    return Array.from(services);
+  }, [msmeList]);
 
-  const filteredMsmes = msmeList.filter(msme => 
-    (msme.msmeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    msme.msmeService?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    msme.msmeLocation?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-    msme.id !== user?.uid // Exclude the current user's own business
+  const uniqueLocations = useMemo(() => {
+    const locations = new Set(msmeList.map(msme => msme.msmeLocation).filter(Boolean));
+    return Array.from(locations);
+  }, [msmeList]);
+
+
+  const filteredMsmes = msmeList.filter(msme => {
+      const searchMatch = (
+        msme.msmeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        msme.msmeService?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        msme.msmeLocation?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      const serviceMatch = filterService ? msme.msmeService === filterService : true;
+      const locationMatch = filterLocation ? msme.msmeLocation === filterLocation : true;
+
+      return searchMatch && serviceMatch && locationMatch && msme.id !== user?.uid;
+    }
   );
 
   const startupSteps = [
@@ -520,7 +544,7 @@ export default function GrowthHubPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="flex w-full max-w-lg items-center space-x-2">
+                 <div className="flex w-full max-w-lg items-center space-x-2">
                     <Input 
                       type="text" 
                       placeholder="e.g., 'Digital Marketing' or 'Accounting'" 
@@ -528,6 +552,47 @@ export default function GrowthHubPage() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <Button type="submit"><Search /></Button>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filters</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Filter Marketplace</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="filter-service">Service / Product</Label>
+                                    <Select value={filterService} onValueChange={setFilterService}>
+                                        <SelectTrigger id="filter-service">
+                                            <SelectValue placeholder="All Services" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">All Services</SelectItem>
+                                            {uniqueServices.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="filter-location">Location</Label>
+                                    <Select value={filterLocation} onValueChange={setFilterLocation}>
+                                        <SelectTrigger id="filter-location">
+                                            <SelectValue placeholder="All Locations" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">All Locations</SelectItem>
+                                            {uniqueLocations.map(location => <SelectItem key={location} value={location}>{location}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                <Button type="button">Apply Filters</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
                 {isLoadingMsmes ? (
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
