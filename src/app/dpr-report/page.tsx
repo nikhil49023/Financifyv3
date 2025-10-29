@@ -43,6 +43,7 @@ const parseToHtml = (text: string) => {
   if (typeof text !== 'string') return '';
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[(.*?)\]/g, '<strong class="text-red-500 font-bold">[$1]</strong>')
     .replace(/\n/g, '<br />');
 };
 
@@ -314,9 +315,9 @@ function DPRReportContent() {
     };
 
     return (
-      <div className={cn("space-y-4 pt-12 print-break-inside-avoid", className)}>
+      <div className={cn("space-y-4 print-break-before", className)}>
         <CardHeader className="p-0 mb-6 border-b pb-4">
-          <CardTitle className="print-break-before">{title}</CardTitle>
+          <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {renderContent()}
@@ -375,7 +376,7 @@ function DPRReportContent() {
   };
 
   return (
-    <div className="space-y-8 @container bg-gray-100/50 dark:bg-black/50 py-8">
+    <div className="space-y-8 @container bg-background py-8">
       <style jsx global>{`
         @media print {
           @page {
@@ -395,22 +396,37 @@ function DPRReportContent() {
           
           html, body {
             background: white !important;
+            color: black !important;
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
           }
-          .a4-container, .a4-container * {
+
+          body * {
+             visibility: hidden;
+          }
+          
+          #print-section, #print-section * {
             visibility: visible;
           }
-          .a4-container {
-            position: relative;
+
+          #print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
             margin: 0;
             padding: 0;
-            width: 100%;
+          }
+
+          .a4-container {
             border: none;
             box-shadow: none;
             background: white !important;
             float: none;
+            width: 100%;
+            min-height: auto;
           }
+
           .a4-container::after {
             content: 'EmpowerMint';
             position: fixed;
@@ -423,18 +439,23 @@ function DPRReportContent() {
             pointer-events: none;
             z-index: -1;
           }
+
           .no-print {
             display: none !important;
           }
+
           .print-break-before {
             page-break-before: always;
           }
+
           .print-break-after {
             page-break-after: always;
           }
+
           .print-no-break, .print-break-inside-avoid {
             page-break-inside: avoid;
           }
+
           .print-cover-page {
              height: 80vh;
              display: flex;
@@ -442,8 +463,9 @@ function DPRReportContent() {
              justify-content: center;
              align-items: center;
              text-align: center;
-             page-break-after: always; /* Ensure it's on its own page */
+             page-break-after: always;
           }
+
            .print-toc {
              page-break-after: always;
            }
@@ -533,7 +555,7 @@ function DPRReportContent() {
                     </table>
                 </div>
             </div>
-
+            
             {isLoading &&
               dprChapterTitles.map((title, index) => (
                 <div key={index} className="pt-12">
@@ -554,7 +576,7 @@ function DPRReportContent() {
               dprChapterTitles.map((title, index) => {
                 const key = Object.keys(report).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || title;
                 const content = report[key];
-                const sectionTitle = `${index + 1}. ${title.replace(/([A-Z])/g, ' $1').trim()}`.replace("And", "and");
+                const sectionTitle = `${index + 1}. ${title}`;
 
                 return (
                   <Section
