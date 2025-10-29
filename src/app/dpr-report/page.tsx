@@ -314,16 +314,14 @@ function DPRReportContent() {
     };
 
     return (
-      <div className="space-y-2 no-print">
-        <div className={`a4-page p-12 print:shadow-none print:border-none print-break-before ${className}`}>
-          <CardHeader className="p-0 mb-6 border-b pb-4">
-            <CardTitle>{title}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {renderContent()}
-          </CardContent>
-        </div>
-        <div className="flex justify-end items-center gap-2 no-print container mx-auto max-w-[210mm] px-0">
+      <div className={cn("space-y-4 pt-12 print-break-inside-avoid", className)}>
+        <CardHeader className="p-0 mb-6 border-b pb-4">
+          <CardTitle className="print-break-before">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {renderContent()}
+        </CardContent>
+        <div className="flex justify-end items-center gap-2 no-print mt-4">
             <input 
               type="file" 
               ref={imageInputRef} 
@@ -345,7 +343,7 @@ function DPRReportContent() {
             </Button>
         </div>
         {isAiEditing && (
-            <div className="p-2 space-y-2 container mx-auto max-w-[210mm] px-0">
+            <div className="p-2 space-y-2 no-print">
                 <div className="flex gap-2">
                     <Input 
                         placeholder={`e.g., "Make this section more detailed"`}
@@ -400,14 +398,10 @@ function DPRReportContent() {
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
           }
-          body * {
-            visibility: hidden;
-          }
-          #print-section,
-          #print-section * {
+          .a4-container, .a4-container * {
             visibility: visible;
           }
-          #print-section {
+          .a4-container {
             position: relative;
             margin: 0;
             padding: 0;
@@ -417,14 +411,7 @@ function DPRReportContent() {
             background: white !important;
             float: none;
           }
-          .a4-page {
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-            min-height: auto !important;
-            background: white !important;
-          }
-          #print-section::after {
+          .a4-container::after {
             content: 'EmpowerMint';
             position: fixed;
             top: 50%;
@@ -445,8 +432,7 @@ function DPRReportContent() {
           .print-break-after {
             page-break-after: always;
           }
-          .print-no-break {
-            page-break-before: avoid;
+          .print-no-break, .print-break-inside-avoid {
             page-break-inside: avoid;
           }
           .print-cover-page {
@@ -458,7 +444,7 @@ function DPRReportContent() {
              text-align: center;
              page-break-after: always; /* Ensure it's on its own page */
           }
-          .print-toc {
+           .print-toc {
              page-break-after: always;
            }
            .print-toc h1 {
@@ -518,65 +504,70 @@ function DPRReportContent() {
         </Card>
       )}
 
-      <div id="print-section" className="space-y-6">
-        {/* Cover Page for Print */}
-        <div className="print-cover-page hidden print:flex">
-            <div>
-                <h1 style={{fontSize: '28pt', fontWeight: 'bold', margin: '0'}}>{ideaTitle}</h1>
-                <p style={{fontSize: '14pt', marginTop: '1rem'}}>Detailed Project Report</p>
-                <div style={{marginTop: '20rem', fontSize: '12pt'}}>
-                    <p>Prepared for:</p>
-                    <p style={{fontWeight: 'bold'}}>{promoterName}</p>
+      <div id="print-section">
+        <div className="a4-container bg-card shadow-lg p-12">
+            {/* Cover Page for Print */}
+            <div className="print-cover-page hidden print:flex">
+                <div>
+                    <h1 style={{fontSize: '28pt', fontWeight: 'bold', margin: '0'}}>{ideaTitle}</h1>
+                    <p style={{fontSize: '14pt', marginTop: '1rem'}}>Detailed Project Report</p>
+                    <div style={{marginTop: '20rem', fontSize: '12pt'}}>
+                        <p>Prepared for:</p>
+                        <p style={{fontWeight: 'bold'}}>{promoterName}</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {/* Table of Contents for Print */}
-         <div className="print-toc hidden print:block">
-             <div>
-                 <h1>Table of Contents</h1>
-                 <table>
-                     <tbody>
-                         {dprChapterTitles.map((title, index) => (
-                             <tr key={index}>
-                                 <td>{index + 1}. {title}</td>
-                             </tr>
-                         ))}
-                     </tbody>
-                 </table>
-             </div>
-         </div>
-
-
-        {isLoading &&
-          dprChapterTitles.map((title, index) => (
-            <div key={index} className="a4-page p-12">
-              <Section
-                sectionKey=""
-                title={`${index + 1}. ${title}`}
-                isLoading={true}
-                onRegenerate={() => {}}
-              />
+            {/* Table of Contents for Print */}
+            <div className="print-toc hidden print:block">
+                <div>
+                    <h1>Table of Contents</h1>
+                    <table>
+                        <tbody>
+                            {dprChapterTitles.map((title, index) => (
+                                <tr key={index}>
+                                    <td>{index + 1}. {title}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-          ))}
-        
-        {report && !isLoading &&
-          dprChapterTitles.map((title, index) => {
-            const key = Object.keys(report).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || title;
-            const content = report[key];
-            const sectionTitle = `${index + 1}. ${title.replace(/([A-Z])/g, ' $1').trim()}`.replace("And", "and");
 
-            return (
-              <Section
-                key={key}
-                sectionKey={key}
-                title={sectionTitle}
-                content={content}
-                isLoading={isLoading}
-                onRegenerate={(updatedKey, updatedContent) => handleSectionRegenerate(updatedKey, updatedContent)}
-              />
-            );
-          })}
+            {isLoading &&
+              dprChapterTitles.map((title, index) => (
+                <div key={index} className="pt-12">
+                   <CardHeader className="p-0 mb-6 border-b pb-4">
+                      <CardTitle>{`${index + 1}. ${title}`}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                       <div className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                    </CardContent>
+                </div>
+            ))}
+            
+            {report && !isLoading &&
+              dprChapterTitles.map((title, index) => {
+                const key = Object.keys(report).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || title;
+                const content = report[key];
+                const sectionTitle = `${index + 1}. ${title.replace(/([A-Z])/g, ' $1').trim()}`.replace("And", "and");
+
+                return (
+                  <Section
+                    key={key}
+                    sectionKey={key}
+                    title={sectionTitle}
+                    content={content}
+                    isLoading={isLoading}
+                    onRegenerate={(updatedKey, updatedContent) => handleSectionRegenerate(updatedKey, updatedContent)}
+                  />
+                );
+              })}
+        </div>
       </div>
     </div>
   );

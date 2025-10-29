@@ -5,25 +5,25 @@
 
 @layer base {
   :root {
-    --background: 210 17% 98%; /* #F8F9FA - Almost white */
+    --background: 225 10% 98%; /* Lighter Gray */
     --foreground: 224 71% 4%; /* Dark Charcoal */
     --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
-    --primary: 217 99% 44%; /* Professional Blue */
+    --primary: 221 83% 53%; /* Professional Slate Blue */
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 224 71% 4%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 210 40% 96.1%; /* Muted accent, same as secondary */
+    --accent: 210 40% 96.1%; /* Muted accent */
     --accent-foreground: 224 71% 4%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 217 99% 44%;
+    --ring: 221 83% 53%;
     --chart-1: 221 83% 53%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -57,6 +57,10 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+
+  .theme-default {
+    /* Uses the root theme */
   }
 
   .theme-stardust {
@@ -130,8 +134,8 @@
     .background-gradient {
         @apply bg-gradient-to-b from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-black;
     }
-    .a4-page {
-      @apply bg-card shadow-lg rounded-sm mx-auto;
+    .a4-container {
+      @apply bg-card shadow-lg mx-auto;
       width: 210mm;
       min-height: 297mm;
     }
