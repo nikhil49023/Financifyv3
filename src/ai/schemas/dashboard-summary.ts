@@ -1,11 +1,10 @@
 /**
  * @fileOverview Zod schemas and TypeScript types for the dashboard summary.
- *
- * - GenerateDashboardSummaryInputSchema - The input schema for the dashboard summary flow.
- * - GenerateDashboardSummaryOutputSchema - The output schema for the dashboard summary flow.
+ * These are now defined directly within the flow file and this file can be removed.
+ * Kept for reference to avoid breaking imports immediately.
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 import { ExtractedTransactionSchema } from './transactions';
 
 export const GenerateDashboardSummaryInputSchema = z.object({
@@ -13,6 +12,8 @@ export const GenerateDashboardSummaryInputSchema = z.object({
     .array(ExtractedTransactionSchema)
     .describe('An array of financial transactions.'),
 });
+export type GenerateDashboardSummaryInput = z.infer<typeof GenerateDashboardSummaryInputSchema>;
+
 
 export const GenerateDashboardSummaryOutputSchema = z.object({
   totalIncome: z.number().describe('The total income for the period.'),
@@ -26,3 +27,4 @@ export const GenerateDashboardSummaryOutputSchema = z.object({
       'A personalized financial suggestion based on the transaction data.'
     ),
 });
+export type GenerateDashboardSummaryOutput = z.infer<typeof GenerateDashboardSummaryOutputSchema>;

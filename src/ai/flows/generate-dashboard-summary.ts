@@ -1,59 +1,15 @@
 'use server';
 
 /**
- * @fileOverview A function for generating a dashboard summary from transaction data using Genkit and Gemini.
+ * @fileOverview A function for generating a dashboard summary.
+ * This implementation uses a non-Genkit approach.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import {
-  GenerateDashboardSummaryInputSchema,
-  GenerateDashboardSummaryOutputSchema,
+import type {
+  GenerateDashboardSummaryInput,
+  GenerateDashboardSummaryOutput,
 } from '../schemas/dashboard-summary';
-
-type GenerateDashboardSummaryInput = z.infer<
-  typeof GenerateDashboardSummaryInputSchema
->;
-type GenerateDashboardSummaryOutput = z.infer<
-  typeof GenerateDashboardSummaryOutputSchema
->;
-
-// Define the prompt for generating only the suggestion
-const suggestionPrompt = ai.definePrompt({
-  name: 'suggestionGenerator',
-  input: {
-    schema: z.object({
-      summary: z.object({
-        totalIncome: z.number(),
-        totalExpenses: z.number(),
-        savingsRate: z.number(),
-      }),
-      transactionSample: z.string(),
-    }),
-  },
-  output: {
-    schema: z.object({
-      suggestion: z.string(),
-    }),
-  },
-  prompt: `You are "FIn-Box," a financial analyst. Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response MUST be a valid JSON object with a "suggestion" key.
-
-Example Output:
-\`\`\`json
-{
-  "suggestion": "Your spending on subscriptions is high. Consider reviewing them."
-}
-\`\`\`
-
-Financial Summary:
-- Total Income: {{summary.totalIncome}}
-- Total Expenses: {{summary.totalExpenses}}
-- Savings Rate: {{summary.savingsRate}}%
-
-Transaction List (sample):
-{{transactionSample}}
-`,
-});
+import catalystService from '@/services/catalyst';
 
 // Helper to safely parse currency strings
 function parseCurrency(amount: string | number): number {
@@ -61,7 +17,6 @@ function parseCurrency(amount: string | number): number {
     return amount;
   }
   if (typeof amount === 'string') {
-    // Remove currency symbols, commas, and keep only numbers and decimal points
     const sanitizedAmount = amount.replace(/[^0-9.-]+/g, '');
     const parsed = parseFloat(sanitizedAmount);
     return isNaN(parsed) ? 0 : parsed;
@@ -72,7 +27,7 @@ function parseCurrency(amount: string | number): number {
 export async function generateDashboardSummary(
   input: GenerateDashboardSummaryInput
 ): Promise<GenerateDashboardSummaryOutput> {
-  const {transactions} = input;
+  const { transactions } = input;
 
   if (!transactions || transactions.length === 0) {
     return {
@@ -102,7 +57,7 @@ export async function generateDashboardSummary(
       ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100)
       : 0;
 
-  const summary = {totalIncome, totalExpenses, savingsRate};
+  const summary = { totalIncome, totalExpenses, savingsRate };
 
   // 2. Generate a sample of transactions for the AI prompt
   const transactionSample = transactions
@@ -110,20 +65,32 @@ export async function generateDashboardSummary(
     .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
     .join('\n');
 
-  // 3. Call the AI to get just the suggestion
-  let suggestion =
-    'Review your spending to find potential savings opportunities.';
+  // 3. Construct the prompt for the AI
+  const prompt = `You are "FIn-Box," a financial analyst. Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response should be a single sentence.
+
+Financial Summary:
+- Total Income: ${summary.totalIncome}
+- Total Expenses: ${summary.totalExpenses}
+- Savings Rate: ${summary.savingsRate}%
+
+Transaction List (sample):
+${transactionSample}
+`;
+
+  let suggestion = 'Review your spending to find potential savings opportunities.';
   try {
-    const {output} = await suggestionPrompt({summary, transactionSample});
-    if (output?.suggestion) {
-      suggestion = output.suggestion;
+    // 4. Call the RAG service to get the suggestion
+    const aiResponse = await catalystService.getRagAnswer({ query: prompt });
+    if (aiResponse) {
+      // The response from catalystService is a raw string.
+      suggestion = aiResponse;
     }
   } catch (e: any) {
     console.error('Failed to generate dashboard suggestion from AI:', e.message);
     // Fallback to the default suggestion if AI fails
   }
 
-  // 4. Return the combined result
+  // 5. Return the combined result
   return {
     ...summary,
     suggestion,
