@@ -1,3 +1,4 @@
+
 'use client';
 
 import './globals.css';
@@ -13,6 +14,8 @@ import DesktopHeader from '@/components/financify/desktop-header';
 import BottomNavbar from '@/components/financify/bottom-navbar';
 import {useState} from 'react';
 import {cn} from '@/lib/utils';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { Suspense } from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -104,6 +107,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-body antialiased`}>
         <LanguageProvider>
           <AuthProvider>
+            <Suspense>
+              <FirebaseErrorListener />
+            </Suspense>
             <AppContent>{children}</AppContent>
           </AuthProvider>
         </LanguageProvider>

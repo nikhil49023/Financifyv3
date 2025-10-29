@@ -63,12 +63,13 @@ import Autoplay from 'embla-carousel-autoplay';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { GenerateFinBiteOutput } from '@/ai/flows/generate-fin-bite';
+import type { GenerateFinBiteOutput } from '@/ai/schemas/fin-bite';
 import { useAuth } from '@/context/auth-provider';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
+import { generateFinBiteAction } from '../actions';
 
 const db = getFirestore(app);
 
@@ -176,12 +177,11 @@ export default function GrowthHubPage() {
     }
     
     try {
-        const response = await fetch('/api/fin-bite');
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to fetch updates.');
+        const result = await generateFinBiteAction();
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to fetch updates.');
         }
-        const data = await response.json();
+        const data = result.data;
         setFinBite(data);
         sessionStorage.setItem('finBiteCache', JSON.stringify(data));
     } catch (e: any) {

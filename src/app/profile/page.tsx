@@ -59,15 +59,13 @@ export default function ProfilePage() {
   };
 
   const handleSaveChanges = async () => {
-    if (!user) return;
+    if (!user || !userProfile) return;
     setIsSaving(true);
     
     const userDocRef = doc(db, 'users', user.uid);
     try {
-        await setDoc(userDocRef, {
-            ...userProfile,
-            ...msmeData
-        }, { merge: true });
+        // Use setDoc with merge:true to update or create fields
+        await setDoc(userDocRef, { ...userProfile, ...msmeData }, { merge: true });
 
         toast({ title: 'Success', description: 'Your profile has been updated.'});
         setEditDialogOpen(false);
@@ -78,6 +76,7 @@ export default function ProfilePage() {
         setIsSaving(false);
     }
   };
+
 
   const handleLogout = () => {
     signOut();

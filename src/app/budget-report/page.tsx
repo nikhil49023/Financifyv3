@@ -23,6 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { useRouter } from 'next/navigation';
 import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
+import { generateBudgetReportAction } from '../actions';
 
 const db = getFirestore(app);
 
@@ -78,18 +79,13 @@ export default function BudgetReportPage() {
     setError(null);
     
     try {
-        const response = await fetch('/api/budget-report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transactions: expenseTransactions }),
-        });
+        const result = await generateBudgetReportAction({ transactions: expenseTransactions });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to generate report.');
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to generate report.');
         }
 
-        const data = await response.json();
+        const data = result.data;
         setProgress(100);
         setReport(data);
 

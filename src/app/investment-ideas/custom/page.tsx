@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useEffect, useState, Suspense, useCallback} from 'react';
@@ -43,6 +44,7 @@ import {
   limit,
 } from 'firebase/firestore';
 import {app} from '@/lib/firebase';
+import { generateInvestmentIdeaAnalysisAction } from '@/app/actions';
 
 const db = getFirestore(app);
 
@@ -229,16 +231,10 @@ function InvestmentIdeaContent() {
           setIsSaved(true);
         } else {
           // If not found in DB, generate new analysis
-          const response = await fetch('/api/generate-idea-analysis', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({idea}),
-          });
-
-          const result = await response.json();
-
-          if (response.ok) {
-            const fullAnalysis = result;
+          const result = await generateInvestmentIdeaAnalysisAction({idea});
+          
+          if (result.success) {
+            const fullAnalysis = result.data;
             setTitle(fullAnalysis.title);
             setSummary(fullAnalysis.summary);
 
@@ -255,7 +251,7 @@ function InvestmentIdeaContent() {
               await saveAnalysis(fullAnalysis);
             }
           } else {
-            throw new Error(result.message || 'Failed to generate analysis');
+            throw new Error(result.error || 'Failed to generate analysis');
           }
         }
 

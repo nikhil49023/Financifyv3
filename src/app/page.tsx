@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -234,7 +235,6 @@ export default function DashboardPage() {
             doc => doc.data() as ExtractedTransaction
           );
           setTransactions(fetchedTransactions);
-          // Loading state for summary will be handled in its own effect
         })
       );
 
@@ -301,20 +301,22 @@ export default function DashboardPage() {
 
       try {
         const response = await fetch('/api/dashboard-summary', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({transactions}),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ transactions })
         });
-
+        
         if (!response.ok) {
-          let errorMsg = 'Failed to generate summary.';
-          try {
-            const errorData = await response.json();
-            errorMsg = errorData.message || errorMsg;
-          } catch {
-            // fallback if errorData is not JSON
-          }
-          throw new Error(errorMsg);
+            let errorMsg = 'Failed to generate summary.';
+            try {
+              const errorData = await response.json();
+              errorMsg = errorData.message || errorMsg;
+            } catch (e) {
+              // fallback if errorData is not JSON
+            }
+            throw new Error(errorMsg);
         }
 
         const data = await response.json();
@@ -325,8 +327,7 @@ export default function DashboardPage() {
         toast({
           variant: 'destructive',
           title: 'Could not load summary',
-          description:
-            'There was an issue fetching the AI-powered summary.',
+          description: error.message || 'There was an issue fetching the AI-powered summary.',
         });
       } finally {
         setIsLoading(false);
@@ -334,7 +335,7 @@ export default function DashboardPage() {
     };
 
     fetchSummary();
-  }, [transactions, user, loadingAuth, translations, getCacheKey, toast]);
+  }, [transactions, user, loadingAuth, translations, getCacheKey, toast, summary, isLoading]);
 
   // Effect to create default emergency fund
   useEffect(() => {

@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
 import { useAuth } from '@/context/auth-provider';
 import { Progress } from '@/components/ui/progress';
+import { generateDprElaborationAction, generateDprFromElaborationAction } from '../actions';
 
 function GenerateDPRContent() {
   const searchParams = useSearchParams();
@@ -68,32 +69,22 @@ function GenerateDPRContent() {
         // Step 1: Elaborate on the idea
         setGenerationStatusText("Expanding business concept...");
         setGenerationProgress(10);
-        const elaborationResponse = await fetch('/api/generate-dpr-elaboration', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idea: businessName, promoterName: user.displayName || 'Entrepreneur' }),
-        });
-
-        if (!elaborationResponse.ok) {
-            const error = await elaborationResponse.json();
-            throw new Error(`Failed to elaborate on the idea: ${error.message}`);
+        
+        const elaborationResult = await generateDprElaborationAction({ idea: businessName, promoterName: user.displayName || 'Entrepreneur' });
+        if (!elaborationResult.success) {
+            throw new Error(`Failed to elaborate on the idea: ${elaborationResult.error}`);
         }
-        const elaboratedProfile = await elaborationResponse.json();
+        const elaboratedProfile = elaborationResult.data;
         setGenerationProgress(40);
         
         // Step 2: Generate the full DPR from the elaborated profile
         setGenerationStatusText("Building full Detailed Project Report...");
-        const dprResponse = await fetch('/api/generate-dpr', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(elaboratedProfile),
-        });
+        const dprResult = await generateDprFromElaborationAction(elaboratedProfile);
 
-         if (!dprResponse.ok) {
-            const error = await dprResponse.json();
-            throw new Error(`Failed to generate the final DPR: ${error.message}`);
+         if (!dprResult.success) {
+            throw new Error(`Failed to generate the final DPR: ${dprResult.error}`);
         }
-        const generatedReport = await dprResponse.json();
+        const generatedReport = dprResult.data;
         
         // Step 3: Finalize and redirect
         setGenerationStatusText("Finalizing report...");

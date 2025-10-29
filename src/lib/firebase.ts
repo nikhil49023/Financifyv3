@@ -5,12 +5,12 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBgHs-SMz1uWVineex7tjZBWy9steLQiCc",
-  authDomain: "studio-7694557123-a611b.firebaseapp.com",
-  projectId: "studio-7694557123-a611b",
-  storageBucket: "studio-7694557123-a611b.appspot.com",
-  messagingSenderId: "1017273967743",
-  appId: "1:1017273967743:web:64f163722cb5e56f2e4b4a"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 

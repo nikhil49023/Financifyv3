@@ -3,30 +3,57 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Default deny all reads and writes
-    match /{document=**} {
-      allow read, write: if false;
-    }
-    
-    // Allow public read access for the community ideas collection
-    match /communityIdeas/{ideaId} {
-      allow read: if true;
-      allow create: if request.auth != null; // Only authenticated users can contribute
-      allow update, delete: if false; // Nobody can edit or delete contributed ideas
+
+    // Helper function to check if the user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // MSME Marketplace: Allow anyone to query the users collection
+    // Helper function to check if the requesting user is the owner of the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Rules for the 'users' collection
     match /users/{userId} {
-      allow list: if true;
-    }
+      // Any authenticated user can create their own profile
+      allow create: if isSignedIn() && request.resource.id == request.auth.uid;
+      
+      // Only the owner can read or update their own profile
+      allow read, update: if isSignedIn() && isOwner(userId);
+      
+      // Deletion of user profiles is disallowed for safety
+      allow delete: if false;
 
-    // Allow users to read and write their own data.
-    // This rule is more specific, so it overrides the general deny rule.
-    match /users/{userId}/{document=**} {
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      // Rules for subcollections under a user document
+      
+      // Transactions: Only the owner can manage their transactions
+      match /transactions/{transactionId} {
+        allow read, write, delete: if isSignedIn() && isOwner(userId);
+      }
+      
+      // Budgets: Only the owner can manage their budgets
+      match /budgets/{budgetId} {
+        allow read, write, delete: if isSignedIn() && isOwner(userId);
+      }
+
+      // Saved Ideas: Only the owner can manage their saved ideas
+      match /savedIdeas/{ideaId} {
+        allow read, write, delete: if isSignedIn() && isOwner(userId);
+      }
+
+       // Savings Goals: Only the owner can manage their goals
+      match /savingsGoals/{goalId} {
+        allow read, write, delete: if isSignedIn() && isOwner(userId);
+      }
+    }
+    
+    // Community Ideas: Any authenticated user can read. Only the original contributor can create or delete.
+    match /communityIdeas/{ideaId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+        allow delete: if isSignedIn() && isOwner(resource.data.userId);
+        allow update: if false; // Disallow updates to maintain integrity
     }
   }
 }
-
-    

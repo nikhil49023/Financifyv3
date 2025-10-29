@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useState, useRef, useEffect, useCallback} from 'react';
@@ -74,6 +75,7 @@ import {
 } from 'firebase/firestore';
 import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import {app} from '@/lib/firebase';
+import { extractTransactionsAction } from '../actions';
 
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -290,20 +292,12 @@ export default function TransactionsPage() {
       reader.onload = async () => {
         const documentDataUri = reader.result as string;
 
-        const response = await fetch('/api/extract-transactions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({documentDataUri}),
-        });
+        const result = await extractTransactionsAction({documentDataUri});
 
-        const result = await response.json();
-
-        if (response.ok) {
+        if (result.success) {
           const batch = writeBatch(db);
           const transactionsRef = collection(db, 'users', user.uid, 'transactions');
-          result.transactions.forEach((transaction: ExtractedTransaction) => {
+          result.data.transactions.forEach((transaction: ExtractedTransaction) => {
             const docRef = doc(transactionsRef);
             batch.set(docRef, transaction);
           });
@@ -318,10 +312,10 @@ export default function TransactionsPage() {
           }
           toast({
             title: 'Import Successful',
-            description: `${result.transactions.length} ${translations.transactions.toasts.importSuccess}`,
+            description: `${result.data.transactions.length} ${translations.transactions.toasts.importSuccess}`,
           });
         } else {
-          throw new Error(result.message || 'Failed to extract transactions.');
+          throw new Error(result.error || 'Failed to extract transactions.');
         }
         setIsImporting(false);
       };

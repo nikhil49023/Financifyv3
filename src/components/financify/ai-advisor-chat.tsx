@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useState, useRef, useEffect, type ElementRef} from 'react';
@@ -19,6 +20,7 @@ import {
   limit,
 } from 'firebase/firestore';
 import {app} from '@/lib/firebase';
+import { generateRagAnswerAction } from '@/app/actions';
 
 const db = getFirestore(app);
 
@@ -127,30 +129,14 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/rag-answer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({query: queryText, transactions: transactions}),
-      });
-
-      if (!response.ok) {
-        let errorMsg = 'Failed to get a response from the AI.';
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.message || errorMsg;
-        } catch {
-          // fallback if error is not JSON
-        }
-        throw new Error(errorMsg);
+      const result = await generateRagAnswerAction({query: queryText, transactions: transactions});
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to get a response from the AI.');
       }
-
-      const result = await response.json();
 
       const newAiMessage: Message = {
         id: getUniqueMessageId(),
-        text: result.answer,
+        text: result.data.answer,
         sender: 'ai',
       };
       setMessages(prev => [...prev, newAiMessage]);
