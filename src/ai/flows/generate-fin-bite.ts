@@ -1,23 +1,19 @@
+
 'use server';
 
 /**
  * @fileOverview This file defines a function for generating "Fin Bites",
- * concise updates on startup schemes and financial news in India, using Genkit and Gemini.
+ * concise updates on startup schemes and financial news in India.
+ * This has been refactored to use a non-Genkit service.
  */
 
-import {ai} from '@/ai/genkit';
-import {
-  GenerateFinBiteOutputSchema,
-  type GenerateFinBiteOutput,
-} from '@/ai/schemas/fin-bite';
+import catalystService from '@/services/catalyst';
+import type { GenerateFinBiteOutput } from '@/ai/schemas/fin-bite';
 
-const finBitePrompt = ai.definePrompt({
-  name: 'finBiteGenerator',
-  output: {schema: GenerateFinBiteOutputSchema},
-  prompt: `You are "FIn-Box," a specialized financial news anchor for early-stage entrepreneurs in India.
+const PROMPT_TEMPLATE = `You are "FIn-Box," a specialized financial news anchor for early-stage entrepreneurs in India.
 Your task is to provide the single latest, most relevant news update for EACH of the following 3 categories: "MSME Schemes", "Finance & Tax", and "Market News".
 
-Your response MUST be a valid JSON object.
+Your response MUST be a valid JSON object. Do not include any extra text, markdown, or explanations.
 
 Example Output:
 \`\`\`json
@@ -41,13 +37,21 @@ Example Output:
   ]
 }
 \`\`\`
-`,
-});
+`;
 
 export async function generateFinBite(): Promise<GenerateFinBiteOutput> {
-  const {output} = await finBitePrompt();
-  if (!output) {
-    throw new Error('Failed to generate FinBite updates: No output from AI.');
+  try {
+    const rawResponse = await catalystService.getRagAnswer({
+      query: PROMPT_TEMPLATE,
+    });
+    // The AI might return the JSON wrapped in markdown, so we need to clean it.
+    const jsonString = rawResponse.replace(/```json\n|```/g, '').trim();
+    const parsedOutput = JSON.parse(jsonString);
+    return parsedOutput;
+  } catch (error: any) {
+    console.error('Failed to parse FinBite updates from AI:', error);
+    throw new Error(
+      `Failed to generate FinBite updates. The AI response was not valid JSON. Response: ${error.message}`
+    );
   }
-  return output;
 }
