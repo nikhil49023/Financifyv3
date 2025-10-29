@@ -34,7 +34,7 @@ ${currentContent}
 Based on the user's request, regenerate the *entire DPR JSON object*, but with the content for the "${sectionToUpdate}" section specifically updated to reflect the user's request. Maintain the structure and content of all other sections.
 
 CRITICAL: You MUST output ONLY a valid JSON object that conforms to the final DPR output schema. Do not include any other text, markdown, or explanations.
-Every string field in the output must start with "*(Powered by EmpowerMint AI)*".
+For any data that needs to be filled in by the user, use the format [Placeholder for user data], for example: [Enter your contact number here].
 `;
   } else {
     // This is the initial full DPR generation request
@@ -44,7 +44,7 @@ You have been provided with a basic business idea and the promoter's name.
 Your task is to first internally elaborate on this idea to create a rich, detailed business profile. Then, use that elaborated profile to write the complete DPR.
 
 CRITICAL: You MUST output ONLY a valid JSON object that conforms to the final DPR output schema. Do not include any other text, markdown, or explanations.
-Every string field in the output must start with "*(Powered by EmpowerMint AI)*".
+For any data that needs to be filled in by the user, use the format [Placeholder for user data], for example: [Enter your contact number here].
 
 For the "financialProjections" section, you must generate the full financial object with credible, realistic data based on the business profile.
 The 'costBreakdown' and 'yearlyProjections' fields must be valid JSON arrays for charts.
@@ -65,6 +65,6 @@ Based on this, generate the complete JSON object for the DPR.
     return parsed as GenerateDprOutput;
   } catch (e) {
     console.error('Failed to parse JSON from model response:', response.text());
-    throw new Error('Could not generate DPR. The AI returned an invalid format.');
+    throw new Error('The AI returned an invalid format. Could not generate the DPR.');
   }
 }

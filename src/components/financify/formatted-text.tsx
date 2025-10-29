@@ -15,8 +15,8 @@ export function FormattedText({ text }: FormattedTextProps) {
     return null;
   }
 
-  // Improved regex to handle nested structures better and avoid splitting by mistake
-  const parts = text.split(/(\*\*.*?\*\*|VAR\{.*?\})/g).filter(Boolean);
+  // Regex to find **bold text** or [placeholders]
+  const parts = text.split(/(\*\*.*?\*\*|\[.*?\])/g).filter(Boolean);
 
   const formattedParts = parts.map((part, index) => {
     // Check for bold format: **...**
@@ -29,12 +29,12 @@ export function FormattedText({ text }: FormattedTextProps) {
       );
     }
 
-    // Check for variable/placeholder format: VAR{...}
-    if (part.startsWith('VAR{') && part.endsWith('}')) {
-      const varText = part.slice('VAR{'.length, -1);
+    // Check for placeholder format: [...]
+    if (part.startsWith('[') && part.endsWith(']')) {
+      const varText = part.slice(1, -1);
       return (
         <span key={index} className="text-red-500 font-bold">
-          {varText}
+          [{varText}]
         </span>
       );
     }
@@ -51,8 +51,4 @@ export function FormattedText({ text }: FormattedTextProps) {
   });
 
   return (
-    <div className="text-muted-foreground whitespace-pre-line leading-relaxed">
-      {formattedParts}
-    </div>
-  );
-}
+    <div className="text-muted-foreground whitespace
