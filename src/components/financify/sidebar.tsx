@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -140,32 +141,35 @@ export default function Sidebar({
         <svg
           width="40"
           height="40"
-          viewBox="0 0 24 24"
+          viewBox="0 0 64 64"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           className="h-10 w-10 text-primary"
         >
           <path
-            d="M12 2L3 7V17L12 22L21 17V7L12 2Z"
+            d="M32 58.6667C46.7276 58.6667 58.6667 46.7276 58.6667 32C58.6667 17.2724 46.7276 5.33334 32 5.33334C17.2724 5.33334 5.33334 17.2724 5.33334 32C5.33334 46.7276 17.2724 58.6667 32 58.6667Z"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth="4"
             strokeLinejoin="round"
           />
           <path
-            d="M12 22V12M12 12L3 7L12 2L21 7L12 12Z"
+            d="M21.3333 42.6667C21.3333 42.6667 24 34.6667 32 34.6667C40 34.6667 42.6667 42.6667 42.6667 42.6667"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth="4"
+            strokeLinecap="round"
             strokeLinejoin="round"
           />
           <path
-            d="M16.5 4.5L7.5 9.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
+            d="M40 26.6667C40 28.8758 38.2091 30.6667 36 30.6667C33.7909 30.6667 32 28.8758 32 26.6667C32 24.4576 33.7909 22.6667 36 22.6667C38.2091 22.6667 40 24.4576 40 26.6667Z"
+            fill="currentColor"
+          />
+          <path
+            d="M28 26.6667C28 28.8758 26.2091 30.6667 24 30.6667C21.7909 30.6667 20 28.8758 20 26.6667C20 24.4576 21.7909 22.6667 24 22.6667C26.2091 22.6667 28 24.4576 28 26.6667Z"
+            fill="currentColor"
           />
         </svg>
         <h1 className={cn('text-xl font-bold', {'hidden': isCollapsed})}>
-          FIn-Box
+          EmpowerMint
         </h1>
       </div>
       <nav className="flex-1 px-0 py-2 space-y-1 mt-4">

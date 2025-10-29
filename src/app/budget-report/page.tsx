@@ -23,7 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { useRouter } from 'next/navigation';
 import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
-import { generateBudgetReportAction } from '../actions';
+import { generateBudgetReportAction } from './actions';
 
 const db = getFirestore(app);
 

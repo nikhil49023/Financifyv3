@@ -1,3 +1,4 @@
+
 import {z} from 'zod';
 
 // Input for the consolidated DPR generation flow
@@ -12,17 +13,17 @@ const FinancialProjectionsSchema = z.object({
   summaryText: z
     .string()
     .describe(
-      'A brief summary of the financial outlook in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'A brief summary of the financial outlook in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
   projectCost: z
     .string()
     .describe(
-      'Breakdown of total project costs in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'Breakdown of total project costs in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
   meansOfFinance: z
     .string()
     .describe(
-      'How the project will be financed (equity, debt) in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'How the project will be financed (equity, debt) in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
   costBreakdown: z
     .array(z.object({name: z.string(), value: z.number()}))
@@ -37,62 +38,62 @@ const FinancialProjectionsSchema = z.object({
   profitabilityAnalysis: z
     .string()
     .describe(
-      'Analysis of profitability in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'Analysis of profitability in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
   cashFlowStatement: z
     .string()
     .describe(
-      'Projected cash flow statement in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'Projected cash flow statement in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
   loanRepaymentSchedule: z
     .string()
     .describe(
-      'Loan repayment schedule in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'Loan repayment schedule in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
   breakEvenAnalysis: z
     .string()
     .describe(
-      'Break-even point analysis in markdown format. Prepend "*(Powered by FIn-Box AI)*".'
+      'Break-even point analysis in markdown format. Prepend "*(Powered by EmpowerMint AI)*".'
     ),
 });
 
 export const GenerateDprOutputSchema = z.object({
   executiveSummary: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   projectIntroduction: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   promoterDetails: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   businessModel: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   marketAnalysis: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   locationAndSite: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   technicalFeasibility: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   implementationSchedule: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   financialProjections: FinancialProjectionsSchema,
   swotAnalysis: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   regulatoryCompliance: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   riskAssessment: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
   annexures: z
     .string()
-    .describe('Must be a markdown string. Prepend "*(Powered by FIn-Box AI)*".'),
+    .describe('Must be a markdown string. Prepend "*(Powered by EmpowerMint AI)*".'),
 });
 export type GenerateDprOutput = z.infer<typeof GenerateDprOutputSchema>;

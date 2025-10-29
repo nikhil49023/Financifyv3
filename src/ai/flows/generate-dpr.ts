@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for generating a full Detailed Project Report (DPR) using Firebase AI.
@@ -17,7 +18,7 @@ You have been provided with a basic business idea and the promoter's name.
 Your task is to first internally elaborate on this idea to create a rich, detailed business profile. Then, use that elaborated profile to write the complete DPR.
 
 CRITICAL: You MUST output ONLY a valid JSON object that conforms to the final DPR output schema. Do not include any other text, markdown, or explanations.
-Every string field in the output must start with "*(Powered by FIn-Box AI)*".
+Every string field in the output must start with "*(Powered by EmpowerMint AI)*".
 
 For the "financialProjections" section, you must generate the full financial object with credible, realistic data based on the business profile.
 The 'costBreakdown' and 'yearlyProjections' fields must be valid JSON arrays for charts.

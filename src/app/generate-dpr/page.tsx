@@ -1,3 +1,4 @@
+
 'use client';
 
 import {Suspense, useState, useEffect} from 'react';
@@ -21,7 +22,7 @@ import Link from 'next/link';
 import {useToast} from '@/hooks/use-toast';
 import {useAuth} from '@/context/auth-provider';
 import {Progress} from '@/components/ui/progress';
-import {generateDprAction} from '../actions';
+import {generateDprAction} from './actions';
 
 function GenerateDPRContent() {
   const searchParams = useSearchParams();

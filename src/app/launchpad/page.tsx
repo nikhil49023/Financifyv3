@@ -69,7 +69,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
-import { generateFinBiteAction } from '../actions';
+import { generateFinBiteAction } from './actions';
 
 const db = getFirestore(app);
 
@@ -516,7 +516,7 @@ export default function GrowthHubPage() {
                     MSME Marketplace
                 </CardTitle>
                 <CardDescription>
-                    Find and connect with services offered by MSMEs in the FIn-Box community.
+                    Find and connect with services offered by MSMEs in the EmpowerMint community.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

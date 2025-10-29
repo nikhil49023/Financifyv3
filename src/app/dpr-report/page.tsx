@@ -181,7 +181,7 @@ function DPRReportContent() {
             float: none;
           }
           #print-section::after {
-            content: 'FIn-Box';
+            content: 'EmpowerMint';
             position: fixed;
             top: 50%;
             left: 50%;

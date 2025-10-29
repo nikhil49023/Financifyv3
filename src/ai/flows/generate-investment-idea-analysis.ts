@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -21,17 +22,17 @@ export async function generateInvestmentIdeaAnalysis(
 Your task is to provide a detailed, structured, and organized analysis of the following business idea:
 "${input.idea}"
 
-CRITICAL: You MUST output ONLY a valid JSON object that conforms to the specified output schema. Do not include any extra text, markdown, or explanations outside of the JSON structure.
+CRITICAL: You MUST output ONLY a valid JSON object that conforms to the specified output schema. Do not include any other text, markdown, or explanations outside of the JSON structure.
 
 The schema is:
 {
   "title": "The name of the business idea.",
-  "summary": "A brief summary of the business concept. Prepend \\"*(Powered by FIn-Box AI)*\\".",
-  "investmentStrategy": "Detail the required initial investment. Prepend \\"*(Powered by FIn-Box AI)*\\".",
-  "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by FIn-Box AI)*\\".",
-  "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by FIn-Box AI)*\\".",
-  "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by FIn-Box AI)*\\".",
-  "relevantSchemes": "Identify 2-3 relevant Indian government schemes. Prepend \\"*(Powered by FIn-Box AI)*\\"."
+  "summary": "A brief summary of the business concept. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
+  "investmentStrategy": "Detail the required initial investment. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
+  "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
+  "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
+  "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
+  "relevantSchemes": "Identify 2-3 relevant Indian government schemes. Prepend \\"*(Powered by EmpowerMint AI)*\\"."
 }
 `;
 

@@ -75,7 +75,7 @@ import {
 } from 'firebase/firestore';
 import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import {app} from '@/lib/firebase';
-import { extractTransactionsAction } from '../actions';
+import { extractTransactionsAction } from './actions';
 
 const db = getFirestore(app);
 const storage = getStorage(app);

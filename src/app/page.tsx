@@ -87,6 +87,7 @@ import {
   doc,
   serverTimestamp,
 } from 'firebase/firestore';
+import { generateDashboardSummaryAction, generateFinBiteAction } from './actions';
 
 const db = getFirestore(app);
 
@@ -167,12 +168,11 @@ export default function DashboardPage() {
     }
 
     try {
-      const response = await fetch('/api/fin-bite');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch updates.');
+      const result = await generateFinBiteAction();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch updates.');
       }
-      const data = await response.json();
+      const data = result.data;
       setFinBite(data);
       sessionStorage.setItem('finBiteCache', JSON.stringify(data));
     } catch (e: any) {
@@ -300,26 +300,12 @@ export default function DashboardPage() {
       }
 
       try {
-        const response = await fetch('/api/dashboard-summary', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ transactions })
-        });
-        
-        if (!response.ok) {
-            let errorMsg = 'Failed to generate summary.';
-            try {
-              const errorData = await response.json();
-              errorMsg = errorData.message || errorMsg;
-            } catch (e) {
-              // fallback if errorData is not JSON
-            }
-            throw new Error(errorMsg);
+        const result = await generateDashboardSummaryAction({ transactions });
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to generate summary.');
         }
-
-        const data = await response.json();
+        
+        const data = result.data;
         setSummary(data);
         if (cacheKey) localStorage.setItem(cacheKey, JSON.stringify(data));
       } catch (error: any) {

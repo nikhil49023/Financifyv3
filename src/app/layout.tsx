@@ -97,7 +97,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>FIn-Box</title>
+        <title>EmpowerMint</title>
         <meta name="description" content="Your personal finance dashboard." />
         <meta
           name="viewport"
