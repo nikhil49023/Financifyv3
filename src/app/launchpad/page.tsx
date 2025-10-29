@@ -576,7 +576,6 @@ export default function GrowthHubPage() {
                                             <SelectValue placeholder="All Services" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All Services</SelectItem>
                                             {msmeServiceCategories.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
@@ -588,7 +587,6 @@ export default function GrowthHubPage() {
                                             <SelectValue placeholder="All Locations" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">All Locations</SelectItem>
                                             {uniqueLocations.map(location => <SelectItem key={location} value={location}>{location}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
