@@ -12,7 +12,7 @@ import type {
 } from '@/ai/schemas/transactions';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, {model: 'gemini-pro-vision'});
+const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 
 export async function extractTransactionsFromDocument(
   input: ExtractTransactionsInput

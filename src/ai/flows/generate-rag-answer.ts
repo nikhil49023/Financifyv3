@@ -12,7 +12,7 @@ import type {
 } from '@/ai/schemas/rag-answer';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, {model: 'gemini-pro'});
+const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 
 export async function generateRagAnswer(
   input: GenerateRagAnswerInput

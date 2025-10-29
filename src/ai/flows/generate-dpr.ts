@@ -8,7 +8,7 @@ import {app} from '@/lib/firebase';
 import type {GenerateDprInput, GenerateDprOutput} from '@/ai/schemas/dpr';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, {model: 'gemini-pro'});
+const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 
 export async function generateDpr(input: GenerateDprInput): Promise<GenerateDprOutput> {
   const prompt = `You are an expert consultant hired to write a bank-ready Detailed Project Report (DPR) for an entrepreneur in India.
