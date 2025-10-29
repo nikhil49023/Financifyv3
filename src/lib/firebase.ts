@@ -5,12 +5,13 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  "projectId": "uplift-ai-lab-95648316-bbea9",
+  "appId": "1:511087468573:web:8562b57ae07093d34ee6f4",
+  "apiKey": "AIzaSyA69d-QroxdswRLV2Tr8ttzdY90OVA6Q7U",
+  "authDomain": "uplift-ai-lab-95648316-bbea9.firebaseapp.com",
+  "measurementId": "G-G1TPGDDV4J",
+  "storageBucket": "uplift-ai-lab-95648316-bbea9.appspot.com",
+  "messagingSenderId": "511087468573"
 };
 
 
