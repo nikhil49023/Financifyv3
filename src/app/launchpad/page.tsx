@@ -69,7 +69,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
-import { generateFinBiteAction } from './actions';
+import { generateFinBiteAction } from '@/app/actions';
 
 const db = getFirestore(app);
 
