@@ -5,6 +5,11 @@ import {z} from 'zod';
 export const GenerateDprInputSchema = z.object({
   idea: z.string().describe("The user's initial business idea."),
   promoterName: z.string().describe("The name of the entrepreneur."),
+  sectionContext: z.object({
+    sectionToUpdate: z.string(),
+    currentContent: z.string(),
+    userRequest: z.string(),
+  }).optional().describe("Context for regenerating a specific section."),
 });
 export type GenerateDprInput = z.infer<typeof GenerateDprInputSchema>;
 

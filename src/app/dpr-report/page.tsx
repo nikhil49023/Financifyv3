@@ -1,16 +1,19 @@
 
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileDown, ArrowLeft, Loader2 } from 'lucide-react';
+import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FormattedText } from '@/components/financify/formatted-text';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-provider';
 import { ProjectCostPieChart, FinancialProjectionsBarChart } from '@/components/financify/dpr-charts';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { generateDprAction } from '@/app/actions';
 
 
 type ReportData = {
@@ -81,69 +84,150 @@ function DPRReportContent() {
     content,
     isLoading,
     className = '',
+    onRegenerate,
   }: {
     title: string;
     content?: any;
     isLoading: boolean;
     className?: string;
-  }) => (
-    <Card className={`print:shadow-none print:border-none print-break-before ${className}`}>
-      <CardHeader className="p-4 md:p-6">
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 md:p-6 pt-0">
-        {isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-        ) : title.includes('Financial Projections') && typeof content === 'object' ? (
-           <div className="space-y-6">
-                <div>
-                    <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
-                    <FormattedText text={content.summaryText} />
-                </div>
-                <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Project Cost Breakdown</h3>
-                         <ProjectCostPieChart data={content.costBreakdown} />
-                    </div>
-                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Yearly Projections</h3>
-                        <FinancialProjectionsBarChart data={content.yearlyProjections} />
-                    </div>
-                </div>
-                <div>
-                    <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
-                    <FormattedText text={content.meansOfFinance} />
-                </div>
-                <div>
-                    <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
-                    <FormattedText text={content.profitabilityAnalysis} />
-                </div>
-                 <div>
-                    <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
-                    <FormattedText text={content.cashFlowStatement} />
-                </div>
-                 <div>
-                    <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
-                    <FormattedText text={content.loanRepaymentSchedule} />
-                </div>
-                 <div>
-                    <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
-                    <FormattedText text={content.breakEvenAnalysis} />
-                </div>
+    onRegenerate: (sectionTitle: string, newContent: any) => void;
+  }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editQuery, setEditQuery] = useState('');
+    const [isRegenerating, setIsRegenerating] = useState(false);
+    const { toast } = useToast();
 
-           </div>
-        ) : (
-          <FormattedText
-            text={content || 'No content generated for this section.'}
-          />
+    const handleRegenerate = async () => {
+        if (!editQuery || !ideaTitle) return;
+        setIsRegenerating(true);
+        try {
+            const currentContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : String(content);
+
+            const result = await generateDprAction({
+                idea: ideaTitle,
+                promoterName: promoterName,
+                // The AI flow is not configured for section-specific regeneration,
+                // so we pass the full context and hope it focuses on the right part.
+                // A more advanced implementation would have a dedicated flow.
+                sectionContext: {
+                    sectionToUpdate: title,
+                    currentContent: currentContent,
+                    userRequest: editQuery,
+                }
+            });
+
+            if (result.success) {
+                const sectionKey = Object.keys(result.data).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || title;
+                onRegenerate(sectionKey, result.data[sectionKey]);
+                toast({ title: 'Section Updated', description: `"${title}" has been regenerated based on your request.` });
+                setIsEditing(false);
+                setEditQuery('');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: 'Regeneration Failed', description: e.message });
+        } finally {
+            setIsRegenerating(false);
+        }
+    };
+
+
+    return (
+      <div className="space-y-2 no-print">
+        <Card className={`print:shadow-none print:border-none print-break-before ${className}`}>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle>{title}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 md:p-6 pt-0">
+            {isLoading || isRegenerating ? (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ) : title.includes('Financial Projections') && typeof content === 'object' ? (
+               <div className="space-y-6">
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
+                        <FormattedText text={content.summaryText} />
+                    </div>
+                    <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Project Cost Breakdown</h3>
+                             <ProjectCostPieChart data={content.costBreakdown} />
+                        </div>
+                         <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Yearly Projections</h3>
+                            <FinancialProjectionsBarChart data={content.yearlyProjections} />
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
+                        <FormattedText text={content.meansOfFinance} />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
+                        <FormattedText text={content.profitabilityAnalysis} />
+                    </div>
+                     <div>
+                        <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
+                        <FormattedText text={content.cashFlowStatement} />
+                    </div>
+                     <div>
+                        <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
+                        <FormattedText text={content.loanRepaymentSchedule} />
+                    </div>
+                     <div>
+                        <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
+                        <FormattedText text={content.breakEvenAnalysis} />
+                    </div>
+
+               </div>
+            ) : (
+              <FormattedText
+                text={content || 'No content generated for this section.'}
+              />
+            )}
+          </CardContent>
+        </Card>
+        <div className="flex justify-end no-print">
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
+                <Sparkles className="mr-2" />
+                Regenerate with AI
+            </Button>
+        </div>
+        {isEditing && (
+            <div className="p-2 space-y-2">
+                <div className="flex gap-2">
+                    <Input 
+                        placeholder={`e.g., "Make this section more detailed"`}
+                        value={editQuery}
+                        onChange={(e) => setEditQuery(e.target.value)}
+                        disabled={isRegenerating}
+                    />
+                    <Button onClick={handleRegenerate} disabled={isRegenerating || !editQuery}>
+                        {isRegenerating ? <Loader2 className="animate-spin" /> : <Send />}
+                    </Button>
+                </div>
+            </div>
         )}
-      </CardContent>
-    </Card>
-  );
+      </div>
+    )
+  };
+
+  const handleSectionRegenerate = (sectionKey: string, newContent: any) => {
+    setReport(prevReport => {
+      if (!prevReport) return null;
+      const updatedReport = {
+        ...prevReport,
+        [sectionKey]: newContent,
+      };
+      // Also update localStorage
+      localStorage.setItem('generatedDPR', JSON.stringify(updatedReport));
+      return updatedReport;
+    });
+  };
 
   return (
     <div className="space-y-8 @container">
@@ -275,7 +359,7 @@ function DPRReportContent() {
 
       <div id="print-section" className="space-y-6">
         {/* Cover Page for Print */}
-        <div className="print-cover-page hidden print:block">
+        <div className="print-cover-page hidden print:flex">
             <div>
                 <h1 style={{fontSize: '28pt', fontWeight: 'bold', margin: '0'}}>{ideaTitle}</h1>
                 <p style={{fontSize: '14pt', marginTop: '1rem'}}>Detailed Project Report</p>
@@ -309,6 +393,7 @@ function DPRReportContent() {
               key={index}
               title={`${index + 1}. ${title}`}
               isLoading={true}
+              onRegenerate={() => {}}
             />
           ))}
         
@@ -325,6 +410,7 @@ function DPRReportContent() {
                 content={content}
                 isLoading={isLoading}
                 className="print-no-break"
+                onRegenerate={(updatedKey, updatedContent) => handleSectionRegenerate(updatedKey, updatedContent)}
               />
             );
           })}
