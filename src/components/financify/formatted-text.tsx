@@ -51,4 +51,8 @@ export function FormattedText({ text }: FormattedTextProps) {
   });
 
   return (
-    <div className="text-muted-foreground whitespace
+    <div className="text-muted-foreground whitespace-pre-line leading-relaxed">
+      {formattedParts}
+    </div>
+  );
+}
