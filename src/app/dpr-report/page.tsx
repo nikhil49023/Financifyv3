@@ -380,7 +380,7 @@ function DPRReportContent() {
         @media print {
           @page {
             size: A4;
-            margin: 1.5cm;
+            margin: 1in 1in 1in 1.5in;
             @top-center {
               content: 'Detailed Project Report: ${ideaTitle || ''}';
               font-size: 10pt;
@@ -505,7 +505,7 @@ function DPRReportContent() {
       )}
 
       <div id="print-section">
-        <div className="a4-container bg-card shadow-lg p-12">
+        <div className="a4-container bg-card shadow-lg">
             {/* Cover Page for Print */}
             <div className="print-cover-page hidden print:flex">
                 <div>

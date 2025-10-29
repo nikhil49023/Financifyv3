@@ -138,6 +138,7 @@
       @apply bg-card shadow-lg mx-auto;
       width: 210mm;
       min-height: 297mm;
+      padding: 1in 1in 1in 1.5in;
     }
 }
 
