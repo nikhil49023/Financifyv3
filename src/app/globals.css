@@ -83,6 +83,9 @@
     .animate-pulse-record {
         animation: pulse-record 2s infinite;
     }
+    .background-gradient {
+        @apply bg-gradient-to-b from-blue-100 via-blue-50 to-white;
+    }
 }
 
 @layer components {

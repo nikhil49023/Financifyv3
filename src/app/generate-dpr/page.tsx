@@ -1,49 +1,60 @@
-
 'use client';
 
-import {Suspense, useState, useEffect} from 'react';
-import {useSearchParams, useRouter} from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   FileText,
   Loader2,
   ArrowLeft,
-  ChevronsRight,
   Sparkles,
+  Presentation,
+  File,
+  Globe,
+  Share2,
+  Shuffle,
+  Plus,
 } from 'lucide-react';
-import {Button} from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import Link from 'next/link';
-import {useToast} from '@/hooks/use-toast';
-import {useAuth} from '@/context/auth-provider';
-import {Progress} from '@/components/ui/progress';
-import {generateDprAction} from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/auth-provider';
+import { generateDprAction } from '@/app/actions';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+
+
+const examplePrompts = [
+  "An eco-friendly packaging solution using agricultural waste.",
+  "A subscription box for artisanal Indian snacks.",
+  "A mobile app for hyperlocal skill-sharing in Tier-2 cities.",
+  "A boutique hotel focused on wellness and yoga retreats.",
+  "A D2C brand for organic baby food.",
+  "A vertical farming setup in urban areas to supply fresh produce."
+];
+
 
 function GenerateDPRContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const {toast} = useToast();
-  const idea = searchParams.get('idea');
-  const {user} = useAuth();
-
+  const { toast } = useToast();
+  const ideaParam = searchParams.get('idea');
+  const { user } = useAuth();
+  
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
-  const [generationStatusText, setGenerationStatusText] = useState('');
-
-  const [businessName, setBusinessName] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [docType, setDocType] = useState('Document');
 
   useEffect(() => {
-    if (idea) {
-      setBusinessName(idea);
+    if (ideaParam) {
+      setPrompt(ideaParam);
     }
-  }, [idea]);
+  }, [ideaParam]);
 
-  const handleGenerateDPR = async () => {
+  const handleGenerate = async () => {
     if (!user) {
       toast({
         variant: 'destructive',
@@ -54,58 +65,35 @@ function GenerateDPRContent() {
       return;
     }
 
-    if (!businessName) {
-      toast({variant: 'destructive', title: 'Error', description: 'Business idea is missing.'});
+    if (!prompt) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please describe the business idea you want to create a report for.' });
       return;
     }
 
     setIsGenerating(true);
-    setGenerationProgress(0);
     toast({
       title: 'Generating DPR',
       description: 'This may take a minute or two. Please wait...',
     });
 
     try {
-      // Simulate progress for a single-stage generation
-      setGenerationStatusText('Expanding business concept...');
-      setGenerationProgress(10);
-      const timer = setInterval(() => {
-        setGenerationProgress(prev => {
-          if (prev >= 80) {
-            clearInterval(timer);
-            setGenerationStatusText(
-              'Building full Detailed Project Report...'
-            );
-            return 80;
-          }
-          return prev + 5;
-        });
-      }, 800);
-
       const dprResult = await generateDprAction({
-        idea: businessName,
+        idea: prompt,
         promoterName: user.displayName || 'Entrepreneur',
       });
-
-      clearInterval(timer);
       
       if (!dprResult.success) {
         throw new Error(`Failed to generate the final DPR: ${dprResult.error}`);
       }
-      const generatedReport = dprResult.data;
-
-      // Finalize and redirect
-      setGenerationStatusText('Finalizing report...');
-      localStorage.setItem('generatedDPR', JSON.stringify(generatedReport));
-      setGenerationProgress(100);
-
+      
+      localStorage.setItem('generatedDPR', JSON.stringify(dprResult.data));
       toast({
         title: 'DPR Generated Successfully!',
         description: 'Your full Detailed Project Report is ready.',
       });
 
-      router.push(`/dpr-report?idea=${encodeURIComponent(businessName)}`);
+      router.push(`/dpr-report?idea=${encodeURIComponent(prompt)}`);
+
     } catch (e: any) {
       console.error('DPR Generation failed:', e);
       toast({
@@ -116,87 +104,73 @@ function GenerateDPRContent() {
       setIsGenerating(false);
     }
   };
-
-  if (isGenerating) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Generating Your DPR</h2>
-        <p className="text-muted-foreground mb-6 max-w-md">
-          Our AI is building your comprehensive report. This may take a minute
-          or two, please don't close this page.
-        </p>
-        <div className="w-full max-w-md">
-          <Progress value={generationProgress} className="w-full mb-2" />
-          <p className="text-sm text-muted-foreground">
-            {generationStatusText} ({Math.round(generationProgress)}%)
-          </p>
-        </div>
-      </div>
-    );
+  
+  const handleShuffle = () => {
+      const randomPrompt = examplePrompts[Math.floor(Math.random() * examplePrompts.length)];
+      setPrompt(randomPrompt);
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <FileText /> DPR Generation Wizard
-          </h1>
-          <p className="text-muted-foreground">
-            Generating report for:{' '}
-            <span className="font-semibold">{businessName}</span>
-          </p>
-        </div>
-        <Button variant="ghost" asChild className="-ml-4">
-          <Link
-            href={`/investment-ideas/custom?idea=${encodeURIComponent(
-              idea || ''
-            )}`}
-          >
-            <ArrowLeft className="mr-2" /> Back to Analysis
-          </Link>
-        </Button>
-      </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 background-gradient">
+        <div className="w-full max-w-4xl space-y-8">
+            <div className="text-center">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Generate</h1>
+                <p className="mt-2 text-lg text-gray-600">What would you like to create today?</p>
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="text-accent" />
-            Ready to Build Your Report?
-          </CardTitle>
-          <CardDescription>
-            The information from your idea analysis will be used to generate a
-            bank-ready Detailed Project Report.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Click the button below to start the automated DPR generation
-              process. The AI will elaborate on your business concept and then
-              write all the necessary sections for a complete report.
-            </p>
-            <Button
-              onClick={handleGenerateDPR}
-              disabled={isGenerating}
-              size="lg"
-            >
-              {isGenerating ? (
-                <>
-                  {' '}
-                  <Loader2 className="mr-2 animate-spin" /> Generating Report...
-                </>
-              ) : (
-                <>
-                  {' '}
-                  <ChevronsRight className="mr-2" /> Generate Full DPR
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                    {label: "Presentation", icon: Presentation},
+                    {label: "Webpage", icon: Globe},
+                    {label: "Document", icon: File},
+                    {label: "Social", icon: Share2},
+                ].map(({label, icon: Icon}) => (
+                     <Card key={label} className={cn(
+                         "p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all",
+                         docType === label ? "ring-2 ring-primary border-primary bg-primary/10" : "hover:bg-gray-50"
+                     )} onClick={() => setDocType(label)}>
+                         <Icon className={cn("h-6 w-6", docType === label ? "text-primary" : "text-gray-500")} />
+                         <span className="font-medium text-sm text-gray-700">{label}</span>
+                     </Card>
+                ))}
+            </div>
+
+            <Card className="shadow-lg border-gray-200">
+                <CardContent className="p-4">
+                    <Textarea 
+                        placeholder="Describe what you'd like to make..."
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        className="w-full text-base border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-4 h-28"
+                    />
+                </CardContent>
+            </Card>
+
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <p className="text-sm font-medium text-gray-600">Example prompts</p>
+                    <Button variant="ghost" size="sm" onClick={handleShuffle}>
+                        <Shuffle className="mr-2" />
+                        Shuffle
+                    </Button>
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {examplePrompts.slice(0, 4).map((p) => (
+                        <Card key={p} className="p-3 bg-white hover:bg-gray-50 flex justify-between items-center cursor-pointer" onClick={() => setPrompt(p)}>
+                            <span className="text-sm text-gray-700">{p}</span>
+                            <Plus className="h-4 w-4 text-gray-400" />
+                        </Card>
+                    ))}
+                </div>
+            </div>
+
+            <div className="text-center pt-4">
+                <Button size="lg" onClick={handleGenerate} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles className="mr-2" />}
+                    Generate
+                </Button>
+            </div>
+        </div>
     </div>
   );
 }
@@ -208,7 +182,6 @@ export default function GenerateDPRPage() {
         <div className="flex flex-col justify-center items-center h-full text-center">
           <Loader2 className="h-8 w-8 animate-spin mb-4" />
           <h2 className="text-xl font-semibold">Loading DPR Generator...</h2>
-          <p className="text-muted-foreground">Please wait a moment.</p>
         </div>
       }
     >
