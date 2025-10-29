@@ -1,30 +1,53 @@
 'use server';
 
 /**
- * @fileOverview A flow for answering questions using the Catalyst RAG service.
+ * @fileOverview A flow for answering questions using the Firebase AI SDK.
  */
-
-import catalystService from '@/services/catalyst';
+import {initializeApp, getApps} from 'firebase/app';
+import {getAI, getGenerativeModel, GoogleAIBackend} from 'firebase/ai';
+import {firebaseConfig} from '@/lib/firebase';
 import type {
   GenerateRagAnswerInput,
   GenerateRagAnswerOutput,
 } from '@/ai/schemas/rag-answer';
 
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+}
+
+const ai = getAI(app!, { backend: new GoogleAIBackend() });
+const model = getGenerativeModel(ai, {model: 'gemini-pro'});
+
 export async function generateRagAnswer(
   input: GenerateRagAnswerInput
 ): Promise<GenerateRagAnswerOutput> {
-  try {
-    // The catalystService is already configured to handle the RAG API call.
-    const answer = await catalystService.getRagAnswer(input);
-
-    if (!answer) {
-      throw new Error('Received an empty response from the AI service.');
+  const context = `
+    CONTEXT:
+    The user has the following transactions:
+    ${
+      input.transactions?.length
+        ? input.transactions
+            .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
+            .join('\n')
+        : 'No transactions available.'
     }
+  `;
 
-    return { answer };
+  const prompt = `You are an expert financial advisor. Answer the user's question based on the provided context. Be simple, crisp, and concise.
+
+${context}
+
+QUESTION:
+${input.query}
+`;
+
+  try {
+    const {response} = await model.generateContent(prompt);
+    const answer = response.text();
+    return {answer};
   } catch (error: any) {
     console.error('Error in generateRagAnswer flow:', error);
-    // Re-throw the error to be handled by the calling action/API route
     throw new Error(`Failed to get answer from AI: ${error.message}`);
   }
 }

@@ -1,58 +1,42 @@
-
 'use server';
 
-import { extractTransactionsFromDocument } from '@/ai/flows/extract-transactions-from-document';
+import {extractTransactionsFromDocument} from '@/ai/flows/extract-transactions-from-document';
 import type {
   ExtractTransactionsInput,
   ExtractTransactionsOutput,
 } from '@/ai/schemas/transactions';
-import { generateDashboardSummary } from '@/ai/flows/generate-dashboard-summary';
-import { generateInvestmentIdeaAnalysis } from '@/ai/flows/generate-investment-idea-analysis';
+import {generateDashboardSummary} from '@/ai/flows/generate-dashboard-summary';
+import {generateInvestmentIdeaAnalysis} from '@/ai/flows/generate-investment-idea-analysis';
 import type {
   GenerateInvestmentIdeaAnalysisInput,
   GenerateInvestmentIdeaAnalysisOutput,
 } from '@/ai/schemas/investment-idea-analysis';
-import type { ExtractedTransaction } from '@/ai/schemas/transactions';
-import {
-  generateRagAnswer,
-} from '@/ai/flows/generate-rag-answer';
+import type {ExtractedTransaction} from '@/ai/schemas/transactions';
+import {generateRagAnswer} from '@/ai/flows/generate-rag-answer';
 import type {
   GenerateRagAnswerInput,
   GenerateRagAnswerOutput,
 } from '@/ai/schemas/rag-answer';
-import {
-  generateDprElaboration,
-} from '@/ai/flows/generate-dpr-elaboration';
-import {
-  generateDprFromElaboration,
-} from '@/ai/flows/generate-dpr-from-elaboration';
-import type {
-    ElaborationInput,
-    ElaboratedBusinessProfile,
-    GenerateDprOutput,
-} from '@/ai/schemas/dpr';
-import {
-  generateFinBite,
-  type GenerateFinBiteOutput
-} from '@/ai/flows/generate-fin-bite';
-import { generateBudgetReport } from '@/ai/flows/generate-budget-report';
+import {generateDpr} from '@/ai/flows/generate-dpr';
+import type {GenerateDprInput, GenerateDprOutput} from '@/ai/schemas/dpr';
+import {generateFinBite, type GenerateFinBiteOutput} from '@/ai/flows/generate-fin-bite';
+import {generateBudgetReport} from '@/ai/flows/generate-budget-report';
 import type {
   GenerateBudgetReportInput,
   GenerateBudgetReportOutput,
 } from '@/ai/schemas/budget-report';
-import { generateTts } from '@/ai/flows/generate-tts';
-import type { GenerateTtsInput, GenerateTtsOutput } from '@/ai/schemas/tts';
-
+import {generateTts} from '@/ai/flows/generate-tts';
+import type {GenerateTtsInput, GenerateTtsOutput} from '@/ai/schemas/tts';
 
 export async function extractTransactionsAction(
   input: ExtractTransactionsInput
 ): Promise<
-  | { success: true; data: ExtractTransactionsOutput }
-  | { success: false; error: string }
+  | {success: true; data: ExtractTransactionsOutput}
+  | {success: false; error: string}
 > {
   try {
     const result = await extractTransactionsFromDocument(input);
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error(error);
     return {
@@ -62,15 +46,15 @@ export async function extractTransactionsAction(
   }
 }
 
-export async function generateDashboardSummaryAction(
-  input: {transactions: ExtractedTransaction[]}
-): Promise<
-  | { success: true; data: any }
-  | { success: false; error: string }
+export async function generateDashboardSummaryAction(input: {
+  transactions: ExtractedTransaction[];
+}): Promise<
+  | {success: true; data: any}
+  | {success: false; error: string}
 > {
   try {
     const result = await generateDashboardSummary(input);
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error('Error in dashboard summary action:', error);
     return {
@@ -80,16 +64,15 @@ export async function generateDashboardSummaryAction(
   }
 }
 
-
 export async function generateInvestmentIdeaAnalysisAction(
   input: GenerateInvestmentIdeaAnalysisInput
 ): Promise<
-  | { success: true; data: GenerateInvestmentIdeaAnalysisOutput }
-  | { success: false; error: string }
+  | {success: true; data: GenerateInvestmentIdeaAnalysisOutput}
+  | {success: false; error: string}
 > {
   try {
     const result = await generateInvestmentIdeaAnalysis(input);
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error(error);
     return {
@@ -102,12 +85,12 @@ export async function generateInvestmentIdeaAnalysisAction(
 export async function generateRagAnswerAction(
   input: GenerateRagAnswerInput
 ): Promise<
-  | { success: true; data: GenerateRagAnswerOutput }
-  | { success: false; error: string }
+  | {success: true; data: GenerateRagAnswerOutput}
+  | {success: false; error: string}
 > {
   try {
     const result = await generateRagAnswer(input);
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error('Error in generateRagAnswerAction:', error);
     return {
@@ -117,33 +100,15 @@ export async function generateRagAnswerAction(
   }
 }
 
-export async function generateDprElaborationAction(
-  input: ElaborationInput
+export async function generateDprAction(
+  input: GenerateDprInput
 ): Promise<
-  | { success: true; data: ElaboratedBusinessProfile }
-  | { success: false; error: string }
+  | {success: true; data: GenerateDprOutput}
+  | {success: false; error: string}
 > {
   try {
-    const result = await generateDprElaboration(input);
-    return { success: true, data: result };
-  } catch (error: any) {
-    console.error(error);
-    return {
-      success: false,
-      error: `Failed to generate DPR elaboration: ${error.message}`,
-    };
-  }
-}
-
-export async function generateDprFromElaborationAction(
-  input: ElaboratedBusinessProfile
-): Promise<
-  | { success: true; data: GenerateDprOutput }
-  | { success: false; error: string }
-> {
-  try {
-    const result = await generateDprFromElaboration(input);
-    return { success: true, data: result };
+    const result = await generateDpr(input);
+    return {success: true, data: result};
   } catch (error: any) {
     console.error(error);
     return {
@@ -153,14 +118,13 @@ export async function generateDprFromElaborationAction(
   }
 }
 
-
 export async function generateFinBiteAction(): Promise<
-  | { success: true; data: GenerateFinBiteOutput }
-  | { success: false; error: string }
+  | {success: true; data: GenerateFinBiteOutput}
+  | {success: false; error: string}
 > {
   try {
     const result = await generateFinBite();
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error('Error generating Fin Bite:', error);
     return {
@@ -173,12 +137,12 @@ export async function generateFinBiteAction(): Promise<
 export async function generateBudgetReportAction(
   input: GenerateBudgetReportInput
 ): Promise<
-  | { success: true; data: GenerateBudgetReportOutput }
-  | { success: false; error: string }
+  | {success: true; data: GenerateBudgetReportOutput}
+  | {success: false; error: string}
 > {
   try {
     const result = await generateBudgetReport(input);
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error('Error in budget report action:', error);
     return {
@@ -191,12 +155,12 @@ export async function generateBudgetReportAction(
 export async function generateTtsAction(
   input: GenerateTtsInput
 ): Promise<
-  | { success: true; data: GenerateTtsOutput }
-  | { success: false; error: string }
+  | {success: true; data: GenerateTtsOutput}
+  | {success: false; error: string}
 > {
   try {
     const result = await generateTts(input);
-    return { success: true, data: result };
+    return {success: true, data: result};
   } catch (error: any) {
     console.error('Error in TTS action:', error);
     return {

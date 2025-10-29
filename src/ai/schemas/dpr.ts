@@ -1,29 +1,13 @@
 import {z} from 'zod';
 
-// Input for the first stage (elaboration)
-export const ElaborationInputSchema = z.object({
+// Input for the consolidated DPR generation flow
+export const GenerateDprInputSchema = z.object({
   idea: z.string().describe("The user's initial business idea."),
   promoterName: z.string().describe("The name of the entrepreneur."),
 });
-export type ElaborationInput = z.infer<typeof ElaborationInputSchema>;
+export type GenerateDprInput = z.infer<typeof GenerateDprInputSchema>;
 
-// Schema for the AI-ELABORATED business profile. This is the output of the first stage.
-export const ElaboratedBusinessProfileSchema = z.object({
-  promoterName: z.string(),
-  businessName: z.string(),
-  businessType: z.string(),
-  location: z.string(),
-  detailedProjectDescription: z.string(),
-  targetAudienceAnalysis: z.string(),
-  competitiveLandscape: z.string(),
-  marketingStrategy: z.string(),
-  financialSummary: z.string(),
-  usp: z.string(),
-});
-export type ElaboratedBusinessProfile = z.infer<
-  typeof ElaboratedBusinessProfileSchema
->;
-
+// This schema is now internal to the flow and doesn't need to be exported.
 const FinancialProjectionsSchema = z.object({
   summaryText: z
     .string()

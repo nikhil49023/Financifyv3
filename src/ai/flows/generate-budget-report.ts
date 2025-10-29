@@ -1,18 +1,32 @@
-
 'use server';
 
 /**
- * @fileOverview A function for generating a budget report.
- * This implementation has been refactored to use a non-Genkit AI service.
+ * @fileOverview A flow for generating a budget report from a list of transactions using Firebase AI.
  */
-
-import catalystService from '@/services/catalyst';
+import {initializeApp, getApps} from 'firebase/app';
+import {getAI, getGenerativeModel, GoogleAIBackend} from 'firebase/ai';
+import {firebaseConfig} from '@/lib/firebase';
 import type {
   GenerateBudgetReportInput,
   GenerateBudgetReportOutput,
 } from '@/ai/schemas/budget-report';
 
-const PROMPT_TEMPLATE = `You are a financial analyst. Based on the following transactions, provide a spending analysis and an expense breakdown.
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+}
+
+const ai = getAI(app!, { backend: new GoogleAIBackend() });
+const model = getGenerativeModel(ai, {model: 'gemini-pro'});
+
+export async function generateBudgetReport(
+  input: GenerateBudgetReportInput
+): Promise<GenerateBudgetReportOutput> {
+  const transactionsList = input.transactions
+    .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
+    .join('\n');
+
+  const prompt = `You are a financial analyst. Based on the following transactions, provide a spending analysis and an expense breakdown.
 Your response MUST be ONLY a valid JSON object that conforms to the output schema. Do NOT include any other text, markdown, or explanations.
 
 The JSON schema is:
@@ -27,38 +41,18 @@ The JSON schema is:
 Group similar expenses into logical categories (e.g., "Food", "Transport", "Shopping").
 
 Here is the list of transactions to analyze:
-{{TRANSACTIONS}}
+${transactionsList}
 `;
 
-function formatTransactionsForPrompt(
-  transactions: GenerateBudgetReportInput['transactions']
-): string {
-  return transactions
-    .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
-    .join('\n');
-}
-
-export async function generateBudgetReport(
-  input: GenerateBudgetReportInput
-): Promise<GenerateBudgetReportOutput> {
-  const transactionsString = formatTransactionsForPrompt(input.transactions);
-  const prompt = PROMPT_TEMPLATE.replace(
-    '{{TRANSACTIONS}}',
-    transactionsString
-  );
+  const {response} = await model.generateContent(prompt);
 
   try {
-    const rawResponse = await catalystService.getRagAnswer({ query: prompt });
-
-    // The AI might return the JSON wrapped in markdown, so we need to clean it.
-    const jsonString = rawResponse.replace(/```json\n|```/g, '').trim();
-    const parsedOutput = JSON.parse(jsonString);
-
-    return parsedOutput;
-  } catch (error: any) {
-    console.error('Failed to generate or parse budget report:', error);
-    throw new Error(
-      `Failed to generate budget report. The AI response was not valid JSON. Response: ${error.message}`
-    );
+    const text = response.text();
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleanedText);
+    return parsed as GenerateBudgetReportOutput;
+  } catch (e) {
+    console.error('Failed to parse JSON from model response:', response.text());
+    throw new Error('Could not generate budget report. The AI returned an invalid format.');
   }
 }

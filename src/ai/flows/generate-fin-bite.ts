@@ -1,16 +1,23 @@
-
 'use server';
 
 /**
- * @fileOverview This file defines a function for generating "Fin Bites",
- * concise updates on startup schemes and financial news in India.
- * This has been refactored to use a non-Genkit service.
+ * @fileOverview A flow for generating "Fin Bites" using Firebase AI.
  */
+import {initializeApp, getApps} from 'firebase/app';
+import {getAI, getGenerativeModel, GoogleAIBackend} from 'firebase/ai';
+import {firebaseConfig} from '@/lib/firebase';
+import type {GenerateFinBiteOutput} from '@/ai/schemas/fin-bite';
 
-import catalystService from '@/services/catalyst';
-import type { GenerateFinBiteOutput } from '@/ai/schemas/fin-bite';
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+}
 
-const PROMPT_TEMPLATE = `You are "FIn-Box," a specialized financial news anchor for early-stage entrepreneurs in India.
+const ai = getAI(app!, { backend: new GoogleAIBackend() });
+const model = getGenerativeModel(ai, {model: 'gemini-pro'});
+
+export async function generateFinBite(): Promise<GenerateFinBiteOutput> {
+  const prompt = `You are "FIn-Box," a specialized financial news anchor for early-stage entrepreneurs in India.
 Your task is to provide the single latest, most relevant news update for EACH of the following 3 categories: "MSME Schemes", "Finance & Tax", and "Market News".
 
 Your response MUST be a valid JSON object. Do not include any extra text, markdown, or explanations.
@@ -39,19 +46,15 @@ Example Output:
 \`\`\`
 `;
 
-export async function generateFinBite(): Promise<GenerateFinBiteOutput> {
+  const {response} = await model.generateContent(prompt);
+
   try {
-    const rawResponse = await catalystService.getRagAnswer({
-      query: PROMPT_TEMPLATE,
-    });
-    // The AI might return the JSON wrapped in markdown, so we need to clean it.
-    const jsonString = rawResponse.replace(/```json\n|```/g, '').trim();
-    const parsedOutput = JSON.parse(jsonString);
-    return parsedOutput;
-  } catch (error: any) {
-    console.error('Failed to parse FinBite updates from AI:', error);
-    throw new Error(
-      `Failed to generate FinBite updates. The AI response was not valid JSON. Response: ${error.message}`
-    );
+    const text = response.text();
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleanedText);
+    return parsed as GenerateFinBiteOutput;
+  } catch (e) {
+    console.error('Failed to parse JSON from model response:', response.text());
+    throw new Error('Could not generate Fin Bites. The AI returned an invalid format.');
   }
 }

@@ -1,15 +1,23 @@
 'use server';
-
 /**
- * @fileOverview A function for generating a dashboard summary.
- * This implementation uses a non-Genkit approach.
+ * @fileOverview A flow to generate a dashboard summary using Firebase AI.
+ * It calculates financial metrics and gets an AI-powered suggestion.
  */
-
+import {initializeApp, getApps} from 'firebase/app';
+import {getAI, getGenerativeModel, GoogleAIBackend} from 'firebase/ai';
+import {firebaseConfig} from '@/lib/firebase';
 import type {
   GenerateDashboardSummaryInput,
   GenerateDashboardSummaryOutput,
-} from '../schemas/dashboard-summary';
-import catalystService from '@/services/catalyst';
+} from '@/ai/schemas/dashboard-summary';
+
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+}
+
+const ai = getAI(app!, { backend: new GoogleAIBackend() });
+const model = getGenerativeModel(ai, {model: 'gemini-pro'});
 
 // Helper to safely parse currency strings
 function parseCurrency(amount: string | number): number {
@@ -27,15 +35,14 @@ function parseCurrency(amount: string | number): number {
 export async function generateDashboardSummary(
   input: GenerateDashboardSummaryInput
 ): Promise<GenerateDashboardSummaryOutput> {
-  const { transactions } = input;
+  const {transactions} = input;
 
   if (!transactions || transactions.length === 0) {
     return {
       totalIncome: 0,
       totalExpenses: 0,
       savingsRate: 0,
-      suggestion:
-        'Start by adding some transactions to see your financial summary.',
+      suggestion: 'Start by adding some transactions to see your financial summary.',
     };
   }
 
@@ -53,46 +60,33 @@ export async function generateDashboardSummary(
   });
 
   const savingsRate =
-    totalIncome > 0
-      ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100)
-      : 0;
+    totalIncome > 0 ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
 
-  const summary = { totalIncome, totalExpenses, savingsRate };
-
-  // 2. Generate a sample of transactions for the AI prompt
-  const transactionSample = transactions
-    .slice(0, 15) // Use a sample of up to 15 transactions
+  // 2. Generate AI suggestion
+  const transactionsSample = transactions
+    .slice(0, 15)
     .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
     .join('\n');
 
-  // 3. Construct the prompt for the AI
-  const prompt = `You are "FIn-Box," a financial analyst. Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response should be a single sentence.
+  const prompt = `You are "FIn-Box," a financial analyst. Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response must be a single sentence.
 
 Financial Summary:
-- Total Income: ${summary.totalIncome}
-- Total Expenses: ${summary.totalExpenses}
-- Savings Rate: ${summary.savingsRate}%
+- Total Income: ${totalIncome}
+- Total Expenses: ${totalExpenses}
+- Savings Rate: ${savingsRate}%
 
 Transaction List (sample):
-${transactionSample}
+${transactionsSample}
 `;
 
-  let suggestion = 'Review your spending to find potential savings opportunities.';
-  try {
-    // 4. Call the RAG service to get the suggestion
-    const aiResponse = await catalystService.getRagAnswer({ query: prompt });
-    if (aiResponse) {
-      // The response from catalystService is a raw string.
-      suggestion = aiResponse;
-    }
-  } catch (e: any) {
-    console.error('Failed to generate dashboard suggestion from AI:', e.message);
-    // Fallback to the default suggestion if AI fails
-  }
+  const {response} = await model.generateContent(prompt);
+  const suggestion = response.text();
 
-  // 5. Return the combined result
+  // 3. Return combined result
   return {
-    ...summary,
-    suggestion,
+    totalIncome,
+    totalExpenses,
+    savingsRate,
+    suggestion: suggestion || 'Review your spending to find potential savings opportunities.',
   };
 }

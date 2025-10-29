@@ -1,8 +1,7 @@
-
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import {Suspense, useState, useEffect} from 'react';
+import {useSearchParams, useRouter} from 'next/navigation';
 import {
   FileText,
   Loader2,
@@ -10,119 +9,130 @@ import {
   ChevronsRight,
   Sparkles,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
-import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
-import { useAuth } from '@/context/auth-provider';
-import { Progress } from '@/components/ui/progress';
-import { generateDprElaborationAction, generateDprFromElaborationAction } from '../actions';
+import {useToast} from '@/hooks/use-toast';
+import {useAuth} from '@/context/auth-provider';
+import {Progress} from '@/components/ui/progress';
+import {generateDprAction} from '../actions';
 
 function GenerateDPRContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { toast } = useToast();
+  const {toast} = useToast();
   const idea = searchParams.get('idea');
-  const { user } = useAuth();
+  const {user} = useAuth();
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStatusText, setGenerationStatusText] = useState('');
-  
+
   const [businessName, setBusinessName] = useState('');
-  
+
   useEffect(() => {
-    const analysisDataString = localStorage.getItem('dprAnalysis');
-    if (analysisDataString) {
-      try {
-        const parsedAnalysis: GenerateInvestmentIdeaAnalysisOutput = JSON.parse(analysisDataString);
-        setBusinessName(parsedAnalysis.title);
-      } catch (e) {
-        console.error("Failed to parse DPR analysis from localStorage", e);
-      }
-    } else if (idea) {
-        setBusinessName(idea);
+    if (idea) {
+      setBusinessName(idea);
     }
   }, [idea]);
 
   const handleGenerateDPR = async () => {
-      if(!user) {
-          toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to generate a DPR.' });
-          router.push('/');
-          return;
-      }
-
-      if(!businessName) {
-          toast({ variant: 'destructive', title: 'Error', description: 'Business idea is missing.' });
-          return;
-      }
-
-      setIsGenerating(true);
-      setGenerationProgress(0);
+    if (!user) {
       toast({
-          title: 'Generating DPR',
-          description: 'This may take a minute or two. Please wait...',
+        variant: 'destructive',
+        title: 'Error',
+        description: 'You must be logged in to generate a DPR.',
+      });
+      router.push('/');
+      return;
+    }
+
+    if (!businessName) {
+      toast({variant: 'destructive', title: 'Error', description: 'Business idea is missing.'});
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    toast({
+      title: 'Generating DPR',
+      description: 'This may take a minute or two. Please wait...',
+    });
+
+    try {
+      // Simulate progress for a single-stage generation
+      setGenerationStatusText('Expanding business concept...');
+      setGenerationProgress(10);
+      const timer = setInterval(() => {
+        setGenerationProgress(prev => {
+          if (prev >= 80) {
+            clearInterval(timer);
+            setGenerationStatusText(
+              'Building full Detailed Project Report...'
+            );
+            return 80;
+          }
+          return prev + 5;
+        });
+      }, 800);
+
+      const dprResult = await generateDprAction({
+        idea: businessName,
+        promoterName: user.displayName || 'Entrepreneur',
       });
 
-      try {
-        // Step 1: Elaborate on the idea
-        setGenerationStatusText("Expanding business concept...");
-        setGenerationProgress(10);
-        
-        const elaborationResult = await generateDprElaborationAction({ idea: businessName, promoterName: user.displayName || 'Entrepreneur' });
-        if (!elaborationResult.success) {
-            throw new Error(`Failed to elaborate on the idea: ${elaborationResult.error}`);
-        }
-        const elaboratedProfile = elaborationResult.data;
-        setGenerationProgress(40);
-        
-        // Step 2: Generate the full DPR from the elaborated profile
-        setGenerationStatusText("Building full Detailed Project Report...");
-        const dprResult = await generateDprFromElaborationAction(elaboratedProfile);
-
-         if (!dprResult.success) {
-            throw new Error(`Failed to generate the final DPR: ${dprResult.error}`);
-        }
-        const generatedReport = dprResult.data;
-        
-        // Step 3: Finalize and redirect
-        setGenerationStatusText("Finalizing report...");
-        localStorage.setItem('generatedDPR', JSON.stringify(generatedReport));
-        setGenerationProgress(100);
-
-        toast({
-            title: "DPR Generated Successfully!",
-            description: "Your full Detailed Project Report is ready.",
-        });
-
-        router.push(`/dpr-report?idea=${encodeURIComponent(businessName)}`);
-
-      } catch(e: any) {
-          console.error("DPR Generation failed:", e);
-          toast({
-              variant: 'destructive',
-              title: `DPR Generation Failed`,
-              description: e.message,
-          });
-          setIsGenerating(false);
+      clearInterval(timer);
+      
+      if (!dprResult.success) {
+        throw new Error(`Failed to generate the final DPR: ${dprResult.error}`);
       }
+      const generatedReport = dprResult.data;
+
+      // Finalize and redirect
+      setGenerationStatusText('Finalizing report...');
+      localStorage.setItem('generatedDPR', JSON.stringify(generatedReport));
+      setGenerationProgress(100);
+
+      toast({
+        title: 'DPR Generated Successfully!',
+        description: 'Your full Detailed Project Report is ready.',
+      });
+
+      router.push(`/dpr-report?idea=${encodeURIComponent(businessName)}`);
+    } catch (e: any) {
+      console.error('DPR Generation failed:', e);
+      toast({
+        variant: 'destructive',
+        title: `DPR Generation Failed`,
+        description: e.message,
+      });
+      setIsGenerating(false);
+    }
   };
-  
+
   if (isGenerating) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4"/>
-            <h2 className="text-2xl font-bold mb-2">Generating Your DPR</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-                Our AI is building your comprehensive report. This may take a minute or two, please don't close this page.
-            </p>
-            <div className="w-full max-w-md">
-                <Progress value={generationProgress} className="w-full mb-2" />
-                <p className="text-sm text-muted-foreground">{generationStatusText} ({Math.round(generationProgress)}%)</p>
-            </div>
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Generating Your DPR</h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          Our AI is building your comprehensive report. This may take a minute
+          or two, please don't close this page.
+        </p>
+        <div className="w-full max-w-md">
+          <Progress value={generationProgress} className="w-full mb-2" />
+          <p className="text-sm text-muted-foreground">
+            {generationStatusText} ({Math.round(generationProgress)}%)
+          </p>
         </div>
-    )
+      </div>
+    );
   }
 
   return (
@@ -133,41 +143,57 @@ function GenerateDPRContent() {
             <FileText /> DPR Generation Wizard
           </h1>
           <p className="text-muted-foreground">
-            Generating report for: <span className="font-semibold">{businessName}</span>
+            Generating report for:{' '}
+            <span className="font-semibold">{businessName}</span>
           </p>
         </div>
         <Button variant="ghost" asChild className="-ml-4">
           <Link
-            href={`/investment-ideas/custom?idea=${encodeURIComponent(idea || '')}`}
+            href={`/investment-ideas/custom?idea=${encodeURIComponent(
+              idea || ''
+            )}`}
           >
             <ArrowLeft className="mr-2" /> Back to Analysis
           </Link>
         </Button>
       </div>
 
-       <Card>
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="text-accent" />
             Ready to Build Your Report?
           </CardTitle>
-           <CardDescription>
-            The information from your idea analysis will be used to generate a bank-ready Detailed Project Report.
+          <CardDescription>
+            The information from your idea analysis will be used to generate a
+            bank-ready Detailed Project Report.
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="space-y-4">
-                <p className="text-muted-foreground">
-                    Click the button below to start the automated DPR generation process. The AI will first elaborate on your business concept and then write all the necessary sections for a complete report.
-                </p>
-                <Button onClick={handleGenerateDPR} disabled={isGenerating} size="lg">
-                    {isGenerating ? (
-                        <> <Loader2 className="mr-2 animate-spin" /> Generating Report...</>
-                    ) : (
-                       <> <ChevronsRight className="mr-2"/> Generate Full DPR</>
-                    )}
-                </Button>
-            </div>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Click the button below to start the automated DPR generation
+              process. The AI will elaborate on your business concept and then
+              write all the necessary sections for a complete report.
+            </p>
+            <Button
+              onClick={handleGenerateDPR}
+              disabled={isGenerating}
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  {' '}
+                  <Loader2 className="mr-2 animate-spin" /> Generating Report...
+                </>
+              ) : (
+                <>
+                  {' '}
+                  <ChevronsRight className="mr-2" /> Generate Full DPR
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
