@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   FileText,
   Send,
@@ -11,8 +11,7 @@ import {
   Recycle,
   Users,
   Eye,
-  Loader2,
-  Users2,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +20,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import {
   Dialog,
@@ -47,11 +45,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/hooks/use-language';
 import { useAuth } from '@/context/auth-provider';
-import { getFirestore, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { app } from '@/lib/firebase';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const db = getFirestore(app);
 
 const investmentIdeaCategories = {
   'AgriTech & Food Processing': {
@@ -96,13 +89,6 @@ type Usage = {
   count: number;
 };
 
-type CommunityIdea = {
-  id: string;
-  title: string;
-  summary: string;
-  contributedBy: string;
-};
-
 export default function BrainstormPage() {
   const { toast } = useToast();
   const [userIdea, setUserIdea] = useState('');
@@ -110,20 +96,6 @@ export default function BrainstormPage() {
   const { translations } = useLanguage();
   const { user } = useAuth();
   const [showLimitAlert, setShowLimitAlert] = useState(false);
-  const [communityIdeas, setCommunityIdeas] = useState<CommunityIdea[]>([]);
-  const [isLoadingCommunityIdeas, setIsLoadingCommunityIdeas] = useState(true);
-
-  useEffect(() => {
-    setIsLoadingCommunityIdeas(true);
-    const ideasRef = collection(db, 'communityIdeas');
-    const q = query(ideasRef, orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const fetchedIdeas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as CommunityIdea[];
-        setCommunityIdeas(fetchedIdeas);
-        setIsLoadingCommunityIdeas(false);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleAnalyzeIdea = () => {
     if (!userIdea.trim()) {
@@ -190,57 +162,22 @@ export default function BrainstormPage() {
        <Card>
         <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl md:text-2xl">
-                <Users2 />
-                Community Ideas
+                <MessageSquare />
+                Join the Entrepreneur Community
             </CardTitle>
             <CardDescription>
-                Explore business ideas contributed by the FIn-Box community.
+                Connect with fellow entrepreneurs, share ideas, and get feedback on Zoho Connect.
             </CardDescription>
         </CardHeader>
-        <CardContent>
-            {isLoadingCommunityIdeas ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[...Array(3)].map((_, i) => (
-                        <Card key={i}>
-                            <CardHeader>
-                                <Skeleton className="h-5 w-3/4" />
-                            </CardHeader>
-                             <CardContent>
-                                <Skeleton className="h-4 w-full" />
-                                <Skeleton className="h-4 w-2/3 mt-2" />
-                            </CardContent>
-                            <CardFooter>
-                                 <Skeleton className="h-4 w-1/2" />
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-            ) : communityIdeas.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {communityIdeas.map(idea => (
-                         <Link
-                            key={idea.id}
-                            href={`/investment-ideas/custom?idea=${encodeURIComponent(idea.title)}`}
-                            passHref
-                            className="block"
-                        >
-                            <Card className="h-full flex flex-col hover:border-primary transition-colors cursor-pointer">
-                                <CardHeader>
-                                    <CardTitle className="text-base">{idea.title}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex-grow">
-                                     <p className="text-sm text-muted-foreground line-clamp-3">{idea.summary}</p>
-                                </CardContent>
-                                <CardFooter>
-                                    <p className="text-xs text-muted-foreground">Contributed by: <span className="font-semibold">{idea.contributedBy}</span></p>
-                                </CardFooter>
-                            </Card>
-                        </Link>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-muted-foreground text-center py-4">No community ideas have been contributed yet. Be the first!</p>
-            )}
+        <CardContent className="space-y-4">
+           <p className="text-muted-foreground">
+                Building a business is a journey, not a solo mission. Join our dedicated community on Zoho Connect to network with peers, find mentors, ask questions, and validate your next big idea.
+           </p>
+            <Button asChild>
+                <a href="https://connect.zoho.com" target="_blank" rel="noopener noreferrer">
+                    Join the Community
+                </a>
+            </Button>
         </CardContent>
       </Card>
 
@@ -359,5 +296,6 @@ export default function BrainstormPage() {
     </div>
   );
 }
+    
 
     
