@@ -11,7 +11,8 @@ import {firebase} from '@genkit-ai/firebase';
 import {genkitEval} from '@genkit-ai/eval';
 
 // Initialize Genkit and export the 'ai' object.
-// The Google AI plugin is configured to use the GEMINI_API_KEY from the environment.
+// The plugins are passed directly to the constructor, which is the modern
+// approach and replaces the deprecated `configureGenkit` function.
 export const ai = genkit({
   plugins: [
     firebase(),
