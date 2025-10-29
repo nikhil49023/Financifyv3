@@ -58,6 +58,50 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  .theme-stardust {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 80%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 0 0% 98%;
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 0 0% 80%;
+  }
+  
+  .theme-blueberry {
+    --background: 225 73% 9%;
+    --foreground: 225 20% 90%;
+    --card: 225 73% 12%;
+    --card-foreground: 225 20% 90%;
+    --popover: 225 73% 12%;
+    --popover-foreground: 225 20% 90%;
+    --primary: 210 90% 70%;
+    --primary-foreground: 225 73% 9%;
+    --secondary: 225 73% 15%;
+    --secondary-foreground: 225 20% 90%;
+    --muted: 225 73% 15%;
+    --muted-foreground: 225 15% 60%;
+    --accent: 210 90% 70%;
+    --accent-foreground: 225 73% 9%;
+    --destructive: 0 70% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 73% 15%;
+    --input: 225 73% 15%;
+    --ring: 210 90% 70%;
+  }
 }
 
 @layer base {
@@ -84,10 +128,10 @@
         animation: pulse-record 2s infinite;
     }
     .background-gradient {
-        @apply bg-gradient-to-b from-blue-100 via-blue-50 to-white;
+        @apply bg-gradient-to-b from-blue-100 via-blue-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-black;
     }
     .a4-page {
-      @apply bg-white shadow-lg rounded-sm mx-auto;
+      @apply bg-card shadow-lg rounded-sm mx-auto;
       width: 210mm;
       min-height: 297mm;
     }

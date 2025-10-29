@@ -83,7 +83,17 @@ function DPRReportContent() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const ideaTitle = searchParams.get('idea');
+  const theme = searchParams.get('theme');
   const promoterName = user?.displayName || 'Entrepreneur';
+
+  useEffect(() => {
+    if (theme) {
+      document.documentElement.className = theme;
+    }
+    return () => {
+      document.documentElement.className = ''; // Reset on unmount
+    }
+  }, [theme]);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -309,6 +319,11 @@ function DPRReportContent() {
             }
           }
           
+          html, body {
+            background: white !important;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+          }
           body * {
             visibility: hidden;
           }
@@ -331,6 +346,7 @@ function DPRReportContent() {
             border-radius: 0 !important;
             margin: 0 !important;
             min-height: auto !important;
+            background: white !important;
           }
           #print-section::after {
             content: 'EmpowerMint';
@@ -505,5 +521,3 @@ export default function DPRReportPage() {
     </Suspense>
   );
 }
-
-    
