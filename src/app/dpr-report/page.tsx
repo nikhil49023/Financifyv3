@@ -4,7 +4,7 @@
 import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send, Edit } from 'lucide-react';
+import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send, Edit, Image as ImageIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { generateDprAction } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { PlaceHolderImages, type ImagePlaceholder } from '@/lib/placeholder-images';
 
 type ReportData = {
   [key: string]: any;
@@ -87,8 +87,12 @@ function DPRReportContent() {
   const ideaTitle = searchParams.get('idea');
   const theme = searchParams.get('theme');
   const promoterName = user?.displayName || 'Entrepreneur';
-  const projectIntroImage = PlaceHolderImages.find(p => p.id === 'dpr-intro');
 
+  const [introImage, setIntroImage] = useState<ImagePlaceholder | null>(null);
+
+  useEffect(() => {
+    setIntroImage(PlaceHolderImages.find(p => p.id === 'dpr-intro') || null);
+  }, []);
 
   useEffect(() => {
     if (theme) {
@@ -148,6 +152,19 @@ function DPRReportContent() {
     });
   };
 
+  const handleImageUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result && introImage) {
+        setIntroImage({
+          ...introImage,
+          imageUrl: e.target.result as string,
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const Section = ({
     title,
     content,
@@ -168,6 +185,7 @@ function DPRReportContent() {
     const [editQuery, setEditQuery] = useState('');
     const [isRegenerating, setIsRegenerating] = useState(false);
     const { toast } = useToast();
+    const imageInputRef = useRef<HTMLInputElement>(null);
 
     const handleRegenerate = async () => {
         if (!editQuery || !ideaTitle) return;
@@ -199,6 +217,16 @@ function DPRReportContent() {
         } finally {
             setIsRegenerating(false);
         }
+    };
+
+    const onImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.files && event.target.files[0]) {
+        if (title.includes('Project Introduction')) {
+          handleImageUpload(event.target.files[0]);
+        } else {
+          toast({ variant: 'destructive', title: 'Feature in Progress', description: 'Image uploads are currently enabled for the Project Introduction section only.'})
+        }
+      }
     };
 
 
@@ -254,17 +282,17 @@ function DPRReportContent() {
         );
       }
 
-      if (title.includes('Project Introduction') && projectIntroImage) {
+      if (title.includes('Project Introduction') && introImage) {
         return (
           <div className="clearfix">
-             <div className="float-right ml-6 mb-4 w-1/3">
+             <div className="float-right ml-6 mb-4 w-full max-w-[250px] sm:w-1/3">
                  <Image 
-                    src={projectIntroImage.imageUrl}
-                    alt={projectIntroImage.description}
+                    src={introImage.imageUrl}
+                    alt={introImage.description}
                     width={250}
                     height={180}
-                    className="rounded-lg shadow-md"
-                    data-ai-hint={projectIntroImage.imageHint}
+                    className="rounded-lg shadow-md aspect-video object-cover"
+                    data-ai-hint={introImage.imageHint}
                  />
              </div>
              <EditableContent
@@ -296,6 +324,17 @@ function DPRReportContent() {
           </CardContent>
         </div>
         <div className="flex justify-end items-center gap-2 no-print container mx-auto max-w-[210mm] px-0">
+            <input 
+              type="file" 
+              ref={imageInputRef} 
+              className="hidden" 
+              onChange={onImageFileChange}
+              accept="image/*"
+            />
+            <Button variant="ghost" size="sm" onClick={() => imageInputRef.current?.click()}>
+                <ImageIcon className="mr-2" />
+                Add Image
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setIsManuallyEditing(!isManuallyEditing)}>
                 <Edit className="mr-2" />
                 Edit Manually
