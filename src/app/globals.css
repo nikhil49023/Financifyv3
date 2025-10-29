@@ -86,6 +86,11 @@
     .background-gradient {
         @apply bg-gradient-to-b from-blue-100 via-blue-50 to-white;
     }
+    .a4-page {
+      @apply bg-white shadow-lg rounded-sm mx-auto;
+      width: 210mm;
+      min-height: 297mm;
+    }
 }
 
 @layer components {

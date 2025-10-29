@@ -1,20 +1,18 @@
 
 'use client';
 
-import { Suspense, useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send } from 'lucide-react';
+import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FormattedText } from '@/components/financify/formatted-text';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-provider';
 import { ProjectCostPieChart, FinancialProjectionsBarChart } from '@/components/financify/dpr-charts';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { generateDprAction } from '@/app/actions';
-
 
 type ReportData = {
   [key: string]: any;
@@ -35,6 +33,65 @@ const dprChapterTitles = [
   'Risk Assessment',
   'Annexures',
 ];
+
+
+// A simple parser to convert markdown-like strings to HTML for contentEditable
+const parseToHtml = (text: string) => {
+  if (typeof text !== 'string') return '';
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br />');
+};
+
+const EditableContent = ({ initialContent, onSave, className }: { initialContent: string, onSave: (newContent: string) => void, className?: string }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [toolbarStyle, setToolbarStyle] = useState({});
+
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        setToolbarStyle({
+          position: 'absolute',
+          top: `${window.scrollY + rect.top - 40}px`,
+          left: `${window.scrollX + rect.left + rect.width / 2 - 20}px`,
+          display: 'block',
+        });
+      } else {
+        setToolbarStyle({ display: 'none' });
+      }
+    };
+    document.addEventListener('selectionchange', handleSelection);
+    return () => document.removeEventListener('selectionchange', handleSelection);
+  }, []);
+
+
+  const handleBlur = () => {
+    if (contentRef.current) {
+      onSave(contentRef.current.innerHTML); // Save HTML content
+    }
+    setIsEditing(false);
+  };
+  
+  return (
+    <div className="relative">
+       <div style={toolbarStyle} className="bg-background border rounded-md shadow-lg p-1">
+          <Button variant="ghost" size="sm" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold'); }}><Edit className="h-4 w-4" /></Button>
+      </div>
+      <div
+        ref={contentRef}
+        contentEditable={true}
+        onFocus={() => setIsEditing(true)}
+        onBlur={handleBlur}
+        dangerouslySetInnerHTML={{ __html: parseToHtml(initialContent) }}
+        className={`outline-none focus:ring-2 focus:ring-primary/20 rounded-md p-2 -m-2 transition-shadow text-muted-foreground whitespace-pre-line leading-relaxed ${className}`}
+      />
+    </div>
+  );
+};
 
 
 function DPRReportContent() {
@@ -79,15 +136,29 @@ function DPRReportContent() {
     window.print();
   };
 
+  const handleContentUpdate = (sectionKey: string, newContent: string) => {
+    setReport(prev => {
+        if (!prev) return null;
+        const updatedReport = {
+            ...prev,
+            [sectionKey]: newContent
+        };
+        localStorage.setItem('generatedDPR', JSON.stringify(updatedReport));
+        return updatedReport;
+    });
+  };
+
   const Section = ({
     title,
     content,
+    sectionKey,
     isLoading,
     className = '',
     onRegenerate,
   }: {
     title: string;
     content?: any;
+    sectionKey: string;
     isLoading: boolean;
     className?: string;
     onRegenerate: (sectionTitle: string, newContent: any) => void;
@@ -106,9 +177,6 @@ function DPRReportContent() {
             const result = await generateDprAction({
                 idea: ideaTitle,
                 promoterName: promoterName,
-                // The AI flow is not configured for section-specific regeneration,
-                // so we pass the full context and hope it focuses on the right part.
-                // A more advanced implementation would have a dedicated flow.
                 sectionContext: {
                     sectionToUpdate: title,
                     currentContent: currentContent,
@@ -117,8 +185,8 @@ function DPRReportContent() {
             });
 
             if (result.success) {
-                const sectionKey = Object.keys(result.data).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || title;
-                onRegenerate(sectionKey, result.data[sectionKey]);
+                const updatedSectionKey = Object.keys(result.data).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || sectionKey;
+                onRegenerate(updatedSectionKey, result.data[updatedSectionKey]);
                 toast({ title: 'Section Updated', description: `"${title}" has been regenerated based on your request.` });
                 setIsEditing(false);
                 setEditQuery('');
@@ -135,11 +203,11 @@ function DPRReportContent() {
 
     return (
       <div className="space-y-2 no-print">
-        <Card className={`print:shadow-none print:border-none print-break-before ${className}`}>
-          <CardHeader className="p-4 md:p-6">
+        <div className={`a4-page p-12 print:shadow-none print:border-none print-break-before ${className}`}>
+          <CardHeader className="p-0 mb-6 border-b pb-4">
             <CardTitle>{title}</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0">
+          <CardContent className="p-0">
             {isLoading || isRegenerating ? (
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full" />
@@ -150,55 +218,56 @@ function DPRReportContent() {
                <div className="space-y-6">
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
-                        <FormattedText text={content.summaryText} />
+                        <EditableContent initialContent={content.summaryText} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.summaryText`, newHtml)} />
                     </div>
-                    <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6">
-                        <div className="space-y-4">
+                    <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6 print:grid-cols-2">
+                        <div className="space-y-4 print-no-break">
                             <h3 className="text-lg font-semibold">Project Cost Breakdown</h3>
                              <ProjectCostPieChart data={content.costBreakdown} />
                         </div>
-                         <div className="space-y-4">
+                         <div className="space-y-4 print-no-break">
                             <h3 className="text-lg font-semibold">Yearly Projections</h3>
                             <FinancialProjectionsBarChart data={content.yearlyProjections} />
                         </div>
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
-                        <FormattedText text={content.meansOfFinance} />
+                        <EditableContent initialContent={content.meansOfFinance} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.meansOfFinance`, newHtml)} />
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
-                        <FormattedText text={content.profitabilityAnalysis} />
+                         <EditableContent initialContent={content.profitabilityAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.profitabilityAnalysis`, newHtml)} />
                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
-                        <FormattedText text={content.cashFlowStatement} />
+                         <EditableContent initialContent={content.cashFlowStatement} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.cashFlowStatement`, newHtml)} />
                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
-                        <FormattedText text={content.loanRepaymentSchedule} />
+                         <EditableContent initialContent={content.loanRepaymentSchedule} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.loanRepaymentSchedule`, newHtml)} />
                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
-                        <FormattedText text={content.breakEvenAnalysis} />
+                         <EditableContent initialContent={content.breakEvenAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.breakEvenAnalysis`, newHtml)} />
                     </div>
 
                </div>
             ) : (
-              <FormattedText
-                text={content || 'No content generated for this section.'}
-              />
+                <EditableContent
+                    initialContent={content || 'No content generated for this section.'}
+                    onSave={(newHtml) => handleContentUpdate(sectionKey, newHtml)}
+                />
             )}
           </CardContent>
-        </Card>
-        <div className="flex justify-end no-print">
+        </div>
+        <div className="flex justify-end no-print container mx-auto max-w-[210mm] px-0">
             <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
                 <Sparkles className="mr-2" />
                 Regenerate with AI
             </Button>
         </div>
         {isEditing && (
-            <div className="p-2 space-y-2">
+            <div className="p-2 space-y-2 container mx-auto max-w-[210mm] px-0">
                 <div className="flex gap-2">
                     <Input 
                         placeholder={`e.g., "Make this section more detailed"`}
@@ -230,7 +299,7 @@ function DPRReportContent() {
   };
 
   return (
-    <div className="space-y-8 @container">
+    <div className="space-y-8 @container bg-gray-100/50 dark:bg-black/50 py-8">
       <style jsx global>{`
         @media print {
           @page {
@@ -258,11 +327,18 @@ function DPRReportContent() {
           #print-section {
             position: relative;
             margin: 0;
-            padding: 0.5cm;
+            padding: 0;
             width: 100%;
-            border: 1px solid #ccc;
-            min-height: calc(100vh - 3cm); /* Adjust based on margin */
+            border: none;
+            box-shadow: none;
+            background: white !important;
             float: none;
+          }
+          .a4-page {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            min-height: auto !important;
           }
           #print-section::after {
             content: 'EmpowerMint';
@@ -287,6 +363,7 @@ function DPRReportContent() {
           }
           .print-no-break {
             page-break-before: avoid;
+            page-break-inside: avoid;
           }
           .print-cover-page {
              height: 80vh;
@@ -315,7 +392,7 @@ function DPRReportContent() {
         }
       `}</style>
 
-      <div className="flex justify-between items-start no-print">
+      <div className="flex justify-between items-start no-print container mx-auto max-w-[210mm] px-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <FileText />
@@ -333,7 +410,7 @@ function DPRReportContent() {
         </Button>
       </div>
 
-      <div className="flex gap-2 no-print">
+      <div className="flex gap-2 no-print container mx-auto max-w-[210mm] px-4">
         <Button
           variant="outline"
           onClick={handleExport}
@@ -344,7 +421,7 @@ function DPRReportContent() {
       </div>
 
       {error && !isLoading && (
-        <Card className="text-center py-10 bg-destructive/10 border-destructive no-print">
+        <Card className="text-center py-10 bg-destructive/10 border-destructive no-print container mx-auto max-w-[210mm]">
           <CardHeader className="p-4 md:p-6">
             <CardTitle>Error Loading Report</CardTitle>
           </CardHeader>
@@ -389,12 +466,14 @@ function DPRReportContent() {
 
         {isLoading &&
           dprChapterTitles.map((title, index) => (
-            <Section
-              key={index}
-              title={`${index + 1}. ${title}`}
-              isLoading={true}
-              onRegenerate={() => {}}
-            />
+            <div key={index} className="a4-page p-12">
+              <Section
+                sectionKey=""
+                title={`${index + 1}. ${title}`}
+                isLoading={true}
+                onRegenerate={() => {}}
+              />
+            </div>
           ))}
         
         {report && !isLoading &&
@@ -406,10 +485,10 @@ function DPRReportContent() {
             return (
               <Section
                 key={key}
+                sectionKey={key}
                 title={sectionTitle}
                 content={content}
                 isLoading={isLoading}
-                className="print-no-break"
                 onRegenerate={(updatedKey, updatedContent) => handleSectionRegenerate(updatedKey, updatedContent)}
               />
             );
