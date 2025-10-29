@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Loader2, Briefcase, Building, Phone, MapPin, Edit, Link as LinkIcon } from 'lucide-react';
+import { LogOut, Loader2, Briefcase, Building, Phone, MapPin, Edit, Link as LinkIcon, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,10 +30,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { getAuth, deleteUser } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 export default function ProfilePage() {
   const { user, userProfile, loading, signOut } = useAuth();
@@ -83,6 +85,28 @@ export default function ProfilePage() {
     router.push('/login');
   };
 
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    try {
+      // First, delete Firestore data
+      await deleteDoc(doc(db, 'users', user.uid));
+      // Then, delete the user from Firebase Auth
+      await deleteUser(user);
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account and all associated data have been permanently deleted.',
+      });
+      router.push('/login');
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Deletion Failed',
+        description: `${error.message} You may need to log out and log in again before deleting your account.`,
+      });
+    }
+  };
+
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     return name
@@ -118,10 +142,10 @@ export default function ProfilePage() {
           <CardTitle className="text-2xl">{user.displayName || 'User'}</CardTitle>
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full">
+              <Button variant="outline">
                 <LogOut className="mr-2" />
                 {translations.sidebar.logout}
               </Button>
@@ -137,6 +161,32 @@ export default function ProfilePage() {
                 <AlertDialogCancel>{translations.logoutDialog.cancel}</AlertDialogCancel>
                 <AlertDialogAction onClick={handleLogout}>
                   {translations.logoutDialog.confirm}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2" />
+                Delete Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your
+                  account and remove all your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive hover:bg-destructive/90"
+                  onClick={handleDeleteAccount}
+                >
+                  Delete Account
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
