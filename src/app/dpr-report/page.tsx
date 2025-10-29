@@ -13,6 +13,7 @@ import { ProjectCostPieChart, FinancialProjectionsBarChart } from '@/components/
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { generateDprAction } from '@/app/actions';
+import { cn } from '@/lib/utils';
 
 type ReportData = {
   [key: string]: any;
@@ -43,53 +44,33 @@ const parseToHtml = (text: string) => {
     .replace(/\n/g, '<br />');
 };
 
-const EditableContent = ({ initialContent, onSave, className }: { initialContent: string, onSave: (newContent: string) => void, className?: string }) => {
+const EditableContent = ({ initialContent, onSave, isManuallyEditing, className }: { initialContent: string, onSave: (newContent: string) => void, isManuallyEditing: boolean, className?: string }) => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [toolbarStyle, setToolbarStyle] = useState({});
-
-  useEffect(() => {
-    const handleSelection = () => {
-      const selection = window.getSelection();
-      if (selection && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        setToolbarStyle({
-          position: 'absolute',
-          top: `${window.scrollY + rect.top - 40}px`,
-          left: `${window.scrollX + rect.left + rect.width / 2 - 20}px`,
-          display: 'block',
-        });
-      } else {
-        setToolbarStyle({ display: 'none' });
-      }
-    };
-    document.addEventListener('selectionchange', handleSelection);
-    return () => document.removeEventListener('selectionchange', handleSelection);
-  }, []);
-
 
   const handleBlur = () => {
     if (contentRef.current) {
       onSave(contentRef.current.innerHTML); // Save HTML content
     }
-    setIsEditing(false);
   };
+
+  useEffect(() => {
+    if (isManuallyEditing && contentRef.current) {
+      contentRef.current.focus();
+    }
+  }, [isManuallyEditing]);
   
   return (
-    <div className="relative">
-       <div style={toolbarStyle} className="bg-background border rounded-md shadow-lg p-1">
-          <Button variant="ghost" size="sm" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold'); }}><Edit className="h-4 w-4" /></Button>
-      </div>
-      <div
-        ref={contentRef}
-        contentEditable={true}
-        onFocus={() => setIsEditing(true)}
-        onBlur={handleBlur}
-        dangerouslySetInnerHTML={{ __html: parseToHtml(initialContent) }}
-        className={`outline-none focus:ring-2 focus:ring-primary/20 rounded-md p-2 -m-2 transition-shadow text-muted-foreground whitespace-pre-line leading-relaxed ${className}`}
-      />
-    </div>
+    <div
+      ref={contentRef}
+      contentEditable={isManuallyEditing}
+      onBlur={handleBlur}
+      dangerouslySetInnerHTML={{ __html: parseToHtml(initialContent) }}
+      className={cn(
+        'outline-none text-muted-foreground whitespace-pre-line leading-relaxed',
+        isManuallyEditing && 'ring-2 ring-primary/20 rounded-md p-2 -m-2 transition-shadow',
+        className
+      )}
+    />
   );
 };
 
@@ -139,10 +120,15 @@ function DPRReportContent() {
   const handleContentUpdate = (sectionKey: string, newContent: string) => {
     setReport(prev => {
         if (!prev) return null;
-        const updatedReport = {
-            ...prev,
-            [sectionKey]: newContent
-        };
+        const keys = sectionKey.split('.');
+        const updatedReport = { ...prev };
+        
+        if (keys.length > 1) {
+            updatedReport[keys[0]] = { ...updatedReport[keys[0]], [keys[1]]: newContent };
+        } else {
+            updatedReport[sectionKey] = newContent;
+        }
+
         localStorage.setItem('generatedDPR', JSON.stringify(updatedReport));
         return updatedReport;
     });
@@ -163,7 +149,8 @@ function DPRReportContent() {
     className?: string;
     onRegenerate: (sectionTitle: string, newContent: any) => void;
   }) => {
-    const [isEditing, setIsEditing] = useState(false);
+    const [isAiEditing, setIsAiEditing] = useState(false);
+    const [isManuallyEditing, setIsManuallyEditing] = useState(false);
     const [editQuery, setEditQuery] = useState('');
     const [isRegenerating, setIsRegenerating] = useState(false);
     const { toast } = useToast();
@@ -188,7 +175,7 @@ function DPRReportContent() {
                 const updatedSectionKey = Object.keys(result.data).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || sectionKey;
                 onRegenerate(updatedSectionKey, result.data[updatedSectionKey]);
                 toast({ title: 'Section Updated', description: `"${title}" has been regenerated based on your request.` });
-                setIsEditing(false);
+                setIsAiEditing(false);
                 setEditQuery('');
             } else {
                 throw new Error(result.error);
@@ -218,7 +205,7 @@ function DPRReportContent() {
                <div className="space-y-6">
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
-                        <EditableContent initialContent={content.summaryText} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.summaryText`, newHtml)} />
+                        <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.summaryText} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.summaryText`, newHtml)} />
                     </div>
                     <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6 print:grid-cols-2">
                         <div className="space-y-4 print-no-break">
@@ -232,41 +219,46 @@ function DPRReportContent() {
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
-                        <EditableContent initialContent={content.meansOfFinance} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.meansOfFinance`, newHtml)} />
+                        <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.meansOfFinance} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.meansOfFinance`, newHtml)} />
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
-                         <EditableContent initialContent={content.profitabilityAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.profitabilityAnalysis`, newHtml)} />
+                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.profitabilityAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.profitabilityAnalysis`, newHtml)} />
                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
-                         <EditableContent initialContent={content.cashFlowStatement} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.cashFlowStatement`, newHtml)} />
+                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.cashFlowStatement} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.cashFlowStatement`, newHtml)} />
                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
-                         <EditableContent initialContent={content.loanRepaymentSchedule} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.loanRepaymentSchedule`, newHtml)} />
+                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.loanRepaymentSchedule} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.loanRepaymentSchedule`, newHtml)} />
                     </div>
                      <div>
                         <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
-                         <EditableContent initialContent={content.breakEvenAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.breakEvenAnalysis`, newHtml)} />
+                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.breakEvenAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.breakEvenAnalysis`, newHtml)} />
                     </div>
 
                </div>
             ) : (
                 <EditableContent
+                    isManuallyEditing={isManuallyEditing}
                     initialContent={content || 'No content generated for this section.'}
                     onSave={(newHtml) => handleContentUpdate(sectionKey, newHtml)}
                 />
             )}
           </CardContent>
         </div>
-        <div className="flex justify-end no-print container mx-auto max-w-[210mm] px-0">
-            <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
+        <div className="flex justify-end items-center gap-2 no-print container mx-auto max-w-[210mm] px-0">
+            <Button variant="ghost" size="sm" onClick={() => setIsManuallyEditing(!isManuallyEditing)}>
+                <Edit className="mr-2" />
+                Edit Manually
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setIsAiEditing(!isAiEditing)}>
                 <Sparkles className="mr-2" />
                 Regenerate with AI
             </Button>
         </div>
-        {isEditing && (
+        {isAiEditing && (
             <div className="p-2 space-y-2 container mx-auto max-w-[210mm] px-0">
                 <div className="flex gap-2">
                     <Input 
@@ -513,3 +505,5 @@ export default function DPRReportPage() {
     </Suspense>
   );
 }
+
+    
