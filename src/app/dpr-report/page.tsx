@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { generateDprAction } from '@/app/actions';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type ReportData = {
   [key: string]: any;
@@ -85,6 +87,8 @@ function DPRReportContent() {
   const ideaTitle = searchParams.get('idea');
   const theme = searchParams.get('theme');
   const promoterName = user?.displayName || 'Entrepreneur';
+  const projectIntroImage = PlaceHolderImages.find(p => p.id === 'dpr-intro');
+
 
   useEffect(() => {
     if (theme) {
@@ -198,6 +202,89 @@ function DPRReportContent() {
     };
 
 
+    const renderContent = () => {
+      if (isLoading || isRegenerating) {
+        return (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        );
+      }
+
+      if (title.includes('Financial Projections') && typeof content === 'object') {
+        return (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
+              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.summaryText} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.summaryText`, newHtml)} />
+            </div>
+            <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6 print:grid-cols-2">
+              <div className="space-y-4 print-no-break">
+                <h3 className="text-lg font-semibold">Project Cost Breakdown</h3>
+                <ProjectCostPieChart data={content.costBreakdown} />
+              </div>
+              <div className="space-y-4 print-no-break">
+                <h3 className="text-lg font-semibold">Yearly Projections</h3>
+                <FinancialProjectionsBarChart data={content.yearlyProjections} />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
+              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.meansOfFinance} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.meansOfFinance`, newHtml)} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
+              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.profitabilityAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.profitabilityAnalysis`, newHtml)} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
+              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.cashFlowStatement} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.cashFlowStatement`, newHtml)} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
+              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.loanRepaymentSchedule} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.loanRepaymentSchedule`, newHtml)} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
+              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.breakEvenAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.breakEvenAnalysis`, newHtml)} />
+            </div>
+          </div>
+        );
+      }
+
+      if (title.includes('Project Introduction') && projectIntroImage) {
+        return (
+          <div className="clearfix">
+             <div className="float-right ml-6 mb-4 w-1/3">
+                 <Image 
+                    src={projectIntroImage.imageUrl}
+                    alt={projectIntroImage.description}
+                    width={250}
+                    height={180}
+                    className="rounded-lg shadow-md"
+                    data-ai-hint={projectIntroImage.imageHint}
+                 />
+             </div>
+             <EditableContent
+                isManuallyEditing={isManuallyEditing}
+                initialContent={content || 'No content generated for this section.'}
+                onSave={(newHtml) => handleContentUpdate(sectionKey, newHtml)}
+            />
+          </div>
+        )
+      }
+
+      return (
+        <EditableContent
+          isManuallyEditing={isManuallyEditing}
+          initialContent={content || 'No content generated for this section.'}
+          onSave={(newHtml) => handleContentUpdate(sectionKey, newHtml)}
+        />
+      );
+    };
+
     return (
       <div className="space-y-2 no-print">
         <div className={`a4-page p-12 print:shadow-none print:border-none print-break-before ${className}`}>
@@ -205,57 +292,7 @@ function DPRReportContent() {
             <CardTitle>{title}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {isLoading || isRegenerating ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            ) : title.includes('Financial Projections') && typeof content === 'object' ? (
-               <div className="space-y-6">
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
-                        <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.summaryText} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.summaryText`, newHtml)} />
-                    </div>
-                    <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6 print:grid-cols-2">
-                        <div className="space-y-4 print-no-break">
-                            <h3 className="text-lg font-semibold">Project Cost Breakdown</h3>
-                             <ProjectCostPieChart data={content.costBreakdown} />
-                        </div>
-                         <div className="space-y-4 print-no-break">
-                            <h3 className="text-lg font-semibold">Yearly Projections</h3>
-                            <FinancialProjectionsBarChart data={content.yearlyProjections} />
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
-                        <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.meansOfFinance} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.meansOfFinance`, newHtml)} />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
-                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.profitabilityAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.profitabilityAnalysis`, newHtml)} />
-                    </div>
-                     <div>
-                        <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
-                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.cashFlowStatement} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.cashFlowStatement`, newHtml)} />
-                    </div>
-                     <div>
-                        <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
-                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.loanRepaymentSchedule} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.loanRepaymentSchedule`, newHtml)} />
-                    </div>
-                     <div>
-                        <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
-                         <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.breakEvenAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.breakEvenAnalysis`, newHtml)} />
-                    </div>
-
-               </div>
-            ) : (
-                <EditableContent
-                    isManuallyEditing={isManuallyEditing}
-                    initialContent={content || 'No content generated for this section.'}
-                    onSave={(newHtml) => handleContentUpdate(sectionKey, newHtml)}
-                />
-            )}
+            {renderContent()}
           </CardContent>
         </div>
         <div className="flex justify-end items-center gap-2 no-print container mx-auto max-w-[210mm] px-0">
