@@ -4,15 +4,10 @@
  */
 import {initializeApp, getApps} from 'firebase/app';
 import {getAI, getGenerativeModel, GoogleAIBackend} from 'firebase/ai';
-import {firebaseConfig} from '@/lib/firebase';
+import {app} from '@/lib/firebase';
 import type {GenerateDprInput, GenerateDprOutput} from '@/ai/schemas/dpr';
 
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-}
-
-const ai = getAI(app!, { backend: new GoogleAIBackend() });
+const ai = getAI(app, { backend: new GoogleAIBackend() });
 const model = getGenerativeModel(ai, {model: 'gemini-pro'});
 
 export async function generateDpr(input: GenerateDprInput): Promise<GenerateDprOutput> {
