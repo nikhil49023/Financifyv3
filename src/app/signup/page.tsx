@@ -28,9 +28,30 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {motion, AnimatePresence} from 'framer-motion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+const msmeServiceCategories = [
+  'IT / Software Services',
+  'Retail / E-commerce',
+  'Construction / Real Estate',
+  'Manufacturing',
+  'Food & Agro Processing',
+  'Hospitality & Tourism',
+  'Healthcare & Pharma',
+  'Logistics & Supply Chain',
+  'Professional Services (Accounting, Legal, etc.)',
+  'Textiles & Apparel',
+  'Other',
+];
 
 const individualSteps = [
   {
@@ -64,8 +85,8 @@ const msmeSteps = [
   },
   {
     field: 'msmeService',
-    title: 'What service/product do you offer?',
-    description: 'A brief description of what your business does.',
+    title: 'What is your primary service category?',
+    description: 'Select the category that best fits your business.',
   },
   {
     field: 'msmeLocation',
@@ -238,6 +259,24 @@ export default function SignUpPage() {
               )
             }
           />
+        );
+      case 'msmeService':
+        return (
+          <Select
+            value={formData.msmeService}
+            onValueChange={value => handleChange('msmeService', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a service category" />
+            </SelectTrigger>
+            <SelectContent>
+              {msmeServiceCategories.map(category => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
       case 'msmeWebsite':
         return (

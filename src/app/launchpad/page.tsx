@@ -77,6 +77,19 @@ import { Label } from '@/components/ui/label';
 
 const db = getFirestore(app);
 
+const msmeServiceCategories = [
+  'IT / Software Services',
+  'Retail / E-commerce',
+  'Construction / Real Estate',
+  'Manufacturing',
+  'Food & Agro Processing',
+  'Hospitality & Tourism',
+  'Healthcare & Pharma',
+  'Logistics & Supply Chain',
+  'Professional Services (Accounting, Legal, etc.)',
+  'Textiles & Apparel',
+  'Other',
+];
 
 const PortalCard = ({
   title,
@@ -218,11 +231,6 @@ export default function GrowthHubPage() {
     setSelectedMsme(msme);
   };
   
-  const uniqueServices = useMemo(() => {
-    const services = new Set(msmeList.map(msme => msme.msmeService).filter(Boolean));
-    return Array.from(services);
-  }, [msmeList]);
-
   const uniqueLocations = useMemo(() => {
     const locations = new Set(msmeList.map(msme => msme.msmeLocation).filter(Boolean));
     return Array.from(locations);
@@ -569,7 +577,7 @@ export default function GrowthHubPage() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="">All Services</SelectItem>
-                                            {uniqueServices.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
+                                            {msmeServiceCategories.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
