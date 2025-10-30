@@ -20,7 +20,8 @@ import type {
 } from '@/ai/schemas/rag-answer';
 import {generateDpr} from '@/ai/flows/generate-dpr';
 import type {GenerateDprInput, GenerateDprOutput} from '@/ai/schemas/dpr';
-import {generateFinBite, type GenerateFinBiteOutput} from '@/ai/flows/generate-fin-bite';
+import {generateFinBite} from '@/ai/flows/generate-fin-bite';
+import type {GenerateFinBiteOutput} from '@/ai/schemas/fin-bite';
 import {generateBudgetReport} from '@/ai/flows/generate-budget-report';
 import type {
   GenerateBudgetReportInput,
@@ -92,7 +93,8 @@ export async function generateRagAnswerAction(
   try {
     const result = await generateRagAnswer(input);
     return {success: true, data: result};
-  } catch (error: any) {
+  } catch (error: any)
+    {
     console.error('Error in generateRagAnswerAction:', error);
     return {
       success: false,
