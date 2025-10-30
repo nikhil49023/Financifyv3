@@ -5,7 +5,6 @@ import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   File,
-  Globe,
   Presentation,
   Share2,
 } from 'lucide-react';
@@ -29,10 +28,9 @@ function GenerateDPRContent() {
         <p className="mt-2 text-md md:text-lg text-gray-600 dark:text-gray-400">Your document is just a click away.</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {[
           { label: "Presentation", icon: Presentation, disabled: true },
-          { label: "Webpage", icon: Globe, disabled: true },
           { label: "Document", icon: File, disabled: false },
           { label: "Social", icon: Share2, disabled: true },
         ].map(({ label, icon: Icon, disabled }) => (
