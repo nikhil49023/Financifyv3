@@ -59,7 +59,7 @@ class CatalystService {
 
   public async getRagAnswer(input: GenerateRagAnswerInput): Promise<string> {
     const token = await this.getValidAccessToken();
-    const ragApiUrl = `https://api.catalyst.zoho.in/quickml/v1/project/${this.projectId}/rag/answer`;
+    const ragApiUrl = `https://console.catalyst.zoho.in/quickml/v1/project/${this.projectId}/rag/answer`;
     
     const context = input.transactions
       ?.map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
