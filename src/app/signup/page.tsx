@@ -192,6 +192,7 @@ export default function SignUpPage() {
         email: user.email,
         role: formData.role,
         createdAt: serverTimestamp(),
+        hasCompletedTour: false, // New user flag
       };
 
       if (formData.role === 'msme') {

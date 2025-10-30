@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged, signOut as firebaseSignOut, type User as FirebaseUser } from 'firebase/auth';
 import { getFirestore, doc, onSnapshot, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
 
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -23,6 +22,7 @@ export type UserProfile = {
   msmeLocation?: string;
   ownerContact?: string;
   msmeWebsite?: string;
+  hasCompletedTour?: boolean;
 };
 
 interface AuthContextType {
@@ -48,10 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(firebaseUser);
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
-        const unsubProfile = onSnapshot(userDocRef, (snapshot) => {
+        // Listen for profile changes
+        onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
                 setUserProfile(snapshot.data() as UserProfile);
             } else {
+                // If profile doesn't exist, create it.
+                // This case can happen with Google Sign-In on first login.
                 getDoc(userDocRef).then(docSnap => {
                     if (!docSnap.exists()) {
                         const newProfile: UserProfile = {
@@ -60,25 +63,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             email: firebaseUser.email,
                             role: 'individual', // default role
                             createdAt: serverTimestamp(),
+                            hasCompletedTour: false, // New user flag
                         };
                         setDoc(userDocRef, newProfile);
                         setUserProfile(newProfile);
                     }
                 });
             }
-             setLoading(false);
-        }, (error) => {
-            console.error("Firestore permission error:", error);
-            // Emit a custom event that a client component can listen to
-            errorEmitter.emit('permission-error', error);
-            setLoading(false);
         });
-
+        
         if (pathname === '/login' || pathname === '/signup') {
           router.replace('/');
         }
-        
-        return () => unsubProfile(); // Cleanup Firestore listener
       } else {
         setUser(null);
         setUserProfile(null);
@@ -86,11 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isPublicPage) {
           router.replace('/login');
         }
-        setLoading(false);
       }
+      setLoading(false);
     });
 
-    return () => unsubscribe(); // Cleanup auth listener
+    return () => unsubscribe();
   }, [router, pathname]);
 
   const signOut = async () => {
@@ -103,14 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const value = { user, userProfile, loading, signOut };
-  
-  const isAuthPage = pathname === '/login' || pathname === '/signup';
-  if (loading && !isAuthPage) {
-      return (
-        <div className="flex h-screen w-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      );
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

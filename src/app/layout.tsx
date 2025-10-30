@@ -12,10 +12,14 @@ import {LanguageProvider} from '@/context/language-provider';
 import AppHeader from '@/components/financify/app-header';
 import DesktopHeader from '@/components/financify/desktop-header';
 import BottomNavbar from '@/components/financify/bottom-navbar';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {cn} from '@/lib/utils';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { Suspense } from 'react';
+import AppTour from '@/components/financify/app-tour';
+import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import { app } from '@/lib/firebase';
+
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,8 +28,29 @@ const inter = Inter({
 
 function AppContent({children}: {children: React.ReactNode}) {
   const pathname = usePathname();
-  const {user} = useAuth();
+  const {user, userProfile} = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  
+  useEffect(() => {
+    if (userProfile && userProfile.hasCompletedTour === false) {
+      // Use a short delay to allow the app to render before showing the tour
+      const timer = setTimeout(() => {
+        setIsTourOpen(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [userProfile]);
+
+  const handleTourComplete = async () => {
+    setIsTourOpen(false);
+    if (user) {
+      const db = getFirestore(app);
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { hasCompletedTour: true }, { merge: true });
+    }
+  };
+
 
   // Special layout for public pages
   const isPublicPage = pathname === '/login' || pathname === '/signup';
@@ -41,6 +66,7 @@ function AppContent({children}: {children: React.ReactNode}) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+       <AppTour isOpen={isTourOpen} onOpenChange={setIsTourOpen} onComplete={handleTourComplete} />
       {/* Desktop Sidebar */}
       <div
         className={cn(
