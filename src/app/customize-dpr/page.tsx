@@ -11,6 +11,8 @@ import { useAuth } from '@/context/auth-provider';
 import { useToast } from '@/hooks/use-toast';
 import { generateDprAction } from '@/app/actions';
 import { AnimatePresence, motion } from 'framer-motion';
+import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
+
 
 const themes = [
     {
@@ -48,19 +50,33 @@ const themes = [
 function CustomizeDPRContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const idea = searchParams.get('idea');
+    const ideaTitle = searchParams.get('idea');
     const { user } = useAuth();
     const { toast } = useToast();
 
     const [selectedTheme, setSelectedTheme] = useState(themes[0].className);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [analysis, setAnalysis] = useState<GenerateInvestmentIdeaAnalysisOutput | null>(null);
+
+    useEffect(() => {
+        const storedAnalysis = localStorage.getItem('dprAnalysis');
+        if (storedAnalysis) {
+            setAnalysis(JSON.parse(storedAnalysis));
+        } else if (ideaTitle) {
+            // Fallback just in case localStorage is cleared
+            setAnalysis({ title: ideaTitle } as GenerateInvestmentIdeaAnalysisOutput);
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'No business idea found.' });
+            router.push('/brainstorm');
+        }
+    }, [ideaTitle, router, toast]);
 
     useEffect(() => {
         document.documentElement.className = selectedTheme;
     }, [selectedTheme]);
 
     const handleGenerateDPR = async () => {
-        if (!idea || !user) {
+        if (!analysis || !user) {
             toast({ variant: 'destructive', title: 'Error', description: 'Missing user or idea information.' });
             router.push('/brainstorm');
             return;
@@ -70,8 +86,9 @@ function CustomizeDPRContent() {
         toast({ title: 'Generating DPR', description: 'This may take a minute or two. Please wait...' });
 
         try {
+            // Use the full analysis object as the 'idea' for the DPR generation
             const dprResult = await generateDprAction({
-                idea: idea,
+                idea: analysis, // Pass the whole analysis object
                 promoterName: user.displayName || 'Entrepreneur',
             });
       
@@ -85,7 +102,7 @@ function CustomizeDPRContent() {
                 description: 'Your full Detailed Project Report is ready.',
             });
 
-            router.push(`/dpr-report?idea=${encodeURIComponent(idea)}&theme=${selectedTheme}`);
+            router.push(`/dpr-report?idea=${encodeURIComponent(analysis.title)}&theme=${selectedTheme}`);
 
         } catch (e: any) {
             console.error('DPR Generation failed:', e);

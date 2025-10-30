@@ -14,6 +14,18 @@ const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 export async function generateDpr(input: GenerateDprInput): Promise<GenerateDprOutput> {
   
   let prompt: string;
+  const businessProfile = typeof input.idea === 'string' 
+    ? `A business idea: "${input.idea}"`
+    : `A detailed business profile:
+---
+Title: ${input.idea.title}
+Summary: ${input.idea.summary}
+Investment Strategy: ${input.idea.investmentStrategy}
+Target Audience: ${input.idea.targetAudience}
+ROI Projection: ${input.idea.roi}
+Future-Proofing: ${input.idea.futureProofing}
+Relevant Schemes: ${input.idea.relevantSchemes}
+---`;
 
   if (input.sectionContext) {
     // This is a regeneration request for a specific section
@@ -21,7 +33,9 @@ export async function generateDpr(input: GenerateDprInput): Promise<GenerateDprO
     prompt = `You are an expert consultant revising a Detailed Project Report (DPR).
 A user wants to update the "${sectionToUpdate}" section.
 
-**Business Idea:** "${input.idea}"
+**Business Profile:**
+${businessProfile}
+
 **Promoter's Name:** "${input.promoterName}"
 
 **Current content of the section:**
@@ -39,9 +53,9 @@ For any data that needs to be filled in by the user, use the format [Placeholder
   } else {
     // This is the initial full DPR generation request
     prompt = `You are an expert consultant hired to write a bank-ready Detailed Project Report (DPR) for an entrepreneur in India.
-You have been provided with a basic business idea and the promoter's name.
+You have been provided with a rich, detailed business profile and the promoter's name.
 
-Your task is to first internally elaborate on this idea to create a rich, detailed business profile. Then, use that elaborated profile to write the complete DPR.
+Your task is to write the complete DPR based on this information.
 
 CRITICAL: You MUST output ONLY a valid JSON object that conforms to the final DPR output schema. Do not include any other text, markdown, or explanations.
 For any data that needs to be filled in by the user, use the format [Placeholder for user data], for example: [Enter your contact number here].
@@ -50,7 +64,9 @@ For the "financialProjections" section, you must generate the full financial obj
 The 'costBreakdown' and 'yearlyProjections' fields must be valid JSON arrays for charts.
 All other fields should be markdown strings, providing detailed and well-structured content for each section of the DPR.
 
-**User's Business Idea:** "${input.idea}"
+**Business Profile:**
+${businessProfile}
+
 **Promoter's Name:** "${input.promoterName}"
 
 Based on this, generate the complete JSON object for the DPR.

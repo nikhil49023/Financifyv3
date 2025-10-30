@@ -94,6 +94,15 @@ function InvestmentIdeaContent() {
 
   const handleBuildDpr = () => {
     if (!title || !user) return;
+    
+    const fullAnalysis: Partial<GenerateInvestmentIdeaAnalysisOutput> = sections.reduce((acc, section) => {
+        if(section.content) {
+            acc[section.key] = section.content;
+        }
+        return acc;
+    }, { title, summary } as Partial<GenerateInvestmentIdeaAnalysisOutput>);
+
+    localStorage.setItem('dprAnalysis', JSON.stringify(fullAnalysis));
     router.push(
       `/generate-dpr?idea=${encodeURIComponent(
         title

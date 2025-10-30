@@ -1,9 +1,11 @@
 
 import {z} from 'zod';
+import { GenerateInvestmentIdeaAnalysisOutputSchema } from './investment-idea-analysis';
 
 // Input for the consolidated DPR generation flow
 export const GenerateDprInputSchema = z.object({
-  idea: z.string().describe("The user's initial business idea."),
+  // The 'idea' can now be a simple string or the full analysis object
+  idea: z.union([z.string(), GenerateInvestmentIdeaAnalysisOutputSchema]).describe("The user's initial business idea or the full analysis object."),
   promoterName: z.string().describe("The name of the entrepreneur."),
   sectionContext: z.object({
     sectionToUpdate: z.string(),
@@ -68,5 +70,37 @@ export const GenerateDprOutputSchema = z.object({
     .describe('Must be a markdown string.'),
   projectIntroduction: z
     .string()
-...
-```
+    .describe('Must be a markdown string.'),
+  promoterDetails: z
+    .string()
+    .describe('Must be a markdown string.'),
+  businessModel: z
+    .string()
+    .describe('Must be a markdown string.'),
+  marketAnalysis: z
+    .string()
+    .describe('Must be a markdown string.'),
+  locationAndSite: z
+    .string()
+    .describe('Must be a markdown string.'),
+  technicalFeasibility: z
+    .string()
+    .describe('Must be a markdown string.'),
+  implementationSchedule: z
+    .string()
+    .describe('Must be a markdown string.'),
+  financialProjections: FinancialProjectionsSchema,
+  swotAnalysis: z
+    .string()
+    .describe('Must be a markdown string.'),
+  regulatoryCompliance: z
+    .string()
+    .describe('Must be a markdown string.'),
+  riskAssessment: z
+    .string()
+    .describe('Must be a markdown string.'),
+  annexures: z
+    .string()
+    .describe('Must be a markdown string.'),
+});
+export type GenerateDprOutput = z.infer<typeof GenerateDprOutputSchema>;
