@@ -178,8 +178,8 @@ function GenerateDPRContent() {
 
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-        <header className="flex items-center justify-between p-3 border-b bg-card">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+        <header className="sticky top-0 md:top-16 lg:top-0 z-20 flex items-center justify-between p-3 border-b bg-card">
             <Button variant="ghost" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2" /> Back
             </Button>
@@ -187,9 +187,9 @@ function GenerateDPRContent() {
             <div className="w-24"></div>
         </header>
 
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4 overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
             {/* Left Column */}
-            <div className="md:col-span-4 lg:col-span-3 space-y-6 md:overflow-y-auto">
+            <div className="md:col-span-4 lg:col-span-3 space-y-6">
                 <Card className="shadow-sm">
                     <CardHeader>
                         <CardTitle>Text Content</CardTitle>
@@ -230,38 +230,42 @@ function GenerateDPRContent() {
                         <TabsTrigger value="freeform">Freeform</TabsTrigger>
                         <TabsTrigger value="card-by-card">Card-by-Card</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="freeform" className="flex-1 mt-4 overflow-hidden">
+                    <TabsContent value="freeform" className="flex-1 mt-4">
                         <Card className="h-full flex flex-col">
                             <CardHeader>
                                 <CardTitle>Core Business Idea & Analysis</CardTitle>
                                 <CardDescription>This information will be used to generate the entire DPR in one go.</CardDescription>
                             </CardHeader>
-                            <CardContent className="flex-1 flex flex-col gap-4 overflow-y-auto">
-                                <div className="space-y-1">
-                                    <Label className="text-sm font-semibold">Business Summary</Label>
-                                    <Textarea 
-                                        className="w-full resize-none text-base"
-                                        value={analysis?.summary || 'Loading...'}
-                                        readOnly
-                                        rows={4}
-                                    />
-                                </div>
-                                {analysis && analysisSections.map(({ key, label }) => (
-                                    <div key={key} className="space-y-1">
-                                        <Label className="text-sm font-semibold">{label}</Label>
-                                        <Textarea
+                            <CardContent className="flex-1 flex flex-col gap-4">
+                                <ScrollArea className="flex-1 h-0 pr-4">
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <Label className="text-sm font-semibold">Business Summary</Label>
+                                        <Textarea 
+                                            className="w-full resize-none text-base"
+                                            value={analysis?.summary || 'Loading...'}
                                             readOnly
-                                            className="w-full resize-none text-sm bg-muted/50"
-                                            value={(analysis[key as keyof typeof analysis] as string) || ''}
-                                            rows={3}
+                                            rows={4}
                                         />
                                     </div>
-                                ))}
+                                    {analysis && analysisSections.map(({ key, label }) => (
+                                        <div key={key} className="space-y-1">
+                                            <Label className="text-sm font-semibold">{label}</Label>
+                                            <Textarea
+                                                readOnly
+                                                className="w-full resize-none text-sm bg-muted/50"
+                                                value={(analysis[key as keyof typeof analysis] as string) || ''}
+                                                rows={3}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                </ScrollArea>
                             </CardContent>
                         </Card>
                     </TabsContent>
                     <TabsContent value="card-by-card" className="flex-1 mt-4">
-                        <ScrollArea className="h-full pr-4">
+                        <ScrollArea className="h-full max-h-[70vh] pr-4">
                             <div className="space-y-4">
                                 {dprSections.map(key => (
                                      <Card key={key} className={cn(dprContent[key] && 'border-green-500')}>
@@ -298,7 +302,7 @@ function GenerateDPRContent() {
             </div>
             
             {/* Right Column */}
-            <div className="hidden lg:flex lg:col-span-3 flex-col gap-6">
+            <div className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
                  <Card className="shadow-sm">
                     <CardHeader>
                         <CardTitle>Additional instructions</CardTitle>
@@ -316,7 +320,7 @@ function GenerateDPRContent() {
             </div>
         </div>
 
-        <footer className="flex items-center justify-center p-3 border-t bg-card">
+        <footer className="sticky bottom-0 z-20 flex items-center justify-center p-3 border-t bg-card mt-auto">
              {activeTab === 'freeform' ? (
                 <Button size="lg" onClick={handleGenerateFreeform} disabled={isGenerating}>
                     {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles className="mr-2" />}
