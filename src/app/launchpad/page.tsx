@@ -548,7 +548,7 @@ export default function GrowthHubPage() {
                     MSME Marketplace
                 </CardTitle>
                 <CardDescription>
-                    Find and connect with services offered by MSMEs in the EmpowerMintt community.
+                    Find and connect with services offered by MSMEs in the Artha community.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -593,6 +593,7 @@ export default function GrowthHubPage() {
                                 </div>
                             </div>
                             <DialogFooter>
+                                <Button type="button" variant="ghost" onClick={() => { setFilterService(''); setFilterLocation(''); }}>Clear Filters</Button>
                                 <DialogClose asChild>
                                 <Button type="button">Apply Filters</Button>
                                 </DialogClose>

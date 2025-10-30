@@ -15,8 +15,9 @@ export function FormattedText({ text }: FormattedTextProps) {
     return null;
   }
 
-  // Regex to find **bold text** or [placeholders]
-  const parts = text.split(/(\*\*.*?\*\*|\[.*?\])/g).filter(Boolean);
+  // Enhanced Regex to find **bold text**, [placeholders], and URLs.
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(/(\*\*.*?\*\*|\[.*?\]|https?:\/\/[^\s]+)/g).filter(Boolean);
 
   const formattedParts = parts.map((part, index) => {
     // Check for bold format: **...**
@@ -36,6 +37,21 @@ export function FormattedText({ text }: FormattedTextProps) {
         <span key={index} className="text-red-500 font-bold">
           [{varText}]
         </span>
+      );
+    }
+
+    // Check if the part is a URL
+    if (urlRegex.test(part)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline hover:text-primary/80 break-words"
+        >
+          {part}
+        </a>
       );
     }
 
