@@ -296,16 +296,7 @@ export default function SignUpPage() {
             <div className="flex items-start gap-2 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800">
               <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
               <p className="text-xs">
-                No website? No problem! You can use a social media profile link instead. For a professional site, check out{' '}
-                <a
-                  href="https://www.zoho.com/sites/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold underline"
-                >
-                  Zoho Sites
-                </a>
-                .
+                No website? No problem! You can use a link to your profile on any social media platform instead.
               </p>
             </div>
           </div>
