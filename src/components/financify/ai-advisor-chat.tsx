@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useState, useRef, useEffect, type ElementRef} from 'react';
@@ -19,6 +20,7 @@ import {
 } from 'firebase/firestore';
 import {app} from '@/lib/firebase';
 import { generateRagAnswerAction } from '@/app/actions';
+import { FormattedText } from '@/components/financify/formatted-text';
 
 const db = getFirestore(app);
 
@@ -168,7 +170,7 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
                     : 'bg-muted'
                 }`}
               >
-                <p>{message.text}</p>
+                {message.sender === 'user' ? <p>{message.text}</p> : <FormattedText text={message.text} />}
               </div>
               {message.sender === 'user' && (
                 <Avatar className="h-8 w-8">
