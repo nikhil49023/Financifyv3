@@ -29,7 +29,7 @@ Relevant Schemes: ${input.idea.relevantSchemes}
 
   if (input.sectionContext) {
     // This is a regeneration request for a specific section
-    const { sectionToUpdate, currentContent, userRequest } = input.sectionContext;
+    const { sectionToUpdate, userRequest } = input.sectionContext;
     prompt = `You are an expert consultant revising a Detailed Project Report (DPR).
 A user wants to generate or update the "${sectionToUpdate}" section.
 
@@ -88,17 +88,6 @@ Based on this, generate the complete JSON object for the DPR.
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(cleanedText);
     
-    // If it's a section update, we need to merge it into a full DPR object
-    if (input.sectionContext) {
-        const sectionKey = Object.keys(parsed)[0];
-        // Create a full object structure for consistency, even though only one part is populated.
-        const fullDprObject = dprSections.reduce((acc, key) => {
-            acc[key as keyof GenerateDprOutput] = parsed[key] || null;
-            return acc;
-        }, {} as Partial<GenerateDprOutput>);
-        return fullDprObject as GenerateDprOutput;
-    }
-
     return parsed as GenerateDprOutput;
   } catch (e) {
     console.error('Failed to parse JSON from model response:', response.text());
@@ -121,5 +110,3 @@ const dprSections: (keyof GenerateDprOutput)[] = [
     'riskAssessment',
     'annexures'
 ];
-
-    
