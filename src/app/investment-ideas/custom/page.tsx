@@ -348,7 +348,7 @@ function InvestmentIdeaContent() {
             )}
           </Button>
 
-          <Button onClick={handleBuildDpr} disabled={!allSectionsLoaded || !user}>
+          <Button onClick={handleBuildDpr} disabled={!isSaved || !user}>
             <ChevronsRight className="mr-2" />
             Build DPR
           </Button>
