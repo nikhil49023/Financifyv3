@@ -428,7 +428,7 @@ function DPRReportContent() {
           }
 
           .a4-container::after {
-            content: 'EmpowerMint';
+            content: 'EmpowerMintt';
             position: fixed;
             top: 50%;
             left: 50%;

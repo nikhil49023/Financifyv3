@@ -27,12 +27,12 @@ CRITICAL: You MUST output ONLY a valid JSON object that conforms to the specifie
 The schema is:
 {
   "title": "The name of the business idea.",
-  "summary": "A brief summary of the business concept. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
-  "investmentStrategy": "Detail the required initial investment. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
-  "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
-  "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
-  "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by EmpowerMint AI)*\\".",
-  "relevantSchemes": "Identify 2-3 relevant Indian government schemes. Prepend \\"*(Powered by EmpowerMint AI)*\\"."
+  "summary": "A brief summary of the business concept. Prepend \\"*(Powered by EmpowerMintt AI)*\\".",
+  "investmentStrategy": "Detail the required initial investment. Prepend \\"*(Powered by EmpowerMintt AI)*\\".",
+  "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by EmpowerMintt AI)*\\".",
+  "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by EmpowerMintt AI)*\\".",
+  "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by EmpowerMintt AI)*\\".",
+  "relevantSchemes": "Identify 2-3 relevant Indian government schemes. Prepend \\"*(Powered by EmpowerMintt AI)*\\"."
 }
 `;
 

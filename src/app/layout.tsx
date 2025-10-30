@@ -123,7 +123,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>EmpowerMint</title>
+        <title>EmpowerMintt</title>
         <meta name="description" content="Your personal finance dashboard." />
         <meta
           name="viewport"

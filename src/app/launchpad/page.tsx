@@ -521,7 +521,7 @@ export default function GrowthHubPage() {
                                 <CardTitle className="flex items-center gap-2 text-base">
                                      <Info className="h-5 w-5 text-primary flex-shrink-0" />
                                      {update.category}
-                                </CardTitle>
+                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-1">
                                 <p className="font-semibold">{update.title}</p>
@@ -548,7 +548,7 @@ export default function GrowthHubPage() {
                     MSME Marketplace
                 </CardTitle>
                 <CardDescription>
-                    Find and connect with services offered by MSMEs in the EmpowerMint community.
+                    Find and connect with services offered by MSMEs in the EmpowerMintt community.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

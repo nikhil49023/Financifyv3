@@ -25,7 +25,7 @@ import { useAuth } from '@/context/auth-provider';
 const tourSteps = [
   {
     icon: Lightbulb,
-    title: 'Welcome to EmpowerMint!',
+    title: 'Welcome to EmpowerMintt!',
     description:
       "Let's take a quick tour to see how you can make the most of your financial co-pilot.",
   },
