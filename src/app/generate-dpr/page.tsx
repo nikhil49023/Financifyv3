@@ -169,16 +169,17 @@ function GenerateDPRContent() {
 
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-900">
-        <header className="flex items-center justify-between p-3 border-b bg-white dark:bg-gray-800">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+        <header className="flex items-center justify-between p-3 border-b bg-card">
             <Button variant="ghost" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2" /> Back
             </Button>
-            <h1 className="text-lg font-semibold">DPR Prompt Editor</h1>
+            <h1 className="text-lg font-semibold truncate px-2">DPR Prompt Editor</h1>
             <div className="w-24"></div>
         </header>
 
         <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4 overflow-y-auto">
+            {/* Left Column */}
             <div className="md:col-span-4 lg:col-span-3 space-y-6">
                 <Card className="shadow-sm">
                     <CardHeader>
@@ -213,7 +214,8 @@ function GenerateDPRContent() {
                 </Card>
             </div>
 
-            <div className="md:col-span-8 lg:col-span-6 flex flex-col">
+            {/* Center Column */}
+            <div className="md:col-span-8 lg:col-span-6 flex flex-col min-h-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="freeform">Freeform</TabsTrigger>
@@ -267,6 +269,7 @@ function GenerateDPRContent() {
                 </Tabs>
             </div>
             
+            {/* Right Column */}
             <div className="hidden lg:block lg:col-span-3 space-y-6">
                  <Card className="shadow-sm">
                     <CardHeader>
@@ -285,7 +288,7 @@ function GenerateDPRContent() {
             </div>
         </div>
 
-        <footer className="flex items-center justify-center p-3 border-t bg-white dark:bg-gray-800">
+        <footer className="flex items-center justify-center p-3 border-t bg-card">
              {activeTab === 'freeform' ? (
                 <Button size="lg" onClick={handleGenerateFreeform} disabled={isGenerating}>
                     {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles className="mr-2" />}
