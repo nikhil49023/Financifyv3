@@ -30,6 +30,7 @@ import { generateDprAction } from '@/app/actions';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { GenerateDprOutput } from '@/ai/schemas/dpr';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const dprSections: (keyof GenerateDprOutput)[] = [
     'executiveSummary',
@@ -50,6 +51,14 @@ const dprSections: (keyof GenerateDprOutput)[] = [
 const formatSectionTitle = (key: string) => {
     return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 }
+
+const analysisSections: { key: keyof GenerateInvestmentIdeaAnalysisOutput, label: string }[] = [
+    { key: 'investmentStrategy', label: 'Investment Strategy' },
+    { key: 'targetAudience', label: 'Target Audience' },
+    { key: 'roi', label: 'Return on Investment (ROI)' },
+    { key: 'futureProofing', label: 'Future Proofing' },
+    { key: 'relevantSchemes', label: 'Relevant Government Schemes' },
+];
 
 function GenerateDPRContent() {
   const searchParams = useSearchParams();
@@ -178,9 +187,9 @@ function GenerateDPRContent() {
             <div className="w-24"></div>
         </header>
 
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4 overflow-y-auto">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4 overflow-hidden">
             {/* Left Column */}
-            <div className="md:col-span-4 lg:col-span-3 space-y-6">
+            <div className="md:col-span-4 lg:col-span-3 space-y-6 md:overflow-y-auto">
                 <Card className="shadow-sm">
                     <CardHeader>
                         <CardTitle>Text Content</CardTitle>
@@ -221,62 +230,81 @@ function GenerateDPRContent() {
                         <TabsTrigger value="freeform">Freeform</TabsTrigger>
                         <TabsTrigger value="card-by-card">Card-by-Card</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="freeform" className="flex-1 mt-4">
+                    <TabsContent value="freeform" className="flex-1 mt-4 overflow-hidden">
                         <Card className="h-full flex flex-col">
                             <CardHeader>
-                                <CardTitle>Core Business Idea</CardTitle>
-                                <CardDescription>This summary will be used to generate the entire DPR in one go.</CardDescription>
+                                <CardTitle>Core Business Idea & Analysis</CardTitle>
+                                <CardDescription>This information will be used to generate the entire DPR in one go.</CardDescription>
                             </CardHeader>
-                            <CardContent className="flex-1">
-                                <Textarea 
-                                    className="w-full h-full resize-none text-base"
-                                    value={analysis?.summary || 'Loading...'}
-                                    readOnly
-                                />
+                            <CardContent className="flex-1 flex flex-col gap-4 overflow-y-auto">
+                                <div className="space-y-1">
+                                    <Label className="text-sm font-semibold">Business Summary</Label>
+                                    <Textarea 
+                                        className="w-full resize-none text-base"
+                                        value={analysis?.summary || 'Loading...'}
+                                        readOnly
+                                        rows={4}
+                                    />
+                                </div>
+                                {analysis && analysisSections.map(({ key, label }) => (
+                                    <div key={key} className="space-y-1">
+                                        <Label className="text-sm font-semibold">{label}</Label>
+                                        <Textarea
+                                            readOnly
+                                            className="w-full resize-none text-sm bg-muted/50"
+                                            value={(analysis[key as keyof typeof analysis] as string) || ''}
+                                            rows={3}
+                                        />
+                                    </div>
+                                ))}
                             </CardContent>
                         </Card>
                     </TabsContent>
-                    <TabsContent value="card-by-card" className="flex-1 mt-4 space-y-4 overflow-y-auto">
-                        {dprSections.map(key => (
-                             <Card key={key} className={cn(dprContent[key] && 'border-green-500')}>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">{formatSectionTitle(key)}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2">
-                                        <Label htmlFor={`prompt-${key}`}>Prompt for this section</Label>
-                                        <Input 
-                                            id={`prompt-${key}`}
-                                            placeholder={`Optional: e.g., "Emphasize the market gap for this section"`}
-                                            value={sectionPrompts[key] || ''}
-                                            onChange={(e) => setSectionPrompts(prev => ({...prev, [key]: e.target.value}))}
-                                            disabled={generatingSection === key}
-                                        />
-                                        <Button onClick={() => handleGenerateSection(key)} disabled={generatingSection === key}>
-                                            {generatingSection === key ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2" />}
-                                            Generate Section
-                                        </Button>
-                                    </div>
-                                    {dprContent[key] && (
-                                        <div className="mt-4 p-3 bg-muted rounded-md text-sm text-muted-foreground line-clamp-2">
-                                            {typeof dprContent[key] === 'string' ? dprContent[key] : 'Financial data generated.'}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        ))}
+                    <TabsContent value="card-by-card" className="flex-1 mt-4">
+                        <ScrollArea className="h-full pr-4">
+                            <div className="space-y-4">
+                                {dprSections.map(key => (
+                                     <Card key={key} className={cn(dprContent[key] && 'border-green-500')}>
+                                        <CardHeader>
+                                            <CardTitle className="text-lg">{formatSectionTitle(key)}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-2">
+                                                <Label htmlFor={`prompt-${key}`}>Prompt for this section</Label>
+                                                <Input 
+                                                    id={`prompt-${key}`}
+                                                    placeholder={`Optional: e.g., "Emphasize the market gap for this section"`}
+                                                    value={sectionPrompts[key] || ''}
+                                                    onChange={(e) => setSectionPrompts(prev => ({...prev, [key]: e.target.value}))}
+                                                    disabled={generatingSection === key}
+                                                />
+                                                <Button onClick={() => handleGenerateSection(key)} disabled={generatingSection === key}>
+                                                    {generatingSection === key ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2" />}
+                                                    Generate Section
+                                                </Button>
+                                            </div>
+                                            {dprContent[key] && (
+                                                <div className="mt-4 p-3 bg-muted rounded-md text-sm text-muted-foreground line-clamp-2">
+                                                    {typeof dprContent[key] === 'string' ? dprContent[key] : 'Financial data generated.'}
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </TabsContent>
                 </Tabs>
             </div>
             
             {/* Right Column */}
-            <div className="hidden lg:block lg:col-span-3 space-y-6">
+            <div className="hidden lg:flex lg:col-span-3 flex-col gap-6">
                  <Card className="shadow-sm">
                     <CardHeader>
                         <CardTitle>Additional instructions</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Textarea placeholder="Optional instructions for the AI" />
+                        <Textarea placeholder="Optional instructions for the AI" rows={4}/>
                     </CardContent>
                 </Card>
                 <Alert>
@@ -313,5 +341,3 @@ export default function GenerateDPRPage() {
     </Suspense>
   );
 }
-
-    
