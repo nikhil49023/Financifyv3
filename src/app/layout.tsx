@@ -123,6 +123,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>Artha</title>
+        <link rel="icon" href="http://googleusercontent.com/image_generation_content/1" />
         <meta name="description" content="Your personal finance dashboard." />
         <meta
           name="viewport"
