@@ -1,4 +1,3 @@
-
 'use client';
 
 import {useState, useRef, useEffect, type ElementRef} from 'react';
@@ -7,7 +6,6 @@ import {Input} from '@/components/ui/input';
 import {Send, Sparkles, User, Loader2} from 'lucide-react';
 import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {motion, AnimatePresence} from 'framer-motion';
-import {ScrollArea} from '@/components/ui/scroll-area';
 import type {ExtractedTransaction} from '@/ai/schemas/transactions';
 import {useAuth} from '@/context/auth-provider';
 import {useLanguage} from '@/hooks/use-language';
@@ -40,7 +38,7 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<ElementRef<typeof ScrollArea>>(null);
+  const bottomOfChatRef = useRef<HTMLDivElement>(null);
 
   const {user, loading: loadingAuth} = useAuth();
   const [transactions, setTransactions] = useState<ExtractedTransaction[]>([]);
@@ -89,19 +87,7 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
   }, [translations, initialMessage]);
 
   const scrollToBottom = () => {
-    setTimeout(() => {
-      if (scrollAreaRef.current) {
-        const scrollableViewport = (
-          scrollAreaRef.current.childNodes[0] as HTMLDivElement
-        )?.querySelector('[data-radix-scroll-area-viewport]');
-        if (scrollableViewport) {
-          scrollableViewport.scrollTo({
-            top: scrollableViewport.scrollHeight,
-            behavior: 'smooth',
-          });
-        }
-      }
-    }, 100);
+    bottomOfChatRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -155,66 +141,65 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
 
   return (
     <div className="flex-1 flex flex-col justify-between">
-      <ScrollArea className="flex-1" ref={scrollAreaRef}>
-        <div className="space-y-6 p-4 sm:p-6">
-          <AnimatePresence>
-            {messages.map(message => (
-              <motion.div
-                key={message.id}
-                initial={{opacity: 0, y: 10}}
-                animate={{opacity: 1, y: 0}}
-                exit={{opacity: 0, y: -10}}
-                transition={{duration: 0.3}}
-                className={`flex items-start gap-3 ${
-                  message.sender === 'user' ? 'justify-end' : ''
-                }`}
-              >
-                {message.sender === 'ai' && (
-                  <Avatar className="h-8 w-8 bg-primary/20 text-primary">
-                    <AvatarFallback>
-                      <Sparkles className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div
-                  className={`rounded-lg p-3 max-w-sm text-sm ${
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
-                  <p>{message.text}</p>
-                </div>
-                {message.sender === 'user' && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
-                      <User className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          {isLoading && (
+      <div className="flex-1 space-y-6 p-4 sm:p-6">
+        <AnimatePresence>
+          {messages.map(message => (
             <motion.div
+              key={message.id}
               initial={{opacity: 0, y: 10}}
               animate={{opacity: 1, y: 0}}
-              transition={{duration: 0.3, delay: 0.2}}
-              className="flex items-start gap-3"
+              exit={{opacity: 0, y: -10}}
+              transition={{duration: 0.3}}
+              className={`flex items-start gap-3 ${
+                message.sender === 'user' ? 'justify-end' : ''
+              }`}
             >
-              <Avatar className="h-8 w-8 bg-primary/20 text-primary">
-                <AvatarFallback>
-                  <Sparkles className="h-5 w-5" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="bg-muted rounded-lg p-3 max-w-md">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              {message.sender === 'ai' && (
+                <Avatar className="h-8 w-8 bg-primary/20 text-primary">
+                  <AvatarFallback>
+                    <Sparkles className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div
+                className={`rounded-lg p-3 max-w-sm text-sm ${
+                  message.sender === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                }`}
+              >
+                <p>{message.text}</p>
               </div>
+              {message.sender === 'user' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
             </motion.div>
-          )}
-        </div>
-      </ScrollArea>
-      <div className="p-4 border-t">
+          ))}
+        </AnimatePresence>
+        {isLoading && (
+          <motion.div
+            initial={{opacity: 0, y: 10}}
+            animate={{opacity: 1, y: 0}}
+            transition={{duration: 0.3, delay: 0.2}}
+            className="flex items-start gap-3"
+          >
+            <Avatar className="h-8 w-8 bg-primary/20 text-primary">
+              <AvatarFallback>
+                <Sparkles className="h-5 w-5" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="bg-muted rounded-lg p-3 max-w-md">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          </motion.div>
+        )}
+        <div ref={bottomOfChatRef} />
+      </div>
+      <div className="p-4 border-t sticky bottom-16 md:bottom-0 bg-background/80 backdrop-blur-sm md:bg-card md:backdrop-blur-none">
         <form onSubmit={handleSendMessage} className="relative flex gap-2">
           <Input
             value={input}
