@@ -206,9 +206,9 @@ export default function SignUpPage() {
       await setDoc(userDocRef, profileData);
 
       toast({
-        title: 'Account Created',
+        title: 'Account Created!',
         description:
-          'Welcome! A verification email has been sent. Please check your inbox.',
+          'A verification email has been sent. Please check your inbox to complete your registration.',
       });
 
       // The AuthProvider will handle redirection.
