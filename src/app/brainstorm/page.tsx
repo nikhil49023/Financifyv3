@@ -12,6 +12,7 @@ import {
   Users,
   Eye,
   MessageSquare,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -186,27 +187,7 @@ export default function BrainstormPage() {
         <CardHeader className="p-4 md:p-6">
           <div className="flex items-center gap-2 mb-2">
             <h2 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 md:h-7 md:w-7 text-primary"
-              >
-                <path d="M15.5 22.5a2.5 2.5 0 0 1-3 0" />
-                <path d="M12.5 20a2.5 2.5 0 0 1-3 0" />
-                <path d="m6.5 17.5-3-3 2.5-5 3.5 2.5-3 2.5" />
-                <path d="m17.5 17.5 3-3-2.5-5-3.5 2.5 3 2.5" />
-                <path d="M12.5 6.5a2.5 2.5 0_0 1-3 0" />
-                <path d="m15.5 4-3-3-3 3" />
-                <path d="m6.5 11.5-3-3 2.5-5 3.5 2.5-3 2.5" />
-                <path d="m17.5 11.5 3-3-2.5-5-3.5 2.5 3 2.5" />
-              </svg>
+              <Sparkles className="h-6 w-6 md:h-7 md:w-7 text-primary" />
               {translations.brainstorm.ideasTitle}
             </h2>
             <Badge variant="outline">Beta</Badge>
@@ -296,6 +277,3 @@ export default function BrainstormPage() {
     </div>
   );
 }
-    
-
-    

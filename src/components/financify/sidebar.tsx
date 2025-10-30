@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -9,6 +10,7 @@ import {
   Rocket,
   Globe,
   MessagesSquare,
+  DollarSign,
 } from 'lucide-react';
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
@@ -137,33 +139,9 @@ export default function Sidebar({
           isCollapsed ? 'justify-center' : 'justify-start'
         )}
       >
-        <svg
-          width="40"
-          height="40"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-10 w-10 text-primary"
-        >
-          <path
-            d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"
-            fill="currentColor"
-            opacity="0.3"
-          />
-          <path
-            d="M12 7C9.24 7 7 9.24 7 12H9C9 10.34 10.34 9 12 9V7Z"
-            fill="currentColor"
-          />
-          <path
-            d="M12 11C10.9 11 10 11.9 10 13H14C14 11.9 13.1 11 12 11Z"
-            fill="currentColor"
-            opacity="0.6"
-          />
-          <path
-            d="M12 15C10.34 15 9 16.34 9 18H15C15 16.34 13.66 15 12 15Z"
-            fill="currentColor"
-          />
-        </svg>
+        <div className={cn("flex items-center justify-center h-10 w-10 text-primary", isCollapsed && "h-12 w-12")}>
+            <DollarSign className="h-8 w-8" />
+        </div>
         <h1 className={cn('text-xl font-bold', {'hidden': isCollapsed})}>
           Artha
         </h1>
