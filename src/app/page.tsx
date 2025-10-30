@@ -321,7 +321,7 @@ export default function DashboardPage() {
     };
 
     fetchSummary();
-  }, [transactions, user, loadingAuth, translations, getCacheKey, toast, summary, isLoading]);
+  }, [transactions, user, loadingAuth, translations, getCacheKey, toast, isLoading]);
 
   // Effect to create default emergency fund
   useEffect(() => {
