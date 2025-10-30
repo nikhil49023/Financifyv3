@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send, Edit } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send, Edit, Star } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-provider';
@@ -14,6 +14,11 @@ import { useToast } from '@/hooks/use-toast';
 import { generateDprAction } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { Textarea } from '@/components/ui/textarea';
+import { getFirestore, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { app } from '@/lib/firebase';
+
+const db = getFirestore(app);
 
 type ReportData = {
   [key: string]: any;
@@ -73,6 +78,85 @@ const EditableContent = ({ initialContent, onSave, isManuallyEditing, className 
       )}
     />
   );
+};
+
+const FeedbackSection = ({ ideaTitle }: { ideaTitle: string | null }) => {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    const handleSubmitFeedback = async () => {
+        if (!user || !ideaTitle || rating === 0) {
+            toast({ variant: 'destructive', title: 'Please provide a rating before submitting.' });
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await addDoc(collection(db, 'dpr-feedback'), {
+                userId: user.uid,
+                ideaTitle: ideaTitle,
+                rating: rating,
+                comment: comment,
+                submittedAt: serverTimestamp()
+            });
+            toast({ title: 'Feedback Submitted', description: 'Thank you for helping us improve!' });
+            setIsSubmitted(true);
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Submission Failed', description: 'Could not submit your feedback. Please try again.' });
+            console.error("Error submitting feedback:", e);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isSubmitted) {
+        return (
+            <Card className="no-print bg-green-50 border-green-200">
+                <CardHeader className="text-center">
+                    <CardTitle>Thank you for your feedback!</CardTitle>
+                </CardHeader>
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="no-print">
+            <CardHeader>
+                <CardTitle>Rate this DPR</CardTitle>
+                <CardDescription>Your feedback helps us improve the AI generation quality.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                            key={star}
+                            className={cn(
+                                'h-8 w-8 cursor-pointer transition-colors',
+                                (hoverRating || rating) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/50'
+                            )}
+                            onMouseEnter={() => setHoverRating(star)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            onClick={() => setRating(star)}
+                        />
+                    ))}
+                </div>
+                <Textarea
+                    placeholder="Optional: Add any comments or suggestions..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                />
+                <Button onClick={handleSubmitFeedback} disabled={isSubmitting || rating === 0}>
+                    {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
+                    Submit Feedback
+                </Button>
+            </CardContent>
+        </Card>
+    );
 };
 
 
@@ -525,6 +609,11 @@ function DPRReportContent() {
               })}
         </div>
       </div>
+      {report && !isLoading && (
+        <div className="container mx-auto max-w-[210mm] px-4 py-8">
+            <FeedbackSection ideaTitle={ideaTitle} />
+        </div>
+      )}
     </div>
   );
 }
