@@ -187,44 +187,8 @@ function GenerateDPRContent() {
             <div className="w-24"></div>
         </header>
 
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
-            {/* Left Column */}
-            <div className="md:col-span-4 lg:col-span-3 space-y-6">
-                <Card className="shadow-sm">
-                    <CardHeader>
-                        <CardTitle>Text Content</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <Label>Amount of text</Label>
-                            <div className="grid grid-cols-2 gap-2">
-                                {['Minimal', 'Concise', 'Detailed', 'Extensive'].map(opt => (
-                                    <Button key={opt} variant={'outline'}>
-                                        {opt}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="write-for">Write for...</Label>
-                            <Textarea id="write-for" rows={2} defaultValue="Bank managers and investors" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="tone">Tone</Label>
-                            <Textarea id="tone" rows={2} defaultValue="Professional, confident, clear" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Output language</Label>
-                            <Button variant="outline" className="w-full justify-between">
-                                English (India) <ChevronDown />
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Center Column */}
-            <div className="md:col-span-8 lg:col-span-6 flex flex-col min-h-0">
+        <div className="flex-1 p-4">
+            <div className="max-w-4xl mx-auto flex flex-col h-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="freeform">Freeform</TabsTrigger>
@@ -299,24 +263,6 @@ function GenerateDPRContent() {
                         </ScrollArea>
                     </TabsContent>
                 </Tabs>
-            </div>
-            
-            {/* Right Column */}
-            <div className="md:col-span-12 lg:col-span-3 flex flex-col gap-6">
-                 <Card className="shadow-sm">
-                    <CardHeader>
-                        <CardTitle>Additional instructions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Textarea placeholder="Optional instructions for the AI" rows={4}/>
-                    </CardContent>
-                </Card>
-                <Alert>
-                    <AlertTitle>Tips</AlertTitle>
-                    <AlertDescription>
-                        Use 'Freeform' for a quick draft, or 'Card-by-card' for detailed control over each section of your report.
-                    </AlertDescription>
-                </Alert>
             </div>
         </div>
 
