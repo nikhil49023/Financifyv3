@@ -16,33 +16,33 @@ import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investme
 
 const themes = [
     {
-        name: 'Consultant',
-        className: 'theme-default',
+        name: 'Classic Corporate Blue',
+        className: 'theme-corporate-blue',
         preview: {
-            bg: 'bg-gray-50',
-            title: 'text-gray-900',
-            body: 'text-gray-600',
-            link: 'text-blue-600',
+            bg: 'bg-[#F5F9FF]',
+            title: 'text-[#1A237E]',
+            body: 'text-[#222222]',
+            link: 'text-[#1976D2]',
         },
     },
     {
-        name: 'Stardust',
-        className: 'theme-stardust',
+        name: 'Modern Green & Gold',
+        className: 'theme-green-gold',
         preview: {
-            bg: 'bg-black',
-            title: 'text-white',
-            body: 'text-gray-400',
-            link: 'text-gray-300',
+            bg: 'bg-[#F5FFF8]',
+            title: 'text-[#004D40]',
+            body: 'text-[#333333]',
+            link: 'text-[#C7A200]', // Adjusted gold for better visibility
         },
     },
     {
-        name: 'Blueberry',
-        className: 'theme-blueberry',
+        name: 'Executive Black & Silver',
+        className: 'theme-executive-silver',
         preview: {
-            bg: 'bg-[#0F172A]',
-            title: 'text-white',
-            body: 'text-slate-300',
-            link: 'text-sky-400',
+            bg: 'bg-[#F8F9FA]',
+            title: 'text-[#000000]',
+            body: 'text-[#444444]',
+            link: 'text-[#2980B9]',
         },
     },
 ];
@@ -72,7 +72,13 @@ function CustomizeDPRContent() {
     }, [ideaTitle, router, toast]);
 
     useEffect(() => {
-        document.documentElement.className = selectedTheme;
+        // Apply the theme class to the root element for global styling
+        document.documentElement.classList.add(selectedTheme);
+
+        // Cleanup function to remove the class when the component unmounts or theme changes
+        return () => {
+            document.documentElement.classList.remove(selectedTheme);
+        };
     }, [selectedTheme]);
 
     const handleGenerateDPR = async () => {
@@ -140,7 +146,7 @@ function CustomizeDPRContent() {
                                 <div key={theme.name} className="space-y-2" onClick={() => setSelectedTheme(theme.className)}>
                                     <Card className={cn("cursor-pointer transition-all", selectedTheme === theme.className ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-primary/50')}>
                                         <div className={cn("p-4 md:p-6 rounded-t-lg aspect-[16/9] flex flex-col justify-center items-center", theme.preview.bg)}>
-                                            <div className="w-4/5 p-4 rounded bg-white/10 backdrop-blur-sm border border-white/20">
+                                            <div className="w-4/5 p-4 rounded bg-white/30 backdrop-blur-sm border border-black/10">
                                                 <h3 className={cn("font-bold text-sm", theme.preview.title)}>Title</h3>
                                                 <p className={cn("text-xs", theme.preview.body)}>
                                                     Body & <span className={cn(theme.preview.link)}>link</span>

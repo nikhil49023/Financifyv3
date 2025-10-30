@@ -63,48 +63,34 @@
     /* Uses the root theme */
   }
 
-  .theme-stardust {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 80%;
-    --primary-foreground: 240 10% 3.9%;
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 0 0% 80%;
+  .theme-corporate-blue {
+    --background: 216 100% 98%; /* #F5F9FF */
+    --foreground: 0 0% 13%; /* #222222 */
+    --card: 0 0% 100%;
+    --card-foreground: 234 63% 30%; /* #1A237E - For Headings */
+    --primary: 206 79% 45%; /* #1976D2 - For Links/Buttons */
+    --primary-foreground: 0 0% 100%;
+    --border: 210 20% 85%;
+  }
+
+  .theme-green-gold {
+    --background: 137 100% 98%; /* #F5FFF8 */
+    --foreground: 0 0% 20%; /* #333333 */
+    --card: 0 0% 100%;
+    --card-foreground: 165 100% 15%; /* #004D40 - For Headings */
+    --primary: 45 100% 49%; /* #FFD700 - For Links/Buttons */
+    --primary-foreground: 165 100% 15%;
+    --border: 120 10% 88%;
   }
   
-  .theme-blueberry {
-    --background: 225 73% 9%;
-    --foreground: 225 20% 90%;
-    --card: 225 73% 12%;
-    --card-foreground: 225 20% 90%;
-    --popover: 225 73% 12%;
-    --popover-foreground: 225 20% 90%;
-    --primary: 210 90% 70%;
-    --primary-foreground: 225 73% 9%;
-    --secondary: 225 73% 15%;
-    --secondary-foreground: 225 20% 90%;
-    --muted: 225 73% 15%;
-    --muted-foreground: 225 15% 60%;
-    --accent: 225 73% 15%;
-    --accent-foreground: 210 90% 70%;
-    --destructive: 0 70% 40%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 225 73% 15%;
-    --input: 225 73% 15%;
-    --ring: 210 90% 70%;
+  .theme-executive-silver {
+    --background: 210 17% 98%; /* #F8F9FA */
+    --foreground: 0 0% 27%; /* #444444 */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%; /* #000000 - For Headings */
+    --primary: 204 70% 45%; /* #2980B9 - For Links/Buttons */
+    --primary-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
   }
 }
 
