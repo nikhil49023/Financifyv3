@@ -31,24 +31,33 @@ Relevant Schemes: ${input.idea.relevantSchemes}
     // This is a regeneration request for a specific section
     const { sectionToUpdate, currentContent, userRequest } = input.sectionContext;
     prompt = `You are an expert consultant revising a Detailed Project Report (DPR).
-A user wants to update the "${sectionToUpdate}" section.
+A user wants to generate or update the "${sectionToUpdate}" section.
 
 **Business Profile:**
 ${businessProfile}
 
 **Promoter's Name:** "${input.promoterName}"
 
-**Current content of the section:**
----
-${currentContent}
----
+**User's Request for this section:** "${userRequest}"
 
-**User's Change Request:** "${userRequest}"
+Based on the business profile and the user's request, generate the content ONLY for the "${sectionToUpdate}" section.
 
-Based on the user's request, regenerate the *entire DPR JSON object*, but with the content for the "${sectionToUpdate}" section specifically updated to reflect the user's request. Maintain the structure and content of all other sections.
+CRITICAL: Your output MUST be ONLY a valid JSON object. This JSON object should contain a single key, which is the camelCase version of the section title (e.g., "executiveSummary", "marketAnalysis", "financialProjections"). The value should be the generated content for that section.
 
-CRITICAL: You MUST output ONLY a valid JSON object that conforms to the final DPR output schema. Do not include any other text, markdown, or explanations.
-For any data that needs to be filled in by the user, use the format [Placeholder for user data], for example: [Enter your contact number here].
+For the "financialProjections" section, you must generate the full financial object with credible, realistic data based on the business profile.
+For all other sections, the value should be a markdown string.
+
+Example for "Market Analysis" section:
+{
+  "marketAnalysis": "The market for eco-friendly packaging is growing at a rate of 12% annually..."
+}
+
+Example for "Financial Projections" section:
+{
+  "financialProjections": { "summaryText": "...", "costBreakdown": [...], ... }
+}
+
+Now, generate the JSON for the "${sectionToUpdate}" section.
 `;
   } else {
     // This is the initial full DPR generation request
@@ -78,9 +87,39 @@ Based on this, generate the complete JSON object for the DPR.
     const text = response.text();
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(cleanedText);
+    
+    // If it's a section update, we need to merge it into a full DPR object
+    if (input.sectionContext) {
+        const sectionKey = Object.keys(parsed)[0];
+        // Create a full object structure for consistency, even though only one part is populated.
+        const fullDprObject = dprSections.reduce((acc, key) => {
+            acc[key as keyof GenerateDprOutput] = parsed[key] || null;
+            return acc;
+        }, {} as Partial<GenerateDprOutput>);
+        return fullDprObject as GenerateDprOutput;
+    }
+
     return parsed as GenerateDprOutput;
   } catch (e) {
     console.error('Failed to parse JSON from model response:', response.text());
     throw new Error('The AI returned an invalid format. Could not generate the DPR.');
   }
 }
+
+const dprSections: (keyof GenerateDprOutput)[] = [
+    'executiveSummary',
+    'projectIntroduction',
+    'promoterDetails',
+    'businessModel',
+    'marketAnalysis',
+    'locationAndSite',
+    'technicalFeasibility',
+    'implementationSchedule',
+    'financialProjections',
+    'swotAnalysis',
+    'regulatoryCompliance',
+    'riskAssessment',
+    'annexures'
+];
+
+    
