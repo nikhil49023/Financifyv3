@@ -15,8 +15,8 @@ export default function AIAdvisorPage() {
   const sampleQuestions = [
     "Where is most of my money going?",
     "Suggest some ways I can reduce my monthly expenses.",
-    "Based on my spending, what's one thing I should focus on improving?",
-    "Am I saving enough money?",
+    "What are some government schemes for new MSMEs in Andhra Pradesh?",
+    "How can I get a collateral-free loan for my small business?",
   ];
 
   const handleSampleQuestionClick = (question: string) => {
@@ -61,7 +61,7 @@ export default function AIAdvisorPage() {
           </CardContent>
        </Card>
 
-      <Card className="flex-1 flex flex-col overflow-hidden">
+      <Card className="flex-1 flex flex-col h-[calc(100vh-24rem)] md:h-auto overflow-hidden">
         <CardContent className="flex-1 flex flex-col p-0">
           <AIAdvisorChat key={initialQuestion} initialMessage={initialQuestion} />
         </CardContent>
