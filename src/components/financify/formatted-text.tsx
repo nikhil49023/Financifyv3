@@ -15,8 +15,8 @@ export function FormattedText({ text }: FormattedTextProps) {
     return null;
   }
 
-  // Enhanced Regex to find **bold text**, [placeholders], and URLs.
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  // Regex to find **bold text**, [placeholders], and URLs (excluding trailing parens).
+  const urlRegex = /(https?:\/\/[^\s)]+[^\s.,!?)\]])/g;
   const parts = text.split(/(\*\*.*?\*\*|\[.*?\]|https?:\/\/[^\s]+)/g).filter(Boolean);
 
   const formattedParts = parts.map((part, index) => {
@@ -42,17 +42,25 @@ export function FormattedText({ text }: FormattedTextProps) {
 
     // Check if the part is a URL
     if (urlRegex.test(part)) {
-      return (
-        <a
-          key={index}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary underline hover:text-primary/80 break-words"
-        >
-          {part}
-        </a>
-      );
+       const urls = part.match(urlRegex) || [];
+        if (urls.length > 0) {
+             const url = urls[0];
+             const [before, ...after] = part.split(url);
+             return (
+                <React.Fragment key={index}>
+                    {before}
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline hover:text-primary/80 break-words"
+                    >
+                        {url}
+                    </a>
+                    {after.join(url)}
+                </React.Fragment>
+             );
+        }
     }
 
     // Handle newline characters and render them as <br>
