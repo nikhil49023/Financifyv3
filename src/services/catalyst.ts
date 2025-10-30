@@ -59,7 +59,7 @@ class CatalystService {
 
   public async getRagAnswer(input: GenerateRagAnswerInput): Promise<string> {
     const token = await this.getValidAccessToken();
-    const ragApiUrl = `https://www.zohoapis.in/catalyst/v1/project/${this.projectId}/baas/quickml/rag/answer`;
+    const ragApiUrl = `https://api.catalyst.zoho.in/quickml/v1/project/${this.projectId}/rag/answer`;
     
     // Construct the body according to the specified format { "query": "...", "documents": ["id1", "id2"] }
     const body = {
