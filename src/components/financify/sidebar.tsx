@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -166,7 +165,7 @@ export default function Sidebar({
           />
         </svg>
         <h1 className={cn('text-xl font-bold', {'hidden': isCollapsed})}>
-          EmpowerMintt
+          Artha
         </h1>
       </div>
       <nav className="flex-1 px-0 py-2 space-y-1 mt-4">

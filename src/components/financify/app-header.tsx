@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useAuth } from '@/context/auth-provider';
@@ -53,7 +52,7 @@ export default function AppHeader() {
           />
         </svg>
         <div>
-          <h1 className="text-lg font-bold">EmpowerMintt</h1>
+          <h1 className="text-lg font-bold">Artha</h1>
         </div>
       </div>
       <Link href="/profile">

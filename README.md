@@ -1,16 +1,16 @@
-# EmpowerMintt - Your Personal Finance & Business Mentor
+# Artha - Your Personal Finance & Business Mentor
 
-EmpowerMintt is a modern, AI-powered financial management and business development application designed specifically for early-stage entrepreneurs and MSMEs in India. It combines essential financial tracking tools with a suite of AI-driven features to provide financial clarity, generate business plans, and foster community connections.
+Artha is a modern, AI-powered financial management and business development application designed specifically for early-stage entrepreneurs and MSMEs in India. It combines essential financial tracking tools with a suite of AI-driven features to provide financial clarity, generate business plans, and foster community connections.
 
-![EmpowerMintt Dashboard](https://storage.googleapis.com/studio-assets/readme-dashboard.png)
+![Artha Dashboard](https://storage.googleapis.com/studio-assets/readme-dashboard.png)
 
 ## Functionality Overview
 
-EmpowerMintt is designed to be a comprehensive co-pilot for entrepreneurs, from managing daily finances to planning long-term business strategy.
+Artha is designed to be a comprehensive co-pilot for entrepreneurs, from managing daily finances to planning long-term business strategy.
 
 ### 1. Core Financial Management
 
-At its heart, EmpowerMintt is a robust tool for tracking your financial health.
+At its heart, Artha is a robust tool for tracking your financial health.
 
 *   **Dashboard**: The central hub of your financial life. After logging in, you are greeted with a clear summary of your total income, total expenses, and savings rate. The dashboard also features an AI-generated "Fin Bite"—a personalized, actionable tip based on your recent financial activity.
 *   **Transaction Management**: Manually add income and expense transactions with descriptions, dates, and amounts.
@@ -20,7 +20,7 @@ At its heart, EmpowerMintt is a robust tool for tracking your financial health.
 
 ### 2. AI-Powered Advisory & Brainstorming
 
-EmpowerMintt integrates AI to provide intelligent assistance beyond simple tracking.
+Artha integrates AI to provide intelligent assistance beyond simple tracking.
 
 *   **AI Financial Advisor**: A conversational chat interface where you can ask financial questions. The AI uses your recent transaction history as context to provide personalized, relevant advice. You can ask things like, "Where is most of my money going?" or "Suggest ways to reduce my monthly expenses."
 *   **Business Idea Brainstorming**: This section is an idea generation powerhouse.
@@ -76,8 +76,8 @@ To get this project's code into your own GitHub repository, follow these steps i
 First, clone the project from its current location to your local machine.
 
 ```bash
-git clone https://github.com/nikhil49023/EmpowerMintt.git
-cd EmpowerMintt
+git clone https://github.com/nikhil49023/Artha.git
+cd Artha
 ```
 
 ### 2. Create a New Repository on GitHub
@@ -87,7 +87,7 @@ After creating it, copy the repository's URL. It will look like this:
 `https://github.com/your-username/your-new-repo-name.git`
 
 ### 3. Link to Your New Repository
-Back in your terminal (inside the `EmpowerMintt` directory), update the remote `origin` to point to your new repository.
+Back in your terminal (inside the `Artha` directory), update the remote `origin` to point to your new repository.
 
 ```bash
 git remote set-url origin https://github.com/your-username/your-new-repo-name.git
@@ -101,4 +101,4 @@ Finally, push all the code to your new repository.
 git push -u origin main
 ```
 
-Now, your new GitHub repository will contain all the code for the EmpowerMintt app.
+Now, your new GitHub repository will contain all the code for the Artha app.

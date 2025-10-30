@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
@@ -363,7 +362,7 @@ function DPRReportContent() {
           }
 
           .a4-container::after {
-            content: 'EmpowerMintt';
+            content: 'Artha';
             position: fixed;
             top: 50%;
             left: 50%;

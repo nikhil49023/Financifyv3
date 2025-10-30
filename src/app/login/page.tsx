@@ -1,4 +1,3 @@
-
 'use client';
 
 import {useState} from 'react';
@@ -72,7 +71,7 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold">Login to EmpowerMintt</h1>
+          <h1 className="text-3xl font-bold">Login to Artha</h1>
           <p className="text-balance text-muted-foreground">
             Enter your credentials to access your financial dashboard
           </p>

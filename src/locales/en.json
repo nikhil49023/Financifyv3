@@ -1,4 +1,3 @@
-
 {
   "sidebar": {
     "dashboard": "Dashboard",
@@ -27,7 +26,7 @@
     "confirm": "Logout"
   },
   "loginPage": {
-    "title": "Welcome to FIn-Box",
+    "title": "Welcome to Artha",
     "description": "Enter your credentials to access your dashboard.",
     "signUpTitle": "Create an Account",
     "signUpDescription": "Enter your details to get started.",

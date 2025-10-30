@@ -1,4 +1,3 @@
-
 'use client';
 
 import {useEffect, useState, Suspense, useCallback} from 'react';
@@ -366,7 +365,7 @@ function InvestmentIdeaContent() {
             <>
               <div className="flex flex-wrap items-center gap-4">
                 <CardTitle className="text-2xl md:text-3xl">{title}</CardTitle>
-                <Badge variant="secondary">Powered by EmpowerMintt AI</Badge>
+                <Badge variant="secondary">Powered by Artha AI</Badge>
               </div>
               <CardDescription className="text-base pt-2">
                 {summary}
