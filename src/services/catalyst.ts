@@ -61,18 +61,10 @@ class CatalystService {
     const token = await this.getValidAccessToken();
     const ragApiUrl = `https://www.zohoapis.in/catalyst/v1/project/${this.projectId}/baas/quickml/rag/answer`;
     
-    const context = input.transactions
-      ?.map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
-      .join('\n') || 'No transaction history available.';
-      
+    // Construct the body according to the specified format { "query": "...", "documents": ["id1", "id2"] }
     const body = {
         query: input.query,
-        documents: [
-            {
-                "document_name": "transactions.txt",
-                "document": context
-            }
-        ]
+        documents: input.documents || [] // Use document IDs passed in the input
     };
 
     const apiResponse = await fetch(ragApiUrl, {
