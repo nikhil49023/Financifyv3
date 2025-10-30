@@ -317,7 +317,7 @@ function DPRReportContent() {
     return (
       <div className={cn("space-y-4 print-break-before", className)}>
         <CardHeader className="p-0 mb-6 border-b pb-4">
-          <CardTitle>{title}</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl">{title}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {renderContent()}
@@ -376,7 +376,7 @@ function DPRReportContent() {
   };
 
   return (
-    <div className="space-y-8 @container bg-background py-8">
+    <div className="space-y-6 md:space-y-8 @container bg-background py-8">
       <style jsx global>{`
         @media print {
           @page {
@@ -484,9 +484,9 @@ function DPRReportContent() {
         }
       `}</style>
 
-      <div className="flex justify-between items-start no-print container mx-auto max-w-[210mm] px-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start no-print container mx-auto max-w-[210mm] px-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
             <FileText />
             Detailed Project Report
           </h1>
@@ -494,7 +494,7 @@ function DPRReportContent() {
             Final compiled report for: <span className="font-semibold">{ideaTitle}</span>
           </p>
         </div>
-        <Button variant="ghost" asChild className="-ml-4">
+        <Button variant="ghost" asChild className="-ml-4 mt-2 sm:mt-0">
           <Link href="/brainstorm">
             <ArrowLeft className="mr-2" />
             Back to Brainstorm
@@ -560,7 +560,7 @@ function DPRReportContent() {
               dprChapterTitles.map((title, index) => (
                 <div key={index} className="pt-12">
                    <CardHeader className="p-0 mb-6 border-b pb-4">
-                      <CardTitle>{`${index + 1}. ${title}`}</CardTitle>
+                      <CardTitle className="text-xl md:text-2xl">{`${index + 1}. ${title}`}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                        <div className="space-y-2">

@@ -201,7 +201,7 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
         )}
         <div ref={bottomOfChatRef} />
       </div>
-      <div className="p-4 border-t sticky bottom-16 md:bottom-0 bg-background/80 backdrop-blur-sm md:bg-card md:backdrop-blur-none">
+      <div className="p-2 sm:p-4 border-t bg-background/80 backdrop-blur-sm md:bg-card md:backdrop-blur-none">
         <form onSubmit={handleSendMessage} className="relative flex gap-2">
           <Input
             value={input}

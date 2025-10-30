@@ -23,10 +23,10 @@ function GenerateDPRContent() {
   const idea = searchParams.get('idea');
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
+    <div className="w-full max-w-4xl mx-auto space-y-6 md:space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-200">Generate</h1>
-        <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your document is just a click away.</p>
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-800 dark:text-gray-200">Generate</h1>
+        <p className="mt-2 text-md md:text-lg text-gray-600 dark:text-gray-400">Your document is just a click away.</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -51,7 +51,7 @@ function GenerateDPRContent() {
       </div>
 
       <Card className="shadow-lg border-gray-200 dark:border-gray-700">
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">Your Business Idea:</p>
           <p className="text-gray-600 dark:text-gray-400 mt-2 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md">
             {idea || "No idea provided. Please go back and specify one."}
@@ -84,4 +84,3 @@ export default function GenerateDPRPage() {
     </Suspense>
   );
 }
-

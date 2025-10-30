@@ -104,28 +104,28 @@ function CustomizeDPRContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full max-w-4xl mx-auto space-y-8"
+                className="w-full max-w-4xl mx-auto space-y-6 md:space-y-8"
             >
                 <div className="text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold">Customize your DPR</h1>
-                    <p className="mt-2 text-lg text-muted-foreground">Choose a theme to style your document.</p>
+                    <h1 className="text-3xl md:text-5xl font-bold">Customize your DPR</h1>
+                    <p className="mt-2 text-md md:text-lg text-muted-foreground">Choose a theme to style your document.</p>
                 </div>
                 
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="p-4 md:p-6">
                         <CardTitle className="flex items-center gap-2">
                            <Palette /> Visuals
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <CardContent className="p-4 md:p-6 pt-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             {themes.map((theme) => (
                                 <div key={theme.name} className="space-y-2" onClick={() => setSelectedTheme(theme.className)}>
                                     <Card className={cn("cursor-pointer transition-all", selectedTheme === theme.className ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-primary/50')}>
-                                        <div className={cn("p-6 rounded-t-lg aspect-[16/9] flex flex-col justify-center items-center", theme.preview.bg)}>
+                                        <div className={cn("p-4 md:p-6 rounded-t-lg aspect-[16/9] flex flex-col justify-center items-center", theme.preview.bg)}>
                                             <div className="w-4/5 p-4 rounded bg-white/10 backdrop-blur-sm border border-white/20">
-                                                <h3 className={cn("font-bold", theme.preview.title)}>Title</h3>
-                                                <p className={cn("text-sm", theme.preview.body)}>
+                                                <h3 className={cn("font-bold text-sm", theme.preview.title)}>Title</h3>
+                                                <p className={cn("text-xs", theme.preview.body)}>
                                                     Body & <span className={cn(theme.preview.link)}>link</span>
                                                 </p>
                                             </div>
@@ -135,7 +135,7 @@ function CustomizeDPRContent() {
                                         <div className={cn("h-5 w-5 rounded-full border-2 flex items-center justify-center", selectedTheme === theme.className ? 'border-primary bg-primary' : 'border-muted-foreground')}>
                                            {selectedTheme === theme.className && <Check className="h-3 w-3 text-primary-foreground" />}
                                         </div>
-                                        <span className="font-medium">{theme.name}</span>
+                                        <span className="font-medium text-sm">{theme.name}</span>
                                      </div>
                                 </div>
                             ))}

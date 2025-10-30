@@ -28,13 +28,13 @@ export default function AIAdvisorPage() {
   return (
     <div className="flex flex-col gap-6">
        <Card>
-          <CardHeader>
+          <CardHeader className="p-4 md:p-6">
              <CardTitle className="flex items-center gap-2">
                 <Lightbulb />
                 How to Use the AI Advisor
              </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 md:p-6 pt-0">
              <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-900 [&>svg]:text-amber-600">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>AI Disclaimer</AlertTitle>
