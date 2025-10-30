@@ -1,4 +1,3 @@
-'use server';
 
 import type { GenerateRagAnswerInput } from '@/ai/schemas/rag-answer';
 import fetch from 'node-fetch';
