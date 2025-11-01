@@ -106,6 +106,20 @@ const categoryColors: { [key: string]: string } = {
   'Other': 'bg-slate-100/50 border-slate-200',
 };
 
+const categoryButtonColors: { [key: string]: string } = {
+    'Construction / Real Estate': 'bg-orange-500 hover:bg-orange-600 text-white',
+    'IT / Software Services': 'bg-blue-600 hover:bg-blue-700 text-white',
+    'Retail / E-commerce': 'bg-red-500 hover:bg-red-600 text-white',
+    'Manufacturing': 'bg-sky-600 hover:bg-sky-700 text-white',
+    'Food & Agro Processing': 'bg-green-600 hover:bg-green-700 text-white',
+    'Hospitality & Tourism': 'bg-cyan-500 hover:bg-cyan-600 text-white',
+    'Healthcare & Pharma': 'bg-slate-500 hover:bg-slate-600 text-white',
+    'Logistics & Supply Chain': 'bg-gray-600 hover:bg-gray-700 text-white',
+    'Professional Services (Accounting, Legal, etc.)': 'bg-blue-800 hover:bg-blue-900 text-white',
+    'Textiles & Apparel': 'bg-rose-500 hover:bg-rose-600 text-white',
+    'Other': 'bg-primary text-primary-foreground hover:bg-primary/90',
+};
+
 
 const PortalCard = ({
   title,
@@ -651,7 +665,7 @@ export default function GrowthHubPage() {
                                             </Button>
                                         </a>
                                       )}
-                                      <Button className="w-full" onClick={() => handleContactClick(msme)}>
+                                      <Button className={cn("w-full", categoryButtonColors[msme.msmeService || 'Other'])} onClick={() => handleContactClick(msme)}>
                                           <Phone className="mr-2 h-4 w-4"/>
                                           Contact
                                       </Button>
