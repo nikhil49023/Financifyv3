@@ -3,6 +3,7 @@
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
 import {
   Bold,
   Italic,
@@ -83,7 +84,15 @@ interface RichTextEditorProps {
 
 const RichTextEditor = ({ content, onChange, editable = true }: RichTextEditorProps) => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Image.configure({
+        inline: false,
+        HTMLAttributes: {
+          class: 'rounded-lg my-4 max-w-full h-auto',
+        },
+      }),
+    ],
     content: content,
     editable,
     editorProps: {
