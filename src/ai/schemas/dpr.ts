@@ -29,6 +29,7 @@ export type GenerateDprSectionOutput = z.infer<typeof GenerateDprSectionOutputSc
 
 
 const FinancialProjectionsSchema = z.object({
+  isMock: z.boolean().optional().describe("A flag to indicate if the data is mock data."),
   summaryText: z
     .string()
     .describe(

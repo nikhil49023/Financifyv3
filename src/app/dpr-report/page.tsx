@@ -27,6 +27,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -215,6 +225,8 @@ function DPRReportContent() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [imageUploadChapter, setImageUploadChapter] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [showMockDataWarning, setShowMockDataWarning] = useState(false);
   
   const ideaTitle = searchParams.get('idea');
   const promoterName = user?.displayName || 'Entrepreneur';
@@ -260,6 +272,16 @@ function DPRReportContent() {
   }, [user, ideaTitle, router]);
 
   const handleExport = () => {
+    const isMock = report?.financialProjections?.isMock;
+    if (isMock) {
+        setShowMockDataWarning(true);
+    } else {
+        proceedWithExport();
+    }
+  };
+
+  const proceedWithExport = () => {
+    setShowMockDataWarning(false);
     window.print();
   };
 
@@ -291,7 +313,11 @@ function DPRReportContent() {
         });
 
         if (result.success) {
-            const content = result.data.content;
+            let content = result.data.content;
+            // If we are refining the financials, remove the isMock flag
+            if (isRefinement && chapter.key === 'financialProjections' && typeof content === 'object' && content !== null) {
+                content.isMock = false;
+            }
             setReport(prev => prev ? ({...prev, [chapter.key]: content}) : null);
             toast({ title: 'Success', description: `Content for "${chapter.title}" has been ${isRefinement ? 'refined' : 'generated'}.` });
         } else {
@@ -539,6 +565,25 @@ function DPRReportContent() {
       <div className="flex gap-2 no-print container mx-auto max-w-[210mm] px-4">
         <Button variant="outline" onClick={handleExport} disabled={isLoading || !!error}><FileDown className="mr-2" /> Export to PDF</Button>
       </div>
+
+       <AlertDialog open={showMockDataWarning} onOpenChange={setShowMockDataWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Using Mock Financial Data</AlertDialogTitle>
+            <AlertDialogDescription>
+              The financial projections in this report are based on mock data. For an accurate report, please use the AI toolkit to refine this section with your own data.
+              <br /><br />
+              Do you still want to proceed with exporting?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={proceedWithExport}>
+              Yes, Export Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {error && !isLoading && (
         <Card className="text-center py-10 bg-destructive/10 border-destructive no-print container mx-auto max-w-[210mm]">

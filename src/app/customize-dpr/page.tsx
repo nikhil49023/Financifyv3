@@ -20,6 +20,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-provider';
 
+const mockFinancialPrompt = `Generate a complete set of financial projections for a small-scale eco-friendly packaging manufacturing startup.
+- The response must be a JSON object only.
+- Add a new root-level key "isMock" and set its value to true.
+- Initial Project Cost: 15 Lakhs (Machinery: 8 Lakhs, Working Capital: 5 Lakhs, Other: 2 Lakhs).
+- Means of Finance: 5 Lakhs promoter contribution (equity), 10 Lakhs bank loan.
+- Yearly Projections (3 years):
+  - Year 1 Sales: 25 Lakhs, Profit: 3 Lakhs
+  - Year 2 Sales: 40 Lakhs, Profit: 6 Lakhs
+  - Year 3 Sales: 60 Lakhs, Profit: 10 Lakhs
+- Assume a standard loan repayment schedule over 5 years.
+- Keep the summary text, profitability analysis, and cash flow statement concise and positive.
+`;
+
 const dprChapters = [
     { key: 'executiveSummary', title: 'Executive Summary', prompt: 'Summarize the entire business project, including its mission, product/service, target market, and financial highlights. This should be a concise overview.' },
     { key: 'projectIntroduction', title: 'Project Introduction', prompt: 'Provide a detailed background of the project. Explain the problem it solves, its objectives, and its scope.' },
@@ -29,7 +42,7 @@ const dprChapters = [
     { key: 'locationAndSite', title: 'Location and Site', prompt: 'Describe the proposed location for the business, justifying its suitability in terms of infrastructure, accessibility, and market proximity.' },
     { key: 'technicalFeasibility', title: 'Technical Feasibility', prompt: 'Detail the technology, machinery, and processes required for production or service delivery. Include raw material sourcing.' },
     { key: 'implementationSchedule', title: 'Implementation Schedule', prompt: 'Outline a timeline for key project milestones, from setup to launch and full operation.' },
-    { key: 'financialProjections', title: 'Financial Projections', prompt: 'Generate realistic financial projections including project cost, means of finance, cost breakdown, yearly sales and profit, profitability analysis, cash flow, loan repayment, and break-even analysis. This must be a detailed, multi-part JSON object.' },
+    { key: 'financialProjections', title: 'Financial Projections', prompt: 'Generate realistic financial projections including project cost, means of finance, cost breakdown, yearly sales and profit, profitability analysis, cash flow, loan repayment, and break-even analysis. This must be a detailed, multi-part JSON object.', isMockable: true },
     { key: 'swotAnalysis', title: 'SWOT Analysis', prompt: 'Conduct a SWOT analysis (Strengths, Weaknesses, Opportunities, Threats) for the business.' },
     { key: 'regulatoryCompliance', title: 'Regulatory & Legal Compliance', prompt: 'List the licenses, permits, and other legal requirements applicable to the business in India.' },
     { key: 'riskAssessment', title: 'Risk Assessment', prompt: 'Identify potential risks (market, operational, financial) and propose mitigation strategies.' },
@@ -100,7 +113,7 @@ function CustomizeDPRContent() {
                 idea: analysis,
                 promoterName,
                 section: chapter.key,
-                basePrompt: chapter.prompt
+                basePrompt: chapter.isMockable ? mockFinancialPrompt : chapter.prompt
             });
 
             if (result.success) {
