@@ -10,7 +10,6 @@ import {
   Rocket,
   Globe,
   MessagesSquare,
-  DollarSign,
 } from 'lucide-react';
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
@@ -140,10 +139,10 @@ export default function Sidebar({
         )}
       >
         <div className={cn("flex items-center justify-center h-10 w-10 text-primary", isCollapsed && "h-12 w-12")}>
-            <DollarSign className="h-8 w-8" />
+            <Wallet className="h-8 w-8" />
         </div>
         <h1 className={cn('text-xl font-bold', {'hidden': isCollapsed})}>
-          Artha
+          Financify
         </h1>
       </div>
       <nav className="flex-1 px-0 py-2 space-y-1 mt-4">

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -27,11 +28,11 @@ CRITICAL: You MUST output ONLY a valid JSON object. Do NOT include the 'relevant
 The schema is:
 {
   "title": "The name of the business idea.",
-  "summary": "A brief summary of the business concept. Prepend \\"*(Powered by Artha AI)*\\".",
-  "investmentStrategy": "Detail the required initial investment. Prepend \\"*(Powered by Artha AI)*\\".",
-  "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by Artha AI)*\\".",
-  "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by Artha AI)*\\".",
-  "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by Artha AI)*\\"."
+  "summary": "A brief summary of the business concept. Prepend \\"*(Powered by Financify AI)*\\".",
+  "investmentStrategy": "Detail the required initial investment. Prepend \\"*(Powered by Financify AI)*\\".",
+  "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by Financify AI)*\\".",
+  "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by Financify AI)*\\".",
+  "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by Financify AI)*\\"."
 }
 `;
 
@@ -52,7 +53,7 @@ The schema is:
     const ragQuery = `List 2-3 relevant Indian government schemes for a business idea about "${input.idea}". For each scheme, briefly explain what it offers and who is eligible.`;
     const ragResult = await generateRagAnswer({ query: ragQuery });
     if (ragResult.answer) {
-      schemesText = `*(Powered by Artha AI)* ${ragResult.answer}`;
+      schemesText = `*(Powered by Financify AI)* ${ragResult.answer}`;
     }
   } catch (e) {
     console.error('Failed to fetch schemes from RAG service:', e);

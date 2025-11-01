@@ -8,7 +8,7 @@ import {Label} from '@/components/ui/label';
 import Link from 'next/link';
 import {useToast} from '@/hooks/use-toast';
 import {useRouter} from 'next/navigation';
-import {Loader2, ArrowLeft, ArrowRight, Info, DollarSign} from 'lucide-react';
+import {Loader2, ArrowLeft, ArrowRight, Info, Wallet} from 'lucide-react';
 import {app} from '@/lib/firebase';
 import {
   getAuth,
@@ -83,6 +83,11 @@ const msmeSteps = [
     description: 'Your official business or brand name.',
   },
   {
+    field: 'msmeDescription',
+    title: 'Describe your Business',
+    description: 'A short description of what your business does.',
+  },
+  {
     field: 'msmeService',
     title: 'What is your primary service category?',
     description: 'Select the category that best fits your business.',
@@ -111,6 +116,7 @@ export default function SignUpPage() {
     email: '',
     password: '',
     msmeName: '',
+    msmeDescription: '',
     msmeService: '',
     msmeLocation: '',
     ownerContact: '',
@@ -151,7 +157,7 @@ export default function SignUpPage() {
   const handleBack = () => {
     if (currentStep > 0) {
       setDirection(-1);
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(currentStep + 1);
     }
   };
 
@@ -160,7 +166,6 @@ export default function SignUpPage() {
   };
 
   const handleSignUp = async () => {
-    // Comprehensive validation before submitting
     const requiredIndividualFields: (keyof typeof formData)[] = ['displayName', 'email', 'password'];
     for (const field of requiredIndividualFields) {
         if (!formData[field]) {
@@ -174,7 +179,7 @@ export default function SignUpPage() {
     }
 
     if (formData.role === 'msme') {
-        const requiredMsmeFields: (keyof typeof formData)[] = ['msmeName', 'msmeService', 'msmeLocation', 'ownerContact'];
+        const requiredMsmeFields: (keyof typeof formData)[] = ['msmeName', 'msmeDescription', 'msmeService', 'msmeLocation', 'ownerContact'];
         for (const field of requiredMsmeFields) {
             if (!formData[field]) {
                 toast({ variant: 'destructive', description: `Please ensure the '${field}' field is filled out.` });
@@ -182,7 +187,6 @@ export default function SignUpPage() {
             }
         }
     }
-
     setIsLoading(true);
 
     try {
@@ -207,6 +211,7 @@ export default function SignUpPage() {
 
       if (formData.role === 'msme') {
         privateProfileData.msmeName = formData.msmeName;
+        privateProfileData.msmeDescription = formData.msmeDescription;
         privateProfileData.msmeService = formData.msmeService;
         privateProfileData.msmeLocation = formData.msmeLocation;
         privateProfileData.ownerContact = formData.ownerContact;
@@ -219,6 +224,7 @@ export default function SignUpPage() {
            displayName: formData.displayName,
            email: user.email,
            msmeName: formData.msmeName,
+           msmeDescription: formData.msmeDescription,
            msmeService: formData.msmeService,
            msmeLocation: formData.msmeLocation,
            ownerContact: formData.ownerContact,
@@ -374,9 +380,9 @@ export default function SignUpPage() {
       <div className="w-full max-w-md space-y-4">
         <div className="text-center mb-6">
           <div className="mb-4 flex justify-center items-center h-12 w-12 rounded-full bg-primary/10 text-primary mx-auto">
-            <DollarSign className="h-8 w-8" />
+            <Wallet className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl font-bold">Create an Account</h1>
+          <h1 className="text-3xl font-bold">Create a Financify Account</h1>
         </div>
 
         <Card className="overflow-hidden">

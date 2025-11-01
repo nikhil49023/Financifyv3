@@ -18,6 +18,7 @@ export type UserProfile = {
   role: 'individual' | 'msme';
   createdAt: any;
   msmeName?: string;
+  msmeDescription?: string;
   msmeService?: string;
   msmeLocation?: string;
   ownerContact?: string;

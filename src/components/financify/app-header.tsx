@@ -4,7 +4,7 @@
 import { useAuth } from '@/context/auth-provider';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import Link from 'next/link';
-import { DollarSign } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 
 export default function AppHeader() {
   const { user } = useAuth();
@@ -27,10 +27,10 @@ export default function AppHeader() {
     <header className="sticky top-0 z-10 flex h-16 flex-shrink-0 items-center justify-between border-b glassmorphic px-2 sm:px-4 print:hidden">
       <div className="flex items-center gap-2">
         <div className="flex items-center justify-center h-10 w-10 text-primary">
-            <DollarSign className="h-8 w-8" />
+            <Wallet className="h-8 w-8" />
         </div>
         <div>
-          <h1 className="text-lg font-bold">Artha</h1>
+          <h1 className="text-lg font-bold">Financify</h1>
         </div>
       </div>
       <Link href="/profile">

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to generate a dashboard summary using Firebase AI.
@@ -63,7 +64,7 @@ export async function generateDashboardSummary(
     .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
     .join('\n');
 
-  const prompt = `You are a financial analyst for "Artha". Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response must be a single sentence.
+  const prompt = `You are a financial analyst for "Financify". Based on the following financial summary and transaction list for an entrepreneur, provide one short, actionable "Fin Bite" (a financial tip). Your response must be a single sentence.
 
 Financial Summary:
 - Total Income: ${totalIncome}

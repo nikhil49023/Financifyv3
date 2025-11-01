@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -92,21 +91,6 @@ const msmeServiceCategories = [
   'Textiles & Apparel',
   'Other',
 ];
-
-const categoryButtonColors: { [key: string]: string } = {
-    'Construction / Real Estate': 'bg-orange-500 hover:bg-orange-600 text-white',
-    'IT / Software Services': 'bg-blue-600 hover:bg-blue-700 text-white',
-    'Retail / E-commerce': 'bg-red-500 hover:bg-red-600 text-white',
-    'Manufacturing': 'bg-sky-600 hover:bg-sky-700 text-white',
-    'Food & Agro Processing': 'bg-green-600 hover:bg-green-700 text-white',
-    'Hospitality & Tourism': 'bg-cyan-500 hover:bg-cyan-600 text-white',
-    'Healthcare & Pharma': 'bg-slate-500 hover:bg-slate-600 text-white',
-    'Logistics & Supply Chain': 'bg-gray-600 hover:bg-gray-700 text-white',
-    'Professional Services (Accounting, Legal, etc.)': 'bg-blue-800 hover:bg-blue-900 text-white',
-    'Textiles & Apparel': 'bg-rose-500 hover:bg-rose-600 text-white',
-    'Other': 'bg-primary text-primary-foreground hover:bg-primary/90',
-};
-
 
 const PortalCard = ({
   title,
@@ -248,7 +232,8 @@ export default function GrowthHubPage() {
       const searchMatch = (
         msme.msmeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         msme.msmeService?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        msme.msmeLocation?.toLowerCase().includes(searchQuery.toLowerCase())
+        msme.msmeLocation?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        msme.msmeDescription?.toLowerCase().includes(searchQuery.toLowerCase())
       );
       const serviceMatch = filterService ? msme.msmeService === filterService : true;
       const locationMatch = filterLocation ? msme.msmeLocation === filterLocation : true;
@@ -527,7 +512,7 @@ export default function GrowthHubPage() {
                     MSME Marketplace
                 </CardTitle>
                 <CardDescription>
-                    Find and connect with services offered by other entrepreneurs in the Artha community.
+                    Find and connect with services offered by other entrepreneurs in the Financify community.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -589,6 +574,7 @@ export default function GrowthHubPage() {
                                     <CardDescription>{msme.msmeService}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
+                                     <p className="text-sm text-muted-foreground line-clamp-3">{msme.msmeDescription || 'No description provided.'}</p>
                                     <div className="flex items-center text-sm text-muted-foreground gap-2">
                                         <User className="h-4 w-4" />
                                         <span>{msme.displayName}</span>
@@ -597,22 +583,20 @@ export default function GrowthHubPage() {
                                         <MapPin className="h-4 w-4" />
                                         <span>{msme.msmeLocation}</span>
                                     </div>
-                                    
                                 </CardContent>
-                                <CardFooter className="flex-col sm:flex-row gap-2">
-                                    <Button onClick={() => handleContactClick(msme)} className="w-full">
+                                <CardContent className="pt-0 flex items-center justify-end gap-2">
+                                    <Button onClick={() => handleContactClick(msme)} size="sm">
                                         <MessageSquare className="mr-2"/>
                                         Contact
                                     </Button>
                                     {msme.msmeWebsite && (
-                                         <Button asChild variant="outline" className="w-full">
+                                        <Button asChild variant="outline" size="icon">
                                             <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer">
-                                                <LinkIcon className="mr-2"/>
-                                                Website
+                                                <Globe/>
                                             </a>
                                         </Button>
                                     )}
-                                </CardFooter>
+                                </CardContent>
                            </Card>
                         ))}
                     </div>
