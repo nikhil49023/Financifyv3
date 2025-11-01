@@ -25,7 +25,7 @@ const PartialAnalysisSchema = z.object({
   targetAudience: z.string().describe('Describe the ideal customer for this business. Prepend \\"*(Powered by Financify AI)*\\".'),
   roi: z.string().describe('Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by Financify AI)*\\".'),
   futureProofing: z.string().describe('Discuss the long-term viability of the business. Prepend \\"*(Powered by Financify AI)*\\".'),
-  sector: z.string().describe('The specific industry or sector for this business idea (e.g., AgriTech, Retail, Manufacturing).'),
+  sector: z.string().describe('The specific industry or sector for this business idea (e.g., Agriculture, Retail, Manufacturing). Use simple, broad terms.'),
 });
 type PartialAnalysis = z.infer<typeof PartialAnalysisSchema>;
 
@@ -47,7 +47,7 @@ The schema is:
   "targetAudience": "Describe the ideal customer for this business. Prepend \\"*(Powered by Financify AI)*\\".",
   "roi": "Provide a realistic projection of potential revenue and profit. Prepend \\"*(Powered by Financify AI)*\\".",
   "futureProofing": "Discuss the long-term viability of the business. Prepend \\"*(Powered by Financify AI)*\\".",
-  "sector": "The specific industry or sector for this business idea (e.g., AgriTech, Retail, Manufacturing)."
+  "sector": "The specific industry or sector for this business idea. Use simple, broad terms like 'Agriculture', 'Manufacturing', 'Retail', or 'Services'. Avoid overly technical jargon like 'AgriTech'."
 }
 `;
 
