@@ -50,35 +50,6 @@ const COLORS = [
   'hsl(var(--chart-5))',
 ];
 
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  if (percent < 0.05) { // Only show line for small slices
-     const outerX = cx + (outerRadius + 10) * Math.cos(-midAngle * RADIAN);
-     const outerY = cy + (outerRadius + 10) * Math.sin(-midAngle * RADIAN);
-     const textAnchor = Math.cos(-midAngle * RADIAN) > 0 ? 'start' : 'end';
-
-      return (
-      <g>
-        <path d={`M${x},${y}L${outerX},${outerY}`} stroke="hsl(var(--muted-foreground))" fill="none"/>
-        <text x={outerX} y={outerY} textAnchor={textAnchor} fill="hsl(var(--foreground))" dominantBaseline="central">
-          {`${name} (${(percent * 100).toFixed(0)}%)`}
-        </text>
-      </g>
-    );
-  }
-
-  return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central">
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
-
 // --- Pie Chart for Project Cost Breakdown ---
 export function ProjectCostPieChart({ data }: { data: PieChartData[] }) {
   if (!data || data.length === 0) {
@@ -109,8 +80,7 @@ export function ProjectCostPieChart({ data }: { data: PieChartData[] }) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={80}
+              outerRadius={100}
               fill="#8884d8"
               dataKey="value"
               nameKey="name"
