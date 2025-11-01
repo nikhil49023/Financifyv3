@@ -519,7 +519,7 @@ function DPRReportContent() {
   return (
     <div className="space-y-6 md:space-y-8 @container bg-background py-8">
       {/* Print Styles */}
-      <style jsx global>{\`
+      <style jsx global>{`
         @media print {
           @page {
             size: A4;
@@ -539,7 +539,7 @@ function DPRReportContent() {
           .tiptap { all: unset; }
           .ProseMirror { box-shadow: none; border: none; padding: 0; }
         }
-      \`}</style>
+      `}</style>
       <input
         type="file"
         ref={imageInputRef}
@@ -601,9 +601,9 @@ function DPRReportContent() {
           <div className="print-cover-page hidden print:flex">
             <div className="space-y-4">
                 <h1 className="text-4xl font-bold">Detailed Project Report</h1>
-                <h2 className="text-2xl text-muted-foreground">${analysis?.title}</h2>
+                <h2 className="text-2xl text-muted-foreground">{analysis?.title}</h2>
                 <p className="pt-12">Prepared for Banking & Financial Review</p>
-                <p>By ${promoterName}</p>
+                <p>By {promoterName}</p>
             </div>
           </div>
           
