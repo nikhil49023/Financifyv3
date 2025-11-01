@@ -386,23 +386,23 @@ function DPRReportContent() {
           <div>
             <CardTitle className="text-2xl md:text-3xl">{chapter.title}</CardTitle>
           </div>
-          {isEditMode && !isFinancials && (
-           <div className="flex gap-2 no-print">
-            <Button variant="outline" size="sm" onClick={() => { setImageUploadChapter(chapter.key); imageInputRef.current?.click(); }} disabled={isUploading}>
-              {isUploading && imageUploadChapter === chapter.key ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ImageIcon className="mr-2" />}
-              Image
-            </Button>
+          <div className="flex items-center gap-2 no-print">
+            {isEditMode && !isFinancials && (
+              <Button variant="outline" size="icon" onClick={() => { setImageUploadChapter(chapter.key); imageInputRef.current?.click(); }} disabled={isUploading}>
+                {isUploading && imageUploadChapter === chapter.key ? <Loader2 className="h-4 w-4 animate-spin"/> : <ImageIcon className="h-4 w-4" />}
+              </Button>
+            )}
             <Dialog open={activeToolkit === chapter.key} onOpenChange={(isOpen) => setActiveToolkit(isOpen ? chapter.key : null)}>
               <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                      <Wand2 className="mr-2" /> AI Toolkit
+                  <Button variant="outline" size="icon">
+                      <Wand2 className="h-4 w-4" />
                   </Button>
               </DialogTrigger>
               <DialogContent>
                   <DialogHeader>
                       <DialogTitle>AI Toolkit: {chapter.title}</DialogTitle>
                       <DialogDescription>
-                      Use the AI to generate or refine the content for this section.
+                      Use the AI to generate or refine the content for this section. Your changes will be reflected in the editor.
                       </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-6 py-4">
@@ -413,25 +413,26 @@ function DPRReportContent() {
                           </Button>
                           <p className="text-xs text-muted-foreground text-center">Replaces the current content with a new version from scratch.</p>
                       </div>
-                      <div className="space-y-4">
-                          <Label htmlFor="refinement-prompt">Refine with AI</Label>
-                          <Textarea 
-                              id="refinement-prompt"
-                              value={refinementPrompt}
-                              onChange={(e) => setRefinementPrompt(e.target.value)}
-                              placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
-                          />
-                          <Button onClick={() => handleToolkitAction(chapter.key, true)} disabled={!refinementPrompt || !content || isGenerating} className="w-full">
-                             {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
-                              Refine
-                          </Button>
-                          <p className="text-xs text-muted-foreground text-center">Refines the existing text in the editor based on your prompt.</p>
-                      </div>
+                      {!isFinancials && (
+                          <div className="space-y-4">
+                              <Label htmlFor="refinement-prompt">Refine with AI</Label>
+                              <Textarea 
+                                  id="refinement-prompt"
+                                  value={refinementPrompt}
+                                  onChange={(e) => setRefinementPrompt(e.target.value)}
+                                  placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
+                              />
+                              <Button onClick={() => handleToolkitAction(chapter.key, true)} disabled={!refinementPrompt || !content || isGenerating} className="w-full">
+                                {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
+                                  Refine
+                              </Button>
+                              <p className="text-xs text-muted-foreground text-center">Refines the existing text based on your prompt.</p>
+                          </div>
+                      )}
                   </div>
               </DialogContent>
             </Dialog>
-           </div>
-          )}
+          </div>
         </CardHeader>
         <CardContent className="p-0">
             {isFinancials ? renderFinancials() : (isEditMode ? renderEditableContent() : renderStaticContent())}
