@@ -543,105 +543,10 @@ export default function GrowthHubPage() {
                     Find and connect with services offered by MSMEs in the Artha community.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-                 <div className="flex w-full max-w-lg items-center space-x-2">
-                    <Input 
-                      type="text" 
-                      placeholder="e.g., 'Digital Marketing' or 'Accounting'" 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <Button type="button" variant="ghost" size="icon"><Search /></Button>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filters</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Filter Marketplace</DialogTitle>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="filter-service">Service / Product</Label>
-                                    <Select value={filterService} onValueChange={setFilterService}>
-                                        <SelectTrigger id="filter-service">
-                                            <SelectValue placeholder="All Services" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {uniqueServices.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="filter-location">Location</Label>
-                                    <Select value={filterLocation} onValueChange={setFilterLocation}>
-                                        <SelectTrigger id="filter-location">
-                                            <SelectValue placeholder="All Locations" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {uniqueLocations.map(location => <SelectItem key={location} value={location}>{location}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button type="button" variant="ghost" onClick={() => { setFilterService(''); setFilterLocation(''); }}>Clear Filters</Button>
-                                <DialogClose asChild>
-                                <Button type="button">Apply Filters</Button>
-                                </DialogClose>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+            <CardContent>
+                <div className="flex items-center justify-center p-10 bg-muted/50 rounded-lg">
+                    <p className="text-muted-foreground">Marketplace functionality coming soon.</p>
                 </div>
-                {isLoadingMsmes ? (
-                   <div className="flex items-center justify-center p-10">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                   </div>
-                ) : filteredMsmes.length > 0 ? (
-                    <Carousel
-                        opts={{
-                            align: 'start',
-                            loop: false,
-                        }}
-                        className="w-full"
-                    >
-                        <CarouselContent className="-ml-2">
-                            {filteredMsmes.map((msme) => (
-                                <CarouselItem key={msme.uid} className="pl-2 md:basis-1/2 lg:basis-1/3">
-                                    <div className="p-1 h-full">
-                                        <Card className={cn('glassmorphic h-full flex flex-col', categoryColors[msme.msmeService || 'Other'])}>
-                                            <CardHeader>
-                                                <CardTitle className="text-base">{msme.msmeName}</CardTitle>
-                                                <CardDescription>{msme.msmeLocation}</CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="flex-1 space-y-4">
-                                                <p className="font-semibold">{msme.msmeService}</p>
-                                            </CardContent>
-                                            <CardFooter className="flex-col items-stretch gap-2">
-                                                {msme.msmeWebsite && (
-                                                    <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer">
-                                                        <Button variant="outline" className="w-full">
-                                                            <LinkIcon className="mr-2 h-4 w-4"/>
-                                                            Website
-                                                        </Button>
-                                                    </a>
-                                                )}
-                                                <Button className={cn("w-full", categoryButtonColors[msme.msmeService || 'Other'])} onClick={() => handleContactClick(msme)}>
-                                                    <Phone className="mr-2 h-4 w-4"/>
-                                                    Contact
-                                                </Button>
-                                            </CardFooter>
-                                        </Card>
-                                    </div>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
-                        <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
-                    </Carousel>
-                ) : (
-                  <p className="text-muted-foreground text-center py-4">No MSMEs found matching your search.</p>
-                )}
             </CardContent>
         </Card>
         
@@ -880,5 +785,6 @@ export default function GrowthHubPage() {
   );
 }
 
+    
     
     
