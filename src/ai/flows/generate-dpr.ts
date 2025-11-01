@@ -14,7 +14,6 @@ const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 
 export async function generateDpr(input: GenerateDprInput): Promise<GenerateDprOutput> {
   
-  let prompt: string;
   const businessProfile = typeof input.idea === 'string' 
     ? `A business idea: "${input.idea}"`
     : `A detailed business profile:
@@ -28,41 +27,8 @@ Future-Proofing: ${input.idea.futureProofing}
 Relevant Schemes: ${input.idea.relevantSchemes}
 ---`;
 
-  if (input.sectionContext) {
-    // This is a regeneration request for a specific section
-    const { sectionToUpdate, userRequest } = input.sectionContext;
-    prompt = `You are an expert consultant revising a Detailed Project Report (DPR).
-A user wants to generate or update the "${sectionToUpdate}" section.
-
-**Business Profile:**
-${businessProfile}
-
-**Promoter's Name:** "${input.promoterName}"
-
-**User's Request for this section:** "${userRequest}"
-
-Based on the business profile and the user's request, generate the content ONLY for the "${sectionToUpdate}" section.
-
-CRITICAL: Your output MUST be ONLY a valid JSON object. This JSON object should contain a single key, which is the camelCase version of the section title (e.g., "executiveSummary", "marketAnalysis", "financialProjections"). The value should be the generated content for that section.
-
-For the "financialProjections" section, you must generate the full financial object with credible, realistic data based on the business profile.
-For all other sections, the value should be a markdown string.
-
-Example for "Market Analysis" section:
-{
-  "marketAnalysis": "The market for eco-friendly packaging is growing at a rate of 12% annually..."
-}
-
-Example for "Financial Projections" section:
-{
-  "financialProjections": { "summaryText": "...", "costBreakdown": [...], ... }
-}
-
-Now, generate the JSON for the "${sectionToUpdate}" section.
-`;
-  } else {
-    // This is the initial full DPR generation request
-    prompt = `You are an expert consultant hired to write a bank-ready Detailed Project Report (DPR) for an entrepreneur in India.
+  // This is the initial full DPR generation request
+  const prompt = `You are an expert consultant hired to write a bank-ready Detailed Project Report (DPR) for an entrepreneur in India.
 You have been provided with a rich, detailed business profile and the promoter's name.
 
 Your task is to write the complete DPR based on this information.
@@ -81,7 +47,7 @@ ${businessProfile}
 
 Based on this, generate the complete JSON object for the DPR.
 `;
-  }
+  
 
   const {response} = await model.generateContent(prompt);
   try {
@@ -95,19 +61,3 @@ Based on this, generate the complete JSON object for the DPR.
     throw new Error('The AI returned an invalid format. Could not generate the DPR.');
   }
 }
-
-const dprSections: (keyof GenerateDprOutput)[] = [
-    'executiveSummary',
-    'projectIntroduction',
-    'promoterDetails',
-    'businessModel',
-    'marketAnalysis',
-    'locationAndSite',
-    'technicalFeasibility',
-    'implementationSchedule',
-    'financialProjections',
-    'swotAnalysis',
-    'regulatoryCompliance',
-    'riskAssessment',
-    'annexures'
-];

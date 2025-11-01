@@ -1,22 +1,22 @@
+
 'use client';
 
-import { Suspense, useEffect, useState, useCallback, useRef } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FileText, FileDown, ArrowLeft, Loader2, Sparkles, Send, Edit, Star } from 'lucide-react';
+import { FileText, FileDown, ArrowLeft, Loader2, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-provider';
 import { ProjectCostPieChart, FinancialProjectionsBarChart } from '@/components/financify/dpr-charts';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { generateDprAction } from '@/app/actions';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { getFirestore, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
+import { FormattedText } from '@/components/financify/formatted-text';
+import { useToast } from '@/hooks/use-toast';
+
 
 const db = getFirestore(app);
 
@@ -24,61 +24,22 @@ type ReportData = {
   [key: string]: any;
 };
 
-const dprChapterTitles = [
-  'Executive Summary',
-  'Project Introduction',
-  'Promoter Details',
-  'Business Model',
-  'Market Analysis',
-  'Location and Site',
-  'Technical Feasibility',
-  'Implementation Schedule',
-  'Financial Projections',
-  'SWOT Analysis',
-  'Regulatory Compliance',
-  'Risk Assessment',
-  'Annexures',
+const dprChapterTitles: {key: keyof ReportData, title: string}[] = [
+  {key: 'executiveSummary', title: 'Executive Summary'},
+  {key: 'projectIntroduction', title: 'Project Introduction'},
+  {key: 'promoterDetails', title: 'Promoter Details'},
+  {key: 'businessModel', title: 'Business Model'},
+  {key: 'marketAnalysis', title: 'Market Analysis'},
+  {key: 'locationAndSite', title: 'Location and Site'},
+  {key: 'technicalFeasibility', title: 'Technical Feasibility'},
+  {key: 'implementationSchedule', title: 'Implementation Schedule'},
+  {key: 'financialProjections', title: 'Financial Projections'},
+  {key: 'swotAnalysis', title: 'SWOT Analysis'},
+  {key: 'regulatoryCompliance', title: 'Regulatory Compliance'},
+  {key: 'riskAssessment', title: 'Risk Assessment'},
+  {key: 'annexures', title: 'Annexures'},
 ];
 
-
-// A simple parser to convert markdown-like strings to HTML for contentEditable
-const parseToHtml = (text: string) => {
-  if (typeof text !== 'string') return '';
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[(.*?)\]/g, '<strong class="text-red-500 font-bold">[$1]</strong>')
-    .replace(/\n/g, '<br />');
-};
-
-const EditableContent = ({ initialContent, onSave, isManuallyEditing, className }: { initialContent: string, onSave: (newContent: string) => void, isManuallyEditing: boolean, className?: string }) => {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  const handleBlur = () => {
-    if (contentRef.current) {
-      onSave(contentRef.current.innerHTML); // Save HTML content
-    }
-  };
-
-  useEffect(() => {
-    if (isManuallyEditing && contentRef.current) {
-      contentRef.current.focus();
-    }
-  }, [isManuallyEditing]);
-  
-  return (
-    <div
-      ref={contentRef}
-      contentEditable={isManuallyEditing}
-      onBlur={handleBlur}
-      dangerouslySetInnerHTML={{ __html: parseToHtml(initialContent) }}
-      className={cn(
-        'outline-none text-muted-foreground whitespace-pre-line leading-relaxed',
-        isManuallyEditing && 'ring-2 ring-primary/20 rounded-md p-2 -m-2 transition-shadow',
-        className
-      )}
-    />
-  );
-};
 
 const FeedbackSection = ({ ideaTitle }: { ideaTitle: string | null }) => {
     const { user } = useAuth();
@@ -168,17 +129,7 @@ function DPRReportContent() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const ideaTitle = searchParams.get('idea');
-  const theme = searchParams.get('theme');
   const promoterName = user?.displayName || 'Entrepreneur';
-
-  useEffect(() => {
-    if (theme) {
-      document.documentElement.className = theme;
-    }
-    return () => {
-      document.documentElement.className = ''; // Reset on unmount
-    }
-  }, [theme]);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -212,78 +163,20 @@ function DPRReportContent() {
     window.print();
   };
 
-  const handleContentUpdate = (sectionKey: string, newContent: string) => {
-    setReport(prev => {
-        if (!prev) return null;
-        const keys = sectionKey.split('.');
-        const updatedReport = { ...prev };
-        
-        if (keys.length > 1) {
-            updatedReport[keys[0]] = { ...updatedReport[keys[0]], [keys[1]]: newContent };
-        } else {
-            updatedReport[sectionKey] = newContent;
-        }
-
-        localStorage.setItem('generatedDPR', JSON.stringify(updatedReport));
-        return updatedReport;
-    });
-  };
-
   const Section = ({
     title,
     content,
-    sectionKey,
     isLoading,
     className = '',
-    onRegenerate,
   }: {
     title: string;
     content?: any;
-    sectionKey: string;
     isLoading: boolean;
     className?: string;
-    onRegenerate: (sectionTitle: string, newContent: any) => void;
   }) => {
-    const [isAiEditing, setIsAiEditing] = useState(false);
-    const [isManuallyEditing, setIsManuallyEditing] = useState(false);
-    const [editQuery, setEditQuery] = useState('');
-    const [isRegenerating, setIsRegenerating] = useState(false);
-    const { toast } = useToast();
-
-    const handleRegenerate = async () => {
-        if (!editQuery || !ideaTitle) return;
-        setIsRegenerating(true);
-        try {
-            const currentContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : String(content);
-
-            const result = await generateDprAction({
-                idea: ideaTitle,
-                promoterName: promoterName,
-                sectionContext: {
-                    sectionToUpdate: title,
-                    currentContent: currentContent,
-                    userRequest: editQuery,
-                }
-            });
-
-            if (result.success) {
-                const updatedSectionKey = Object.keys(result.data).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || sectionKey;
-                onRegenerate(updatedSectionKey, result.data[updatedSectionKey]);
-                toast({ title: 'Section Updated', description: `"${title}" has been regenerated based on your request.` });
-                setIsAiEditing(false);
-                setEditQuery('');
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Regeneration Failed', description: e.message });
-        } finally {
-            setIsRegenerating(false);
-        }
-    };
 
     const renderContent = () => {
-      if (isLoading || isRegenerating) {
+      if (isLoading) {
         return (
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -298,7 +191,7 @@ function DPRReportContent() {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-2">Financial Summary</h3>
-              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.summaryText} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.summaryText`, newHtml)} />
+              <FormattedText text={content.summaryText} />
             </div>
             <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6 print:grid-cols-2">
               <div className="space-y-4 print-no-break">
@@ -312,34 +205,30 @@ function DPRReportContent() {
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Means of Finance</h3>
-              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.meansOfFinance} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.meansOfFinance`, newHtml)} />
+              <FormattedText text={content.meansOfFinance} />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Profitability Analysis</h3>
-              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.profitabilityAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.profitabilityAnalysis`, newHtml)} />
+              <FormattedText text={content.profitabilityAnalysis} />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Cash Flow Statement</h3>
-              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.cashFlowStatement} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.cashFlowStatement`, newHtml)} />
+              <FormattedText text={content.cashFlowStatement} />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Loan Repayment Schedule</h3>
-              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.loanRepaymentSchedule} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.loanRepaymentSchedule`, newHtml)} />
+              <FormattedText text={content.loanRepaymentSchedule} />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Break-Even Analysis</h3>
-              <EditableContent isManuallyEditing={isManuallyEditing} initialContent={content.breakEvenAnalysis} onSave={(newHtml) => handleContentUpdate(`${sectionKey}.breakEvenAnalysis`, newHtml)} />
+              <FormattedText text={content.breakEvenAnalysis} />
             </div>
           </div>
         );
       }
       
       return (
-        <EditableContent
-          isManuallyEditing={isManuallyEditing}
-          initialContent={content || 'No content generated for this section.'}
-          onSave={(newHtml) => handleContentUpdate(sectionKey, newHtml)}
-        />
+        <FormattedText text={content || 'No content generated for this section.'} />
       );
     };
 
@@ -351,47 +240,10 @@ function DPRReportContent() {
         <CardContent className="p-0">
           {renderContent()}
         </CardContent>
-        <div className="flex justify-end items-center gap-2 no-print mt-4">
-            <Button variant="ghost" size="sm" onClick={() => setIsManuallyEditing(!isManuallyEditing)}>
-                <Edit className="mr-2" />
-                Edit Manually
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setIsAiEditing(!isAiEditing)}>
-                <Sparkles className="mr-2" />
-                Regenerate with AI
-            </Button>
-        </div>
-        {isAiEditing && (
-            <div className="p-2 space-y-2 no-print">
-                <div className="flex gap-2">
-                    <Input 
-                        placeholder={`e.g., "Make this section more detailed"`}
-                        value={editQuery}
-                        onChange={(e) => setEditQuery(e.target.value)}
-                        disabled={isRegenerating}
-                    />
-                    <Button onClick={handleRegenerate} disabled={isRegenerating || !editQuery}>
-                        {isRegenerating ? <Loader2 className="animate-spin" /> : <Send />}
-                    </Button>
-                </div>
-            </div>
-        )}
       </div>
     )
   };
 
-  const handleSectionRegenerate = (sectionKey: string, newContent: any) => {
-    setReport(prevReport => {
-      if (!prevReport) return null;
-      const updatedReport = {
-        ...prevReport,
-        [sectionKey]: newContent,
-      };
-      // Also update localStorage
-      localStorage.setItem('generatedDPR', JSON.stringify(updatedReport));
-      return updatedReport;
-    });
-  };
 
   return (
     <div className="space-y-6 md:space-y-8 @container bg-background py-8">
@@ -399,7 +251,7 @@ function DPRReportContent() {
         @media print {
           @page {
             size: A4;
-            margin: 1in 1in 1in 1.5in;
+            margin: 1in;
             @top-center {
               content: 'Detailed Project Report: ${ideaTitle || ''}';
               font-size: 10pt;
@@ -443,8 +295,9 @@ function DPRReportContent() {
             float: none;
             width: 100%;
             min-height: auto;
+            padding: 0;
           }
-
+          
           .a4-container::after {
             content: 'Artha';
             position: fixed;
@@ -564,9 +417,9 @@ function DPRReportContent() {
                     <h1>Table of Contents</h1>
                     <table>
                         <tbody>
-                            {dprChapterTitles.map((title, index) => (
+                            {dprChapterTitles.map((chapter, index) => (
                                 <tr key={index}>
-                                    <td>{index + 1}. {title}</td>
+                                    <td>{index + 1}. {chapter.title}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -575,10 +428,10 @@ function DPRReportContent() {
             </div>
             
             {isLoading &&
-              dprChapterTitles.map((title, index) => (
-                <div key={index} className="pt-12">
+              dprChapterTitles.map((chapter, index) => (
+                <div key={index} className={cn("pt-12 px-4 md:px-8", index > 0 && "print-break-before")}>
                    <CardHeader className="p-0 mb-6 border-b pb-4">
-                      <CardTitle className="text-xl md:text-2xl">{`${index + 1}. ${title}`}</CardTitle>
+                      <CardTitle className="text-xl md:text-2xl">{`${index + 1}. ${chapter.title}`}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                        <div className="space-y-2">
@@ -591,20 +444,18 @@ function DPRReportContent() {
             ))}
             
             {report && !isLoading &&
-              dprChapterTitles.map((title, index) => {
-                const key = Object.keys(report).find(k => k.toLowerCase().replace(/ /g, '') === title.toLowerCase().replace(/ /g, '')) || title;
-                const content = report[key];
-                const sectionTitle = `${index + 1}. ${title}`;
+              dprChapterTitles.map((chapter, index) => {
+                const content = report[chapter.key];
+                const sectionTitle = `${index + 1}. ${chapter.title}`;
 
                 return (
-                  <Section
-                    key={key}
-                    sectionKey={key}
-                    title={sectionTitle}
-                    content={content}
-                    isLoading={isLoading}
-                    onRegenerate={(updatedKey, updatedContent) => handleSectionRegenerate(updatedKey, updatedContent)}
-                  />
+                  <div key={chapter.key} className={cn("px-4 md:px-8 py-8", index > 0 && "print-break-before")}>
+                      <Section
+                        title={sectionTitle}
+                        content={content}
+                        isLoading={isLoading}
+                      />
+                  </div>
                 );
               })}
         </div>

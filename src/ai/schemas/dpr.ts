@@ -7,11 +7,6 @@ export const GenerateDprInputSchema = z.object({
   // The 'idea' can now be a simple string or the full analysis object
   idea: z.union([z.string(), GenerateInvestmentIdeaAnalysisOutputSchema]).describe("The user's initial business idea or the full analysis object."),
   promoterName: z.string().describe("The name of the entrepreneur."),
-  sectionContext: z.object({
-    sectionToUpdate: z.string(),
-    currentContent: z.string(),
-    userRequest: z.string(),
-  }).optional().describe("Context for regenerating a specific section."),
 });
 export type GenerateDprInput = z.infer<typeof GenerateDprInputSchema>;
 
