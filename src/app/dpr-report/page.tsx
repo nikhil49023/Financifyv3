@@ -226,7 +226,7 @@ function DPRReportContent() {
   const [imageUploadChapter, setImageUploadChapter] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const [showMockDataWarning, setShowMockDataWarning] = useState(false);
+  const [showExportWarning, setShowExportWarning] = useState(false);
   
   const ideaTitle = searchParams.get('idea');
   const promoterName = user?.displayName || 'Entrepreneur';
@@ -272,16 +272,11 @@ function DPRReportContent() {
   }, [user, ideaTitle, router]);
 
   const handleExport = () => {
-    const isMock = report?.financialProjections?.isMock;
-    if (isMock) {
-        setShowMockDataWarning(true);
-    } else {
-        proceedWithExport();
-    }
+    setShowExportWarning(true);
   };
 
   const proceedWithExport = () => {
-    setShowMockDataWarning(false);
+    setShowExportWarning(false);
     window.print();
   };
 
@@ -524,7 +519,7 @@ function DPRReportContent() {
   return (
     <div className="space-y-6 md:space-y-8 @container bg-background py-8">
       {/* Print Styles */}
-      <style jsx global>{`
+      <style jsx global>{\`
         @media print {
           @page {
             size: A4;
@@ -544,7 +539,7 @@ function DPRReportContent() {
           .tiptap { all: unset; }
           .ProseMirror { box-shadow: none; border: none; padding: 0; }
         }
-      `}</style>
+      \`}</style>
       <input
         type="file"
         ref={imageInputRef}
@@ -566,20 +561,27 @@ function DPRReportContent() {
         <Button variant="outline" onClick={handleExport} disabled={isLoading || !!error}><FileDown className="mr-2" /> Export to PDF</Button>
       </div>
 
-       <AlertDialog open={showMockDataWarning} onOpenChange={setShowMockDataWarning}>
+       <AlertDialog open={showExportWarning} onOpenChange={setShowExportWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Using Mock Financial Data</AlertDialogTitle>
+            <AlertDialogTitle>Important Disclaimer</AlertDialogTitle>
             <AlertDialogDescription>
-              The financial projections in this report are based on mock data. For an accurate report, please use the AI toolkit to refine this section with your own data.
-              <br /><br />
-              Do you still want to proceed with exporting?
+              <div className="space-y-4">
+                  {report?.financialProjections?.isMock && (
+                      <p className="font-semibold text-destructive">
+                          Warning: The financial projections in this report are based on mock data. Please use the AI toolkit to refine this section with your own data for an accurate report.
+                      </p>
+                  )}
+                  <p>
+                      This is an AI-generated DPR. Before submitting to the bank, please cross-check with an eligible agency. A Detailed Project Report (DPR) can be prepared by the Special Purpose Vehicle (SPV) or any qualified agency as decided by the State Government. Agencies empanelled in any scheme of the Ministry of MSME are also eligible to prepare the DPR under this scheme.
+                  </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={proceedWithExport}>
-              Yes, Export Anyway
+              Continue to Export
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
