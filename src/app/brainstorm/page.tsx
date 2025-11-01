@@ -167,15 +167,15 @@ export default function BrainstormPage() {
                 Join the Entrepreneur Community
             </CardTitle>
             <CardDescription>
-                Connect with fellow entrepreneurs, share ideas, and get feedback on Zoho Connect.
+                Connect with fellow entrepreneurs, share ideas, and get feedback.
             </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
            <p className="text-muted-foreground">
-                Building a business is a journey, not a solo mission. Join our dedicated community on Zoho Connect to network with peers, find mentors, ask questions, and validate your next big idea.
+                Building a business is a journey, not a solo mission. Join our dedicated community to network with peers, find mentors, ask questions, and validate your next big idea.
            </p>
             <Button asChild>
-                <a href="https://connect.zoho.com" target="_blank" rel="noopener noreferrer">
+                <a href="https://financify.zohocs.in/portal/financify/group/financify-enterpuners-community" target="_blank" rel="noopener noreferrer">
                     Join the Community
                 </a>
             </Button>
