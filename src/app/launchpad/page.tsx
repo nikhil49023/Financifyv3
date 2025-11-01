@@ -593,48 +593,51 @@ export default function GrowthHubPage() {
                     </Dialog>
                 </div>
                 {isLoadingMsmes ? (
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[...Array(3)].map((_, i) => (
-                          <Card key={i}>
-                            <CardHeader>
-                                <Skeleton className="h-5 w-3/4" />
-                                <Skeleton className="h-4 w-1/2" />
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                 <Skeleton className="h-5 w-2/3" />
-                                 <Skeleton className="h-10 w-full" />
-                            </CardContent>
-                        </Card>
-                      ))}
+                   <div className="flex items-center justify-center p-10">
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                    </div>
                 ) : filteredMsmes.length > 0 ? (
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredMsmes.map((msme) => (
-                          <Card key={msme.id} className={cn('glassmorphic', categoryColors[msme.msmeService || 'Other'])}>
-                              <CardHeader>
-                                  <CardTitle className="text-base">{msme.msmeName}</CardTitle>
-                                  <CardDescription>{msme.msmeLocation}</CardDescription>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                   <p className="font-semibold">{msme.msmeService}</p>
-                                   <div className="flex flex-col gap-2">
-                                      {msme.msmeWebsite && (
-                                        <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer">
-                                            <Button variant="outline" className="w-full">
-                                                <LinkIcon className="mr-2 h-4 w-4"/>
-                                                Website
-                                            </Button>
-                                        </a>
-                                      )}
-                                      <Button className={cn("w-full", categoryButtonColors[msme.msmeService || 'Other'])} onClick={() => handleContactClick(msme)}>
-                                          <Phone className="mr-2 h-4 w-4"/>
-                                          Contact
-                                      </Button>
-                                   </div>
-                              </CardContent>
-                          </Card>
-                      ))}
-                  </div>
+                    <Carousel
+                        opts={{
+                            align: 'start',
+                            loop: false,
+                        }}
+                        className="w-full"
+                    >
+                        <CarouselContent className="-ml-2">
+                            {filteredMsmes.map((msme) => (
+                                <CarouselItem key={msme.id} className="pl-2 md:basis-1/2 lg:basis-1/3">
+                                    <div className="p-1 h-full">
+                                        <Card className={cn('glassmorphic h-full flex flex-col', categoryColors[msme.msmeService || 'Other'])}>
+                                            <CardHeader>
+                                                <CardTitle className="text-base">{msme.msmeName}</CardTitle>
+                                                <CardDescription>{msme.msmeLocation}</CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="flex-1 space-y-4">
+                                                <p className="font-semibold">{msme.msmeService}</p>
+                                            </CardContent>
+                                            <CardFooter className="flex-col items-stretch gap-2">
+                                                {msme.msmeWebsite && (
+                                                    <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer">
+                                                        <Button variant="outline" className="w-full">
+                                                            <LinkIcon className="mr-2 h-4 w-4"/>
+                                                            Website
+                                                        </Button>
+                                                    </a>
+                                                )}
+                                                <Button className={cn("w-full", categoryButtonColors[msme.msmeService || 'Other'])} onClick={() => handleContactClick(msme)}>
+                                                    <Phone className="mr-2 h-4 w-4"/>
+                                                    Contact
+                                                </Button>
+                                            </CardFooter>
+                                        </Card>
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+                        <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+                    </Carousel>
                 ) : (
                   <p className="text-muted-foreground text-center py-4">No MSMEs found matching your search.</p>
                 )}
