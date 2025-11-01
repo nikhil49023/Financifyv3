@@ -65,7 +65,7 @@ The schema is:
   // Step 2: Fetch relevant government schemes from the RAG service using the new, specific prompt.
   let schemesText = 'Could not fetch relevant government schemes at this time.';
   try {
-    const ragQuery = `what are the schemes provided under AP MSME for ${partialAnalysis.sector}`;
+    const ragQuery = `what are the incentives for ${partialAnalysis.title} in AP`;
     const ragResult = await generateRagAnswer({ query: ragQuery });
     if (ragResult.answer) {
       schemesText = `*(Powered by Financify AI)* ${ragResult.answer}`;
