@@ -67,7 +67,11 @@ declare module 'lucide-react' {
     export const Star: LucideIcon;
     export const Wand2: LucideIcon;
     export const ImageIcon: LucideIcon;
+    export const Gem: LucideIcon;
+    export const Crown: LucideIcon;
+    export const Check: LucideIcon;
 
 
     // Add any other icons you might use
   }
+
