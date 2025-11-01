@@ -27,6 +27,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Card,
   CardContent,
   CardHeader,
@@ -191,8 +197,9 @@ function DPRReportContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeToolkit, setActiveToolkit] = useState<string | null>(null);
   const { user } = useAuth();
+  
+  const [activeEditor, setActiveEditor] = useState<string | null>(null);
 
-  const [isEditMode, setIsEditMode] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [imageUploadChapter, setImageUploadChapter] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -247,7 +254,7 @@ function DPRReportContent() {
   const handleSaveChanges = () => {
     localStorage.setItem('generatedDPR', JSON.stringify(report));
     toast({ title: "Saved", description: "Your changes have been saved to this browser."});
-    setIsEditMode(false);
+    setActiveEditor(null);
   };
 
   const handleToolkitAction = async (chapterKey: string, isRefinement: boolean) => {
@@ -333,9 +340,9 @@ function DPRReportContent() {
   }) => {
     const content = report ? report[chapter.key] : null;
     const isFinancials = chapter.key === 'financialProjections';
+    const isEditing = activeEditor === chapter.key;
 
     const renderEditableContent = () => {
-      if (isFinancials) return null;
       if (isLoading || !report) {
         return <div className="space-y-2"><Skeleton className="h-40 w-full" /></div>;
       }
@@ -343,13 +350,12 @@ function DPRReportContent() {
         <RichTextEditor
             content={content || ''}
             onChange={(newContent) => handleTextChange(chapter.key, newContent)}
-            editable={!isGenerating && !isFinancials}
+            editable={!isGenerating}
         />
       );
     }
 
     const renderStaticContent = () => {
-      if (isFinancials) return null;
       if (isLoading || !report) {
         return <div className="space-y-2"><Skeleton className="h-40 w-full" /></div>;
       }
@@ -387,22 +393,32 @@ function DPRReportContent() {
             <CardTitle className="text-2xl md:text-3xl">{chapter.title}</CardTitle>
           </div>
           <div className="flex items-center gap-2 no-print">
-            {isEditMode && !isFinancials && (
-              <Button variant="outline" size="icon" onClick={() => { setImageUploadChapter(chapter.key); imageInputRef.current?.click(); }} disabled={isUploading}>
-                {isUploading && imageUploadChapter === chapter.key ? <Loader2 className="h-4 w-4 animate-spin"/> : <ImageIcon className="h-4 w-4" />}
-              </Button>
-            )}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                        <Wand2 className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                     {!isFinancials && (
+                        <DropdownMenuItem onClick={() => setActiveEditor(chapter.key)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit Manually</span>
+                        </DropdownMenuItem>
+                     )}
+                    <DropdownMenuItem onClick={() => setActiveToolkit(chapter.key)}>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        <span>Use AI</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
             <Dialog open={activeToolkit === chapter.key} onOpenChange={(isOpen) => setActiveToolkit(isOpen ? chapter.key : null)}>
-              <DialogTrigger asChild>
-                  <Button variant="outline" size="icon">
-                      <Wand2 className="h-4 w-4" />
-                  </Button>
-              </DialogTrigger>
               <DialogContent>
                   <DialogHeader>
                       <DialogTitle>AI Toolkit: {chapter.title}</DialogTitle>
                       <DialogDescription>
-                      Use the AI to generate or refine the content for this section. Your changes will be reflected in the editor.
+                      Use the AI to generate or refine the content for this section.
                       </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-6 py-4">
@@ -435,7 +451,16 @@ function DPRReportContent() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-            {isFinancials ? renderFinancials() : (isEditMode ? renderEditableContent() : renderStaticContent())}
+            {isFinancials ? renderFinancials() : (isEditing ? renderEditableContent() : renderStaticContent())}
+            {isEditing && (
+              <div className="flex justify-end gap-2 mt-4 no-print">
+                <Button variant="ghost" onClick={() => setActiveEditor(null)}>Cancel</Button>
+                <Button onClick={handleSaveChanges}>Save Changes</Button>
+                <Button variant="outline" size="icon" onClick={() => { setImageUploadChapter(chapter.key); imageInputRef.current?.click(); }} disabled={isUploading}>
+                  {isUploading && imageUploadChapter === chapter.key ? <Loader2 className="h-4 w-4 animate-spin"/> : <ImageIcon className="h-4 w-4" />}
+                </Button>
+              </div>
+            )}
         </CardContent>
       </div>
     );
@@ -483,15 +508,7 @@ function DPRReportContent() {
       </div>
 
       <div className="flex gap-2 no-print container mx-auto max-w-[210mm] px-4">
-        {isEditMode ? (
-          <>
-            <Button onClick={handleSaveChanges} disabled={isLoading || !!error}><Save className="mr-2" /> Save & Exit</Button>
-            <Button variant="ghost" onClick={() => setIsEditMode(false)}><X className="mr-2" /> Cancel</Button>
-          </>
-        ) : (
-          <Button onClick={() => setIsEditMode(true)} disabled={isLoading || !!error}><Edit className="mr-2" /> Edit Report</Button>
-        )}
-        <Button variant="outline" onClick={handleExport} disabled={isLoading || !!error || isEditMode}><FileDown className="mr-2" /> Export to PDF</Button>
+        <Button variant="outline" onClick={handleExport} disabled={isLoading || !!error}><FileDown className="mr-2" /> Export to PDF</Button>
       </div>
 
       {error && !isLoading && (
@@ -522,7 +539,7 @@ function DPRReportContent() {
         </div>
       </div>
       
-      {report && !isLoading && !isEditMode &&(
+      {report && !isLoading && (
         <div className="container mx-auto max-w-[210mm] px-4 py-8">
             <FeedbackSection ideaTitle={ideaTitle} />
         </div>
