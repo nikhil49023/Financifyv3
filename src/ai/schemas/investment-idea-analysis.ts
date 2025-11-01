@@ -1,5 +1,5 @@
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 // Schemas for Investment Idea Analysis
 export const GenerateInvestmentIdeaAnalysisInputSchema = z.object({
