@@ -105,7 +105,7 @@ export default function BudgetReportPage() {
   };
 
   const totalExpenses = report?.expenseBreakdown.reduce((acc, item) => acc + item.value, 0) || 0;
-  const totalIncome = report?.incomeBreakdown.reduce((acc, item) => acc + item.value, 0) || 0;
+  const totalIncome = report?.overallBreakdown.find(item => item.name === 'Total Income')?.value || 0;
   
   if (isLoading) {
       return (
@@ -251,16 +251,16 @@ export default function BudgetReportPage() {
                     <FormattedText text={report.summary} />
                 </CardContent>
             </Card>
-             <div className="space-y-6">
+             <div className="grid grid-cols-1 print-grid-cols-2 lg:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader className="p-4 md:p-6">
-                        <CardTitle>Income Breakdown</CardTitle>
+                        <CardTitle>Overall Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 md:p-6 pt-0">
-                        {report.incomeBreakdown.length > 0 ? (
-                            <ProjectCostPieChart data={report.incomeBreakdown} />
+                        {report.overallBreakdown.length > 0 ? (
+                            <ProjectCostPieChart data={report.overallBreakdown} />
                         ) : (
-                            <p className="text-muted-foreground text-center py-10">No income data to display.</p>
+                            <p className="text-muted-foreground text-center py-10">No overall data to display.</p>
                         )}
                     </CardContent>
                 </Card>

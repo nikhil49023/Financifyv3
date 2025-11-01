@@ -15,6 +15,19 @@ import type {
 const ai = getAI(app, { backend: new GoogleAIBackend() });
 const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 
+// Helper to safely parse currency strings
+function parseCurrency(amount: string | number): number {
+  if (typeof amount === 'number') {
+    return amount;
+  }
+  if (typeof amount === 'string') {
+    const sanitizedAmount = amount.replace(/[^0-9.-]+/g, '');
+    const parsed = parseFloat(sanitizedAmount);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
+
 export async function generateBudgetReport(
   input: GenerateBudgetReportInput
 ): Promise<GenerateBudgetReportOutput> {
@@ -22,7 +35,7 @@ export async function generateBudgetReport(
     .map(t => `- ${t.description}: ${t.amount} (${t.type}) on ${t.date}`)
     .join('\n');
 
-  const prompt = `You are a financial analyst. Based on the following transactions, provide a spending analysis, an expense breakdown, and an income breakdown.
+  const prompt = `You are a financial analyst. Based on the following transactions, provide a spending analysis and a detailed expense breakdown.
 Your response MUST be ONLY a valid JSON object that conforms to the output schema. Do NOT include any other text, markdown, or explanations.
 
 The JSON schema is:
@@ -31,15 +44,10 @@ The JSON schema is:
   "expenseBreakdown": [
     { "name": "CategoryName", "value": 1234.56 },
     ...
-  ],
-  "incomeBreakdown": [
-    { "name": "CategoryName", "value": 1234.56 },
-    ...
   ]
 }
 
 Group similar expenses into logical categories (e.g., "Food", "Transport", "Shopping").
-Group similar income sources into logical categories (e.g., "Salary", "Freelance", "Investment").
 
 Here is the list of transactions to analyze:
 ${transactionsList}
@@ -52,14 +60,28 @@ ${transactionsList}
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(cleanedText);
 
-    // Ensure both breakdowns are always arrays, even if empty
+    // Manually calculate overall breakdown
+    let totalIncome = 0;
+    let totalExpenses = 0;
+    input.transactions.forEach(t => {
+        const amount = parseCurrency(t.amount);
+        if (t.type === 'income') {
+            totalIncome += amount;
+        } else {
+            totalExpenses += amount;
+        }
+    });
+
+    parsed.overallBreakdown = [
+        { name: 'Total Income', value: totalIncome },
+        { name: 'Total Expenses', value: totalExpenses },
+    ];
+
+    // Ensure expense breakdown is always an array
     if (!parsed.expenseBreakdown) {
       parsed.expenseBreakdown = [];
     }
-    if (!parsed.incomeBreakdown) {
-      parsed.incomeBreakdown = [];
-    }
-
+    
     return parsed as GenerateBudgetReportOutput;
   } catch (e) {
     console.error('Failed to parse JSON from model response:', response.text());

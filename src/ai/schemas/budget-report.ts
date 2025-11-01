@@ -15,8 +15,8 @@ export const GenerateBudgetReportOutputSchema = z.object({
   expenseBreakdown: z
     .array(z.object({ name: z.string(), value: z.number() }))
     .describe('A JSON array of expense categories and their total amounts for a pie chart.'),
-  incomeBreakdown: z
+  overallBreakdown: z
     .array(z.object({ name: z.string(), value: z.number() }))
-    .describe('A JSON array of income categories and their total amounts for a pie chart.'),
+    .describe('A JSON array containing total income and total expenses for a pie chart.'),
 });
 export type GenerateBudgetReportOutput = z.infer<typeof GenerateBudgetReportOutputSchema>;
