@@ -93,6 +93,14 @@ function InvestmentIdeaContent() {
   const {translations} = useLanguage();
 
   const handleBuildDpr = () => {
+    if (!isSaved) {
+      toast({
+        variant: 'destructive',
+        title: 'Please Save Idea First',
+        description: 'You must save the analysis before building a DPR.',
+      });
+      return;
+    }
     if (!title || !user) return;
     
     const fullAnalysis: Partial<GenerateInvestmentIdeaAnalysisOutput> = sections.reduce((acc, section) => {
@@ -348,7 +356,7 @@ function InvestmentIdeaContent() {
             )}
           </Button>
 
-          <Button onClick={handleBuildDpr} disabled={!isSaved || !user}>
+          <Button onClick={handleBuildDpr} disabled={!allSectionsLoaded || !user}>
             <ChevronsRight className="mr-2" />
             Build DPR
           </Button>
