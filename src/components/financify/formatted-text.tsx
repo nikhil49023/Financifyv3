@@ -15,32 +15,29 @@ export function FormattedText({ text }: FormattedTextProps) {
     return null;
   }
 
-  // Regex to find **bold text**, [placeholders], and URLs (excluding trailing parens).
+  // Use dangerouslySetInnerHTML to render HTML content from the AI
+  if (text.includes('<p>') || text.includes('<h3>') || text.includes('<ul>')) {
+      return (
+          <div
+              className="text-muted-foreground whitespace-pre-line leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: text }}
+           />
+      );
+  }
+
+  // Fallback for plain text with special formatting
   const urlRegex = /(https?:\/\/[^\s)]+[^\s.,!?)\]])/g;
   const parts = text.split(/(\*\*.*?\*\*|\[.*?\]|https?:\/\/[^\s]+)/g).filter(Boolean);
 
   const formattedParts = parts.map((part, index) => {
-    // Check for bold format: **...**
     if (part.startsWith('**') && part.endsWith('**')) {
-      const boldText = part.slice(2, -2);
       return (
         <strong key={index} className="font-semibold text-foreground">
-          {boldText}
+          {part.slice(2, -2)}
         </strong>
       );
     }
 
-    // Check for placeholder format: [...]
-    if (part.startsWith('[') && part.endsWith(']')) {
-      const varText = part.slice(1, -1);
-      return (
-        <span key={index} className="text-red-500 font-bold">
-          [{varText}]
-        </span>
-      );
-    }
-
-    // Check if the part is a URL
     if (urlRegex.test(part)) {
        const urls = part.match(urlRegex) || [];
         if (urls.length > 0) {
@@ -63,7 +60,6 @@ export function FormattedText({ text }: FormattedTextProps) {
         }
     }
 
-    // Handle newline characters and render them as <br>
     const lines = part.split('\n').map((line, lineIndex) => (
       <React.Fragment key={lineIndex}>
         {line}

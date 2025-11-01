@@ -43,8 +43,9 @@ ${typeof existingContent === 'object' ? JSON.stringify(existingContent, null, 2)
 ---
 
 Your task is to rewrite the "Existing Content" based on the "User's Instruction".
-Maintain the original format (JSON for financial projections, markdown for others).
+Maintain the original format (JSON for financial projections, HTML for others).
 Output ONLY the refined, complete content for the section. Do not add any extra commentary.
+Use basic HTML for formatting: <h3> for subheadings, <p> for paragraphs, <ul> and <li> for lists.
 
 **Business Profile (for context):**
 ${businessProfile}
@@ -60,7 +61,7 @@ Your current task is to generate the content for ONLY the following section: **$
 ${basePrompt}
 
 **Critical Output Format:**
-- For all sections EXCEPT 'financialProjections', you MUST output ONLY the generated text content as a raw string.
+- For all sections EXCEPT 'financialProjections', you MUST output ONLY the generated text content as a raw string using basic HTML for formatting (<h3>, <p>, <ul>, <li>).
 - For the 'financialProjections' section, you MUST output ONLY a valid JSON object matching the required schema for financial data.
 - Do NOT include any other text, markdown formatting (like \`\`\`json), titles, or explanations in your response. Just the raw content.
 
@@ -77,7 +78,7 @@ Now, generate the content for the "${section}" section.
 
   try {
     const text = response.text();
-    // For the financial section, we expect JSON. For all others, we expect a markdown string.
+    // For the financial section, we expect JSON. For all others, we expect an HTML string.
     if (section === 'financialProjections') {
       const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(cleanedText);

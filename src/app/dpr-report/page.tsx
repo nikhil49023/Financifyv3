@@ -50,6 +50,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { generateDprAction } from '../actions';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
+import RichTextEditor from '@/components/financify/rich-text-editor';
 
 
 const db = getFirestore(app);
@@ -293,18 +294,16 @@ function DPRReportContent() {
         if (isLoading || !report) {
             return (
                 <div className="space-y-2">
-                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-40 w-full" />
                 </div>
             );
         }
 
         return (
-            <Textarea
-                value={typeof content === 'string' ? content : JSON.stringify(content, null, 2)}
-                onChange={(e) => handleTextChange(chapter.key, e.target.value)}
-                rows={isFinancials ? 20 : 10}
-                className="text-base"
-                disabled={isGenerating || isFinancials}
+            <RichTextEditor
+                content={content || ''}
+                onChange={(newContent) => handleTextChange(chapter.key, newContent)}
+                editable={!isGenerating && !isFinancials}
             />
         );
     }
@@ -402,11 +401,14 @@ function DPRReportContent() {
           html, body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
           body * { visibility: hidden; }
           #print-section, #print-section * { visibility: visible; }
+          .tiptap p, .tiptap h1, .tiptap h2, .tiptap h3, .tiptap ul, .tiptap li { visibility: visible; }
           #print-section { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
           .no-print { display: none !important; }
           .print-break-before { page-break-before: always; }
           .print-no-break { page-break-inside: avoid; }
           .print-cover-page { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; }
+          .tiptap { all: unset; }
+          .ProseMirror { box-shadow: none; border: none; padding: 0; }
         }
       `}</style>
 
@@ -435,8 +437,13 @@ function DPRReportContent() {
       <div id="print-section">
         <div className="bg-card shadow-lg mx-auto w-[210mm] min-h-[297mm]">
           {/* Cover Page for Print */}
-          <div className="print-cover-page hidden print:flex">
-             {/* Cover page content */}
+          <div className="print-cover-page hidden print:flex flex-col items-center justify-center text-center">
+            <div className="space-y-4">
+                <h1 className="text-4xl font-bold">Detailed Project Report</h1>
+                <h2 className="text-2xl text-muted-foreground">{analysis?.title}</h2>
+                <p className="pt-12">Prepared for Banking & Financial Review</p>
+                <p>By {promoterName}</p>
+            </div>
           </div>
           
           {dprChapters.map((chapter, index) => (
