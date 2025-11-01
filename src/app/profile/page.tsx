@@ -65,9 +65,25 @@ export default function ProfilePage() {
     setIsSaving(true);
     
     const userDocRef = doc(db, 'users', user.uid);
+    const msmeProfileRef = doc(db, 'msme-profiles', user.uid);
+
     try {
-        // Use setDoc with merge:true to update or create fields
-        await setDoc(userDocRef, { ...userProfile, ...msmeData }, { merge: true });
+        const privateData = { ...userProfile, ...msmeData };
+        // Use setDoc with merge:true to update or create fields in private user doc
+        await setDoc(userDocRef, privateData, { merge: true });
+        
+        // Also update the public MSME profile
+        const publicData = {
+          uid: user.uid,
+          displayName: userProfile.displayName,
+          email: userProfile.email,
+          msmeName: msmeData.msmeName,
+          msmeService: msmeData.msmeService,
+          msmeLocation: msmeData.msmeLocation,
+          ownerContact: msmeData.ownerContact,
+          msmeWebsite: msmeData.msmeWebsite,
+        };
+        await setDoc(msmeProfileRef, publicData, { merge: true });
 
         toast({ title: 'Success', description: 'Your profile has been updated.'});
         setEditDialogOpen(false);
@@ -88,10 +104,15 @@ export default function ProfilePage() {
   const handleDeleteAccount = async () => {
     if (!user) return;
     try {
-      // First, delete Firestore data
+      // First, delete Firestore data (private user doc and public msme profile)
       await deleteDoc(doc(db, 'users', user.uid));
+      if (isMsme) {
+          await deleteDoc(doc(db, 'msme-profiles', user.uid));
+      }
+      
       // Then, delete the user from Firebase Auth
       await deleteUser(user);
+      
       toast({
         title: 'Account Deleted',
         description: 'Your account and all associated data have been permanently deleted.',

@@ -93,17 +93,17 @@ const msmeServiceCategories = [
 ];
 
 const categoryColors: { [key: string]: string } = {
-  'Construction / Real Estate': 'bg-slate-200/50 border-orange-300',
-  'IT / Software Services': 'bg-blue-200/50 border-blue-300',
-  'Retail / E-commerce': 'bg-red-100/50 border-red-200',
-  'Manufacturing': 'bg-sky-200/50 border-gray-300',
-  'Food & Agro Processing': 'bg-yellow-100/50 border-green-300',
-  'Hospitality & Tourism': 'bg-cyan-100/50 border-rose-300',
-  'Healthcare & Pharma': 'bg-blue-100/50 border-slate-300',
-  'Logistics & Supply Chain': 'bg-gray-200/50 border-orange-300',
-  'Professional Services (Accounting, Legal, etc.)': 'bg-blue-200/50 border-gray-300',
-  'Textiles & Apparel': 'bg-rose-100/50 border-stone-300',
-  'Other': 'bg-slate-100/50 border-slate-200',
+    'Construction / Real Estate': 'bg-slate-200/50 border-orange-300',
+    'IT / Software Services': 'bg-blue-200/50 border-blue-300',
+    'Retail / E-commerce': 'bg-red-100/50 border-red-200',
+    'Manufacturing': 'bg-sky-200/50 border-gray-300',
+    'Food & Agro Processing': 'bg-yellow-100/50 border-green-300',
+    'Hospitality & Tourism': 'bg-cyan-100/50 border-rose-300',
+    'Healthcare & Pharma': 'bg-blue-100/50 border-slate-300',
+    'Logistics & Supply Chain': 'bg-gray-200/50 border-orange-300',
+    'Professional Services (Accounting, Legal, etc.)': 'bg-blue-200/50 border-gray-300',
+    'Textiles & Apparel': 'bg-rose-100/50 border-stone-300',
+    'Other': 'bg-slate-100/50 border-slate-200',
 };
 
 const categoryButtonColors: { [key: string]: string } = {
@@ -167,28 +167,14 @@ const PortalCard = ({
           <p className="text-muted-foreground text-sm">{description}</p>
         </CardContent>
         <CardContent>
-          <Button>
-            <LogIn className="mr-2 h-4 w-4" /> {loginText}
+          <Button asChild>
+             <a href={url} target="_blank" rel="noopener noreferrer">
+                 <LogIn className="mr-2 h-4 w-4" /> {loginText}
+             </a>
           </Button>
         </CardContent>
       </Card>
     </DialogTrigger>
-    <DialogContent className="max-w-[90vw] md:max-w-4xl lg:max-w-6xl h-[90vh] flex flex-col p-0">
-      <DialogHeader className="p-4 border-b flex-row flex justify-between items-center">
-        <DialogTitle className="flex items-center gap-2">
-          <Globe className="w-5 h-5" />
-          {title}
-        </DialogTitle>
-        <DialogClose asChild>
-          <Button variant="ghost" size="icon">
-            <X className="h-4 w-4" />
-          </Button>
-        </DialogClose>
-      </DialogHeader>
-      <div className="flex-1 overflow-hidden">
-        <iframe src={url} className="w-full h-full border-0" title={title} />
-      </div>
-    </DialogContent>
   </Dialog>
 );
 
@@ -243,15 +229,18 @@ export default function GrowthHubPage() {
   
   useEffect(() => {
     setIsLoadingMsmes(true);
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('role', '==', 'msme'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const profilesRef = collection(db, 'msme-profiles');
+    const unsubscribe = onSnapshot(profilesRef, (snapshot) => {
       const msmes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as (UserProfile & { id: string })[];
       setMsmeList(msmes);
       setIsLoadingMsmes(false);
+    }, (error) => {
+        console.error("Error fetching MSME profiles: ", error);
+        toast({variant: 'destructive', title: 'Error', description: 'Could not load marketplace profiles. Check security rules.'});
+        setIsLoadingMsmes(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
 
   const handleContactClick = (msme: any) => {
     if (!user) {
@@ -307,37 +296,9 @@ export default function GrowthHubPage() {
           Choose a business structure (Sole Proprietorship, LLP, Pvt. Ltd.) and
           complete the legal registration process. Check for state-specific
           portals like{' '}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="link"
-                className="p-0 h-auto text-primary underline"
-              >
-                APMSME ONE
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[90vw] md:max-w-4xl lg:max-w-6xl h-[90vh] flex flex-col p-0">
-              <DialogHeader className="p-4 border-b flex-row flex justify-between items-center">
-                <DialogTitle className="flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
-                  {translations.launchpad.statePortals.apmsmeone.title}
-                </DialogTitle>
-                <DialogClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </DialogClose>
-              </DialogHeader>
-              <div className="flex-1 overflow-hidden">
-                <iframe
-                  src="https://apmsmeone.ap.gov.in/MSMEONE/LoginPages/HomeLogin.aspx"
-                  className="w-full h-full border-0"
-                  title={translations.launchpad.statePortals.apmsmeone.title}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-          .
+          <a href="https://apmsmeone.ap.gov.in/MSMEONE/LoginPages/HomeLogin.aspx" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+            APMSME ONE
+          </a>.
         </>
       ),
     },
