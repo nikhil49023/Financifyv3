@@ -74,6 +74,7 @@ import { app } from '@/lib/firebase';
 import { generateFinBiteAction } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const db = getFirestore(app);
 
@@ -90,6 +91,21 @@ const msmeServiceCategories = [
   'Textiles & Apparel',
   'Other',
 ];
+
+const categoryColors: { [key: string]: string } = {
+  'IT / Software Services': 'bg-blue-100/50 border-blue-200',
+  'Retail / E-commerce': 'bg-purple-100/50 border-purple-200',
+  'Construction / Real Estate': 'bg-yellow-100/50 border-yellow-200',
+  'Manufacturing': 'bg-orange-100/50 border-orange-200',
+  'Food & Agro Processing': 'bg-green-100/50 border-green-200',
+  'Hospitality & Tourism': 'bg-teal-100/50 border-teal-200',
+  'Healthcare & Pharma': 'bg-cyan-100/50 border-cyan-200',
+  'Logistics & Supply Chain': 'bg-indigo-100/50 border-indigo-200',
+  'Professional Services (Accounting, Legal, etc.)': 'bg-gray-100/50 border-gray-200',
+  'Textiles & Apparel': 'bg-pink-100/50 border-pink-200',
+  'Other': 'bg-slate-100/50 border-slate-200',
+};
+
 
 const PortalCard = ({
   title,
@@ -545,7 +561,7 @@ export default function GrowthHubPage() {
              <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
                     <Briefcase />
-                    MSME Marketplace
+                    Marketplace
                 </CardTitle>
                 <CardDescription>
                     Find and connect with services offered by MSMEs in the Artha community.
@@ -619,7 +635,7 @@ export default function GrowthHubPage() {
                 ) : filteredMsmes.length > 0 ? (
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {filteredMsmes.map((msme) => (
-                          <Card key={msme.id}>
+                          <Card key={msme.id} className={cn('glassmorphic', categoryColors[msme.msmeService || 'Other'])}>
                               <CardHeader>
                                   <CardTitle className="text-base">{msme.msmeName}</CardTitle>
                                   <CardDescription>{msme.msmeLocation}</CardDescription>
