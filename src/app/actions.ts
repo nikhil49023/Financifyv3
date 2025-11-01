@@ -19,7 +19,12 @@ import type {
   GenerateRagAnswerOutput,
 } from '@/ai/schemas/rag-answer';
 import {generateDpr} from '@/ai/flows/generate-dpr';
-import type {GenerateDprInput, GenerateDprOutput} from '@/ai/schemas/dpr';
+import type {
+    GenerateDprInput,
+    GenerateDprOutput,
+    GenerateDprSectionInput,
+    GenerateDprSectionOutput
+} from '@/ai/schemas/dpr';
 import {generateFinBite} from '@/ai/flows/generate-fin-bite';
 import type {GenerateFinBiteOutput} from '@/ai/schemas/fin-bite';
 import {generateBudgetReport} from '@/ai/flows/generate-budget-report';
@@ -29,6 +34,7 @@ import type {
 } from '@/ai/schemas/budget-report';
 import {generateTts} from '@/ai/flows/generate-tts';
 import type {GenerateTtsInput, GenerateTtsOutput} from '@/ai/schemas/tts';
+import { generateDprSection } from '@/ai/flows/generate-dpr-section';
 
 export async function extractTransactionsAction(
   input: ExtractTransactionsInput
@@ -104,13 +110,13 @@ export async function generateRagAnswerAction(
 }
 
 export async function generateDprAction(
-  input: GenerateDprInput
+  input: GenerateDprSectionInput
 ): Promise<
-  | {success: true; data: GenerateDprOutput}
+  | {success: true; data: GenerateDprSectionOutput}
   | {success: false; error: string}
 > {
   try {
-    const result = await generateDpr(input);
+    const result = await generateDprSection(input);
     return {success: true, data: result};
   } catch (error: any) {
     console.error(error);

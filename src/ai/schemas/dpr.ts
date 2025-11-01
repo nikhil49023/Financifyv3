@@ -2,15 +2,30 @@
 import {z} from 'zod';
 import { GenerateInvestmentIdeaAnalysisOutputSchema } from './investment-idea-analysis';
 
-// Input for the consolidated DPR generation flow
+// Input for the original, full DPR generation flow (deprecated)
 export const GenerateDprInputSchema = z.object({
-  // The 'idea' can now be a simple string or the full analysis object
   idea: z.union([z.string(), GenerateInvestmentIdeaAnalysisOutputSchema]).describe("The user's initial business idea or the full analysis object."),
   promoterName: z.string().describe("The name of the entrepreneur."),
 });
 export type GenerateDprInput = z.infer<typeof GenerateDprInputSchema>;
 
-// This schema is now internal to the flow and doesn't need to be exported.
+// Input for the new, section-by-section DPR generation flow
+export const GenerateDprSectionInputSchema = z.object({
+    idea: GenerateInvestmentIdeaAnalysisOutputSchema.describe("The full analysis object for the business idea."),
+    promoterName: z.string().describe("The name of the entrepreneur."),
+    section: z.string().describe("The specific section of the DPR to generate (e.g., 'executiveSummary')."),
+    prompt: z.string().describe("The detailed prompt for the AI to generate the content for this specific section.")
+});
+export type GenerateDprSectionInput = z.infer<typeof GenerateDprSectionInputSchema>;
+
+// Output for the new, section-by-section DPR generation flow
+export const GenerateDprSectionOutputSchema = z.object({
+    content: z.union([z.string(), z.any()])
+        .describe("The generated content for the section. Can be a string for text-based sections or a JSON object for financial projections.")
+});
+export type GenerateDprSectionOutput = z.infer<typeof GenerateDprSectionOutputSchema>;
+
+
 const FinancialProjectionsSchema = z.object({
   summaryText: z
     .string()

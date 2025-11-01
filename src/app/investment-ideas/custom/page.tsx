@@ -1,3 +1,4 @@
+
 'use client';
 
 import {useEffect, useState, Suspense, useCallback} from 'react';
@@ -103,9 +104,9 @@ function InvestmentIdeaContent() {
 
     localStorage.setItem('dprAnalysis', JSON.stringify(fullAnalysis));
     router.push(
-      `/generate-dpr?idea=${encodeURIComponent(
+      `/customize-dpr?idea=${encodeURIComponent(
         title
-      )}`
+      )}&name=${encodeURIComponent(user?.displayName || 'Entrepreneur')}`
     );
   };
 

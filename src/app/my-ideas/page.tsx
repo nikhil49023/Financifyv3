@@ -56,7 +56,7 @@ export default function MyIdeasPage() {
     if (!idea || !user) return;
     localStorage.setItem('dprAnalysis', JSON.stringify(idea));
     router.push(
-      `/generate-dpr?idea=${encodeURIComponent(
+      `/customize-dpr?idea=${encodeURIComponent(
         idea.title
       )}&name=${encodeURIComponent(user?.displayName || 'Entrepreneur')}`
     );
