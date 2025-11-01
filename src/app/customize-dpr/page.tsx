@@ -12,31 +12,19 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
-import {
   ArrowLeft,
   ArrowRight,
   Banknote,
   FileText,
   Loader2,
   Sparkles,
-  Wand2,
 } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
 import { generateDprAction } from '@/app/actions';
 import Link from 'next/link';
-import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const dprChapters = [
     { key: 'executiveSummary', title: 'Executive Summary', prompt: 'Summarize the entire business project, including its mission, product/service, target market, and financial highlights. This should be a concise overview.' },
@@ -47,13 +35,12 @@ const dprChapters = [
     { key: 'locationAndSite', title: 'Location and Site', prompt: 'Describe the proposed location for the business, justifying its suitability in terms of infrastructure, accessibility, and market proximity.' },
     { key: 'technicalFeasibility', title: 'Technical Feasibility', prompt: 'Detail the technology, machinery, and processes required for production or service delivery. Include raw material sourcing.' },
     { key: 'implementationSchedule', title: 'Implementation Schedule', prompt: 'Outline a timeline for key project milestones, from setup to launch and full operation.' },
-    { key: 'financialProjections', title: 'Financial Projections', prompt: 'Generate realistic financial projections including project cost, means of finance, cost breakdown, yearly sales and profit, profitability analysis, cash flow, loan repayment, and break-even analysis. This must be a detailed, multi-part section.' },
+    { key: 'financialProjections', title: 'Financial Projections', prompt: 'Generate realistic financial projections including project cost, means of finance, cost breakdown, yearly sales and profit, profitability analysis, cash flow, loan repayment, and break-even analysis. This must be a detailed, multi-part JSON object.' },
     { key: 'swotAnalysis', title: 'SWOT Analysis', prompt: 'Conduct a SWOT analysis (Strengths, Weaknesses, Opportunities, Threats) for the business.' },
     { key: 'regulatoryCompliance', title: 'Regulatory & Legal Compliance', prompt: 'List the licenses, permits, and other legal requirements applicable to the business in India.' },
     { key: 'riskAssessment', title: 'Risk Assessment', prompt: 'Identify potential risks (market, operational, financial) and propose mitigation strategies.' },
     { key: 'annexures', title: 'Annexures', prompt: 'List any supporting documents that would be attached, such as market research data, promoter CVs, or quotations for machinery.' }
 ];
-
 
 type DprReport = {
     [key: string]: string | object;
@@ -64,18 +51,13 @@ function CustomizeDPRContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const [step, setStep] = useState(0); // 0 = purpose, 1 = section-by-section
-  const [currentChapter, setCurrentChapter] = useState(0);
+  const [step, setStep] = useState(0); // 0 = purpose, 1 = generation
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [currentGenerationStatus, setCurrentGenerationStatus] = useState('Starting...');
+
   const [analysis, setAnalysis] = useState<GenerateInvestmentIdeaAnalysisOutput | null>(null);
   const [promoterName, setPromoterName] = useState('');
-
-  const [report, setReport] = useState<DprReport>({});
-  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [toolkitOpen, setToolkitOpen] = useState(false);
-  const [refinementPrompt, setRefinementPrompt] = useState('');
-
 
   useEffect(() => {
     const ideaTitle = searchParams.get('idea');
@@ -102,77 +84,55 @@ function CustomizeDPRContent() {
     if (name) {
       setPromoterName(name);
     }
-
   }, [searchParams, toast]);
 
-  const handleGeneration = async (isRefinement = false) => {
+  const startGeneration = async () => {
     if (!analysis || !promoterName) return;
 
-    setIsGenerating(true);
-    setToolkitOpen(false);
-    const chapter = dprChapters[currentChapter];
-    const existingContent = report[chapter.key];
+    setStep(1); // Move to generation view
+    let generatedReport: DprReport = {};
 
-    try {
-        const result = await generateDprAction({
-            idea: analysis,
-            promoterName: promoterName,
-            section: chapter.key,
-            basePrompt: chapter.prompt,
-            existingContent: isRefinement ? existingContent : undefined,
-            refinementPrompt: isRefinement ? refinementPrompt : undefined,
-        });
+    for (let i = 0; i < dprChapters.length; i++) {
+        const chapter = dprChapters[i];
+        setCurrentGenerationStatus(`Generating "${chapter.title}"...`);
+        
+        try {
+            const result = await generateDprAction({
+                idea: analysis,
+                promoterName,
+                section: chapter.key,
+                basePrompt: chapter.prompt
+            });
 
-        if (result.success) {
-            const content = result.data.content;
-            setReport(prev => ({...prev, [chapter.key]: content}));
-            toast({ title: 'Success', description: `Content for "${chapter.title}" has been ${isRefinement ? 'refined' : 'generated'}.` });
-        } else {
-            throw new Error(result.error || `Failed to generate ${chapter.title}`);
+            if (result.success) {
+                generatedReport[chapter.key] = result.data.content;
+                setGenerationProgress(((i + 1) / dprChapters.length) * 100);
+            } else {
+                throw new Error(result.error || `Failed to generate ${chapter.title}`);
+            }
+        } catch (e: any) {
+            setError(`Failed during section: ${chapter.title}. Error: ${e.message}`);
+            toast({ variant: 'destructive', title: `Error Generating ${chapter.title}`, description: e.message });
+            return; // Stop generation on error
         }
-
-    } catch (e: any) {
-        toast({
-            variant: 'destructive',
-            title: `Error Generating ${chapter.title}`,
-            description: e.message
-        });
-    } finally {
-        setIsGenerating(false);
-        setRefinementPrompt('');
     }
-  };
-  
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const chapterKey = dprChapters[currentChapter].key;
-      setReport(prev => ({...prev, [chapterKey]: e.target.value}));
-  }
 
-  const handleNext = () => {
-    if (currentChapter < dprChapters.length - 1) {
-      setCurrentChapter(prev => prev + 1);
-    } else {
-      // Final step, save to local storage and navigate to report page
-      localStorage.setItem('generatedDPR', JSON.stringify(report));
-      router.push(`/dpr-report?idea=${encodeURIComponent(analysis?.title || '')}`);
-    }
+    setCurrentGenerationStatus('Finalizing Report...');
+    localStorage.setItem('generatedDPR', JSON.stringify(generatedReport));
+    
+    // Brief delay before redirecting
+    setTimeout(() => {
+        router.push(`/dpr-report?idea=${encodeURIComponent(analysis.title || '')}`);
+    }, 1000);
   };
 
-  const handleBack = () => {
-    if (currentChapter > 0) {
-      setCurrentChapter(prev => prev - 1);
-    }
-  };
-
-  const progress = ((currentChapter + 1) / dprChapters.length) * 100;
-  
   if (error) {
       return (
           <div className="text-center py-10">
               <p className="text-destructive font-semibold">An error occurred</p>
               <p className="text-muted-foreground mt-2">{error}</p>
-              <Button variant="outline" onClick={() => router.push('/brainstorm')} className="mt-4">
-                  Back to Brainstorm
+              <Button variant="outline" asChild className="mt-4">
+                  <Link href="/brainstorm">Back to Brainstorm</Link>
               </Button>
           </div>
       );
@@ -182,128 +142,64 @@ function CustomizeDPRContent() {
       return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
   }
 
-  if (step === 0) {
+  if (step === 1) {
     return (
-      <div className="max-w-2xl mx-auto text-center space-y-8">
-        <h1 className="text-3xl font-bold">What is the purpose of this report?</h1>
-        <p className="text-muted-foreground">
-          Select a format below. The AI will tailor the DPR structure and tone for your chosen purpose.
-        </p>
+        <div className="max-w-2xl mx-auto text-center space-y-8">
+            <Sparkles className="h-16 w-16 mx-auto text-primary" />
+            <h1 className="text-3xl font-bold">Generating Your DPR</h1>
+            <p className="text-muted-foreground">The AI is building your report. This may take a few minutes. Please don't navigate away from this page.</p>
+            <Card>
+                <CardContent className="pt-6 space-y-4">
+                    <Progress value={generationProgress} className="w-full" />
+                    <p className="text-center text-sm text-muted-foreground">{currentGenerationStatus}</p>
+                    <div className="space-y-2 pt-4">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
+
+  return (
+      <div className="max-w-2xl mx-auto space-y-8">
+         <Button variant="ghost" asChild className="-ml-4">
+          <Link href="/brainstorm">
+            <ArrowLeft className="mr-2" />
+            Back to Brainstorm
+          </Link>
+        </Button>
+        <div className="text-center">
+            <h1 className="text-3xl font-bold">What is the purpose of this report?</h1>
+            <p className="text-muted-foreground mt-2">
+            Select a format below. The AI will tailor the DPR structure and tone for your chosen purpose.
+            </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card 
-                className="p-6 text-center cursor-pointer hover:border-primary transition-colors"
-                onClick={() => setStep(1)}
+                className="p-6 text-center cursor-pointer hover:border-primary transition-colors flex flex-col items-center justify-center gap-4"
+                onClick={startGeneration}
             >
-                <Banknote className="h-12 w-12 mx-auto text-primary mb-4" />
+                <Banknote className="h-12 w-12 text-primary" />
                 <h3 className="font-semibold text-lg">Bank Loan</h3>
+                <ArrowRight className="text-muted-foreground" />
             </Card>
-             <Card className="p-6 text-center cursor-not-allowed bg-muted/50 opacity-50">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+             <Card className="p-6 text-center cursor-not-allowed bg-muted/50 opacity-50 flex flex-col items-center justify-center gap-4">
+                <FileText className="h-12 w-12 text-muted-foreground" />
                 <h3 className="font-semibold text-lg text-muted-foreground">Govt. Scheme</h3>
                 <p className="text-xs text-muted-foreground">(Coming Soon)</p>
             </Card>
-             <Card className="p-6 text-center cursor-not-allowed bg-muted/50 opacity-50">
-                <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+             <Card className="p-6 text-center cursor-not-allowed bg-muted/50 opacity-50 flex flex-col items-center justify-center gap-4">
+                <Sparkles className="h-12 w-12 text-muted-foreground" />
                 <h3 className="font-semibold text-lg text-muted-foreground">Social Article</h3>
                  <p className="text-xs text-muted-foreground">(Coming Soon)</p>
             </Card>
         </div>
       </div>
     );
-  }
-
-  const chapter = dprChapters[currentChapter];
-  const contentForChapter = report[chapter.key];
-  const isFinancials = chapter.key === 'financialProjections';
-
-  return (
-    <div className="space-y-6">
-        <Button variant="ghost" asChild className="-ml-4">
-          <Link href="/brainstorm">
-            <ArrowLeft className="mr-2" />
-            Back to Brainstorm
-          </Link>
-        </Button>
-        
-        <Progress value={progress} />
-
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-2xl">{`${currentChapter + 1}. ${chapter.title}`}</CardTitle>
-                <CardDescription>{chapter.prompt}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    <Dialog open={toolkitOpen} onOpenChange={setToolkitOpen}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Wand2 className="mr-2 h-4 w-4" />
-                          AI Toolkit
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>AI Toolkit: {chapter.title}</DialogTitle>
-                          <DialogDescription>
-                            Use the AI to generate or refine the content for this section.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-6 py-4">
-                          <div className="space-y-2">
-                             <Button onClick={() => handleGeneration(false)} className="w-full">
-                              <Sparkles className="mr-2" />
-                              Auto-Generate Content
-                            </Button>
-                            <p className="text-xs text-muted-foreground text-center">Generates the initial content for this section from scratch.</p>
-                          </div>
-                          
-                           <div className="space-y-4">
-                            <Label htmlFor="refinement-prompt">Refine with AI</Label>
-                            <Textarea 
-                                id="refinement-prompt"
-                                value={refinementPrompt}
-                                onChange={(e) => setRefinementPrompt(e.target.value)}
-                                placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
-                            />
-                            <Button onClick={() => handleGeneration(true)} disabled={!refinementPrompt || !contentForChapter} className="w-full">
-                                Refine
-                            </Button>
-                            <p className="text-xs text-muted-foreground text-center">Refines the existing text in the editor based on your prompt.</p>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-
-                    {isGenerating && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin"/>
-                            <span>AI is writing...</span>
-                        </div>
-                    )}
-                    
-                    <Textarea 
-                        value={typeof contentForChapter === 'string' ? contentForChapter : JSON.stringify(contentForChapter, null, 2)}
-                        onChange={(e) => handleTextChange(e as any)}
-                        rows={isFinancials ? 20 : 10}
-                        placeholder={isFinancials ? 'Financial data will be generated as a JSON object.' : 'AI-generated content will appear here, or you can write your own.'}
-                        disabled={isGenerating}
-                    />
-                     {isFinancials && <p className="text-sm text-muted-foreground">The financial projections section contains complex data and should be auto-generated. Manual editing is not recommended.</p>}
-                </div>
-            </CardContent>
-        </Card>
-        <div className="flex justify-between">
-            <Button variant="outline" onClick={handleBack} disabled={currentChapter === 0}>
-                <ArrowLeft className="mr-2" /> Back
-            </Button>
-            <Button onClick={handleNext} disabled={!contentForChapter}>
-                 {currentChapter === dprChapters.length - 1 ? 'Finish & View Report' : 'Next'} <ArrowRight className="ml-2" />
-            </Button>
-        </div>
-    </div>
-  );
 }
-
 
 export default function CustomizeDPRPage() {
     return (
