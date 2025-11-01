@@ -93,16 +93,16 @@ const msmeServiceCategories = [
 ];
 
 const categoryColors: { [key: string]: string } = {
-  'IT / Software Services': 'bg-blue-100/50 border-blue-200',
-  'Retail / E-commerce': 'bg-purple-100/50 border-purple-200',
-  'Construction / Real Estate': 'bg-yellow-100/50 border-yellow-200',
-  'Manufacturing': 'bg-orange-100/50 border-orange-200',
-  'Food & Agro Processing': 'bg-green-100/50 border-green-200',
-  'Hospitality & Tourism': 'bg-teal-100/50 border-teal-200',
-  'Healthcare & Pharma': 'bg-cyan-100/50 border-cyan-200',
-  'Logistics & Supply Chain': 'bg-indigo-100/50 border-indigo-200',
-  'Professional Services (Accounting, Legal, etc.)': 'bg-gray-100/50 border-gray-200',
-  'Textiles & Apparel': 'bg-pink-100/50 border-pink-200',
+  'Construction / Real Estate': 'bg-slate-200/50 border-orange-300',
+  'IT / Software Services': 'bg-blue-200/50 border-blue-300',
+  'Retail / E-commerce': 'bg-red-100/50 border-red-200',
+  'Manufacturing': 'bg-sky-200/50 border-gray-300',
+  'Food & Agro Processing': 'bg-yellow-100/50 border-green-300',
+  'Hospitality & Tourism': 'bg-cyan-100/50 border-rose-300',
+  'Healthcare & Pharma': 'bg-blue-100/50 border-slate-300',
+  'Logistics & Supply Chain': 'bg-gray-200/50 border-orange-300',
+  'Professional Services (Accounting, Legal, etc.)': 'bg-blue-200/50 border-gray-300',
+  'Textiles & Apparel': 'bg-rose-100/50 border-stone-300',
   'Other': 'bg-slate-100/50 border-slate-200',
 };
 
