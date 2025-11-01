@@ -58,40 +58,6 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-
-  .theme-default {
-    /* Uses the root theme */
-  }
-
-  .theme-corporate-blue {
-    --background: 216 100% 98%; /* #F5F9FF */
-    --foreground: 0 0% 13%; /* #222222 */
-    --card: 0 0% 100%;
-    --card-foreground: 234 63% 30%; /* #1A237E - For Headings */
-    --primary: 206 79% 45%; /* #1976D2 - For Links/Buttons */
-    --primary-foreground: 0 0% 100%;
-    --border: 210 20% 85%;
-  }
-
-  .theme-green-gold {
-    --background: 137 100% 98%; /* #F5FFF8 */
-    --foreground: 0 0% 20%; /* #333333 */
-    --card: 0 0% 100%;
-    --card-foreground: 165 100% 15%; /* #004D40 - For Headings */
-    --primary: 45 100% 49%; /* #FFD700 - For Links/Buttons */
-    --primary-foreground: 165 100% 15%;
-    --border: 120 10% 88%;
-  }
-  
-  .theme-executive-silver {
-    --background: 210 17% 98%; /* #F8F9FA */
-    --foreground: 0 0% 27%; /* #444444 */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%; /* #000000 - For Headings */
-    --primary: 204 70% 45%; /* #2980B9 - For Links/Buttons */
-    --primary-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-  }
 }
 
 @layer base {

@@ -93,20 +93,6 @@ const msmeServiceCategories = [
   'Other',
 ];
 
-const categoryColors: { [key: string]: string } = {
-    'Construction / Real Estate': 'bg-slate-200/50 border-orange-300',
-    'IT / Software Services': 'bg-blue-200/50 border-blue-300',
-    'Retail / E-commerce': 'bg-red-100/50 border-red-200',
-    'Manufacturing': 'bg-sky-200/50 border-gray-300',
-    'Food & Agro Processing': 'bg-yellow-100/50 border-green-300',
-    'Hospitality & Tourism': 'bg-cyan-100/50 border-rose-300',
-    'Healthcare & Pharma': 'bg-blue-100/50 border-slate-300',
-    'Logistics & Supply Chain': 'bg-gray-200/50 border-orange-300',
-    'Professional Services (Accounting, Legal, etc.)': 'bg-blue-200/50 border-gray-300',
-    'Textiles & Apparel': 'bg-rose-100/50 border-stone-300',
-    'Other': 'bg-slate-100/50 border-slate-200',
-};
-
 const categoryButtonColors: { [key: string]: string } = {
     'Construction / Real Estate': 'bg-orange-500 hover:bg-orange-600 text-white',
     'IT / Software Services': 'bg-blue-600 hover:bg-blue-700 text-white',
@@ -133,46 +119,46 @@ const PortalCard = ({
   url: string;
   loginText: string;
 }) => (
-  <Card className="h-full flex flex-col hover:border-primary transition-colors">
-    <CardHeader className="flex flex-row items-center gap-4">
-      <svg
-        className="w-12 h-12 text-primary"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M12 2L3 7V17L12 22L21 17V7L12 2Z"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinejoin="round"
-        ></path>
-        <path
-          d="M3.5 7.5L12 12.5L20.5 7.5"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinejoin="round"
-        ></path>
-        <path
-          d="M12 21.5V12.5"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinejoin="round"
-        ></path>
-      </svg>
-      <CardTitle className="text-lg">{title}</CardTitle>
-    </CardHeader>
-    <CardContent className="flex-1">
-      <p className="text-muted-foreground text-sm">{description}</p>
-    </CardContent>
-    <CardContent>
-      <Button asChild>
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          <LogIn className="mr-2 h-4 w-4" /> {loginText}
-        </a>
-      </Button>
-    </CardContent>
-  </Card>
+    <a href={url} target="_blank" rel="noopener noreferrer" className="block h-full">
+        <Card className="h-full flex flex-col hover:border-primary transition-colors">
+            <CardHeader className="flex flex-row items-center gap-4">
+            <svg
+                className="w-12 h-12 text-primary"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                d="M12 2L3 7V17L12 22L21 17V7L12 2Z"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinejoin="round"
+                ></path>
+                <path
+                d="M3.5 7.5L12 12.5L20.5 7.5"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinejoin="round"
+                ></path>
+                <path
+                d="M12 21.5V12.5"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinejoin="round"
+                ></path>
+            </svg>
+            <CardTitle className="text-lg">{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+            <p className="text-muted-foreground text-sm">{description}</p>
+            </CardContent>
+            <CardContent>
+            <Button className="w-full">
+                <LogIn className="mr-2 h-4 w-4" /> {loginText}
+            </Button>
+            </CardContent>
+        </Card>
+    </a>
 );
 
 
@@ -597,7 +583,7 @@ export default function GrowthHubPage() {
                 ) : filteredMsmes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredMsmes.map((msme) => (
-                           <Card key={msme.id} className={cn("flex flex-col", categoryColors[msme.msmeService || 'Other'])}>
+                           <Card key={msme.id} className="glassmorphic flex flex-col hover:border-primary transition-colors duration-300">
                                 <CardHeader>
                                     <CardTitle className="text-lg">{msme.msmeName}</CardTitle>
                                     <CardDescription>{msme.msmeService}</CardDescription>
@@ -611,20 +597,21 @@ export default function GrowthHubPage() {
                                         <MapPin className="h-4 w-4" />
                                         <span>{msme.msmeLocation}</span>
                                     </div>
-                                    {msme.msmeWebsite && (
-                                        <div className="flex items-center text-sm text-muted-foreground gap-2">
-                                            <LinkIcon className="h-4 w-4" />
-                                            <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">
-                                                {msme.msmeWebsite}
-                                            </a>
-                                        </div>
-                                    )}
+                                    
                                 </CardContent>
-                                <CardFooter>
-                                    <Button onClick={() => handleContactClick(msme)} className={cn("w-full", categoryButtonColors[msme.msmeService || 'Other'])}>
+                                <CardFooter className="flex-col sm:flex-row gap-2">
+                                    <Button onClick={() => handleContactClick(msme)} className="w-full">
                                         <MessageSquare className="mr-2"/>
                                         Contact
                                     </Button>
+                                    {msme.msmeWebsite && (
+                                         <Button asChild variant="outline" className="w-full">
+                                            <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer">
+                                                <LinkIcon className="mr-2"/>
+                                                Website
+                                            </a>
+                                        </Button>
+                                    )}
                                 </CardFooter>
                            </Card>
                         ))}
@@ -675,26 +662,12 @@ export default function GrowthHubPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <a href="https://apmsmeone.ap.gov.in/MSMEONE/LoginPages/HomeLogin.aspx" target="_blank" rel="noopener noreferrer" className="block">
-                <Card className="h-full flex flex-col hover:border-primary transition-colors">
-                    <CardHeader className="flex flex-row items-center gap-4">
-                    <svg className="w-12 h-12 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"></path>
-                        <path d="M3.5 7.5L12 12.5L20.5 7.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"></path>
-                        <path d="M12 21.5V12.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"></path>
-                    </svg>
-                    <CardTitle className="text-lg">{translations.launchpad.statePortals.apmsmeone.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                    <p className="text-muted-foreground text-sm">{translations.launchpad.statePortals.apmsmeone.description}</p>
-                    </CardContent>
-                    <CardFooter>
-                        <Button asChild className="w-full">
-                            <span><LogIn className="mr-2 h-4 w-4" /> {translations.launchpad.statePortals.loginToPortal}</span>
-                        </Button>
-                    </CardFooter>
-                </Card>
-            </a>
+            <PortalCard
+                title={translations.launchpad.statePortals.apmsmeone.title}
+                description={translations.launchpad.statePortals.apmsmeone.description}
+                url="https://apmsmeone.ap.gov.in/MSMEONE/LoginPages/HomeLogin.aspx"
+                loginText={translations.launchpad.statePortals.loginToPortal}
+            />
           </CardContent>
         </Card>
 
@@ -882,5 +855,3 @@ export default function GrowthHubPage() {
     </div>
   );
 }
-
-    
