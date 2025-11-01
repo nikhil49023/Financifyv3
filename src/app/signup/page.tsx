@@ -186,7 +186,7 @@ export default function SignUpPage() {
 
       // Create a user profile document in Firestore
       const userDocRef = doc(db, 'users', user.uid);
-      const profileData: any = {
+      const privateProfileData: any = {
         uid: user.uid,
         displayName: formData.displayName,
         email: user.email,
@@ -196,14 +196,28 @@ export default function SignUpPage() {
       };
 
       if (formData.role === 'msme') {
-        profileData.msmeName = formData.msmeName;
-        profileData.msmeService = formData.msmeService;
-        profileData.msmeLocation = formData.msmeLocation;
-        profileData.ownerContact = formData.ownerContact;
-        profileData.msmeWebsite = formData.msmeWebsite;
+        privateProfileData.msmeName = formData.msmeName;
+        privateProfileData.msmeService = formData.msmeService;
+        privateProfileData.msmeLocation = formData.msmeLocation;
+        privateProfileData.ownerContact = formData.ownerContact;
+        privateProfileData.msmeWebsite = formData.msmeWebsite;
+        
+        // Also create the public MSME profile for the marketplace
+        const msmeProfileRef = doc(db, 'msme-profiles', user.uid);
+        const publicProfileData = {
+           uid: user.uid,
+           displayName: formData.displayName,
+           email: user.email,
+           msmeName: formData.msmeName,
+           msmeService: formData.msmeService,
+           msmeLocation: formData.msmeLocation,
+           ownerContact: formData.ownerContact,
+           msmeWebsite: formData.msmeWebsite,
+        };
+        await setDoc(msmeProfileRef, publicProfileData, { merge: true });
       }
 
-      await setDoc(userDocRef, profileData);
+      await setDoc(userDocRef, privateProfileData);
 
       toast({
         title: 'Account Created!',
@@ -407,3 +421,5 @@ export default function SignUpPage() {
     </div>
   );
 }
+
+    
