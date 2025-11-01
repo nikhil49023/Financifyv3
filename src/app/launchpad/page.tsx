@@ -189,7 +189,7 @@ export default function GrowthHubPage() {
   const { toast } = useToast();
 
   const [msmeList, setMsmeList] = useState<(UserProfile & { id: string })[]>([]);
-  const [isLoadingMsmes, setIsLoadingMsmes] = useState(false);
+  const [isLoadingMsmes, setIsLoadingMsmes] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMsme, setSelectedMsme] = useState<any | null>(null);
 
@@ -236,7 +236,7 @@ export default function GrowthHubPage() {
       setIsLoadingMsmes(false);
     }, (error) => {
         console.error("Error fetching MSME profiles: ", error);
-        toast({variant: 'destructive', title: 'Error', description: 'Could not load marketplace profiles. Check security rules.'});
+        toast({variant: 'destructive', title: 'Error', description: 'Could not load marketplace profiles.'});
         setIsLoadingMsmes(false);
     });
     return () => unsubscribe();
@@ -252,7 +252,12 @@ export default function GrowthHubPage() {
   
   const uniqueLocations = useMemo(() => {
     const locations = new Set(msmeList.map(msme => msme.msmeLocation).filter(Boolean));
-    return Array.from(locations);
+    return Array.from(locations).sort();
+  }, [msmeList]);
+
+  const uniqueServices = useMemo(() => {
+    const services = new Set(msmeList.map(msme => msme.msmeService).filter(Boolean));
+    return Array.from(services).sort();
   }, [msmeList]);
 
 
@@ -265,7 +270,7 @@ export default function GrowthHubPage() {
       const serviceMatch = filterService ? msme.msmeService === filterService : true;
       const locationMatch = filterLocation ? msme.msmeLocation === filterLocation : true;
 
-      return searchMatch && serviceMatch && locationMatch && msme.id !== user?.uid;
+      return searchMatch && serviceMatch && locationMatch && msme.uid !== user?.uid;
     }
   );
 
@@ -550,7 +555,7 @@ export default function GrowthHubPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <Button type="submit"><Search /></Button>
+                    <Button type="button" variant="ghost" size="icon"><Search /></Button>
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="outline"><Filter className="mr-2 h-4 w-4"/> Filters</Button>
@@ -567,7 +572,7 @@ export default function GrowthHubPage() {
                                             <SelectValue placeholder="All Services" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {msmeServiceCategories.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
+                                            {uniqueServices.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -606,7 +611,7 @@ export default function GrowthHubPage() {
                     >
                         <CarouselContent className="-ml-2">
                             {filteredMsmes.map((msme) => (
-                                <CarouselItem key={msme.id} className="pl-2 md:basis-1/2 lg:basis-1/3">
+                                <CarouselItem key={msme.uid} className="pl-2 md:basis-1/2 lg:basis-1/3">
                                     <div className="p-1 h-full">
                                         <Card className={cn('glassmorphic h-full flex flex-col', categoryColors[msme.msmeService || 'Other'])}>
                                             <CardHeader>
@@ -878,3 +883,5 @@ export default function GrowthHubPage() {
     </div>
   );
 }
+
+    
