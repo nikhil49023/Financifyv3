@@ -3,21 +3,13 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
-  ArrowRight,
   Banknote,
-  FileText,
   Loader2,
   Sparkles,
+  FileText,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
@@ -25,6 +17,8 @@ import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investme
 import { generateDprAction } from '@/app/actions';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/context/auth-provider';
 
 const dprChapters = [
     { key: 'executiveSummary', title: 'Executive Summary', prompt: 'Summarize the entire business project, including its mission, product/service, target market, and financial highlights. This should be a concise overview.' },
@@ -50,6 +44,7 @@ function CustomizeDPRContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const [step, setStep] = useState(0); // 0 = purpose, 1 = generation
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -83,8 +78,12 @@ function CustomizeDPRContent() {
     
     if (name) {
       setPromoterName(name);
+    } else if (user?.displayName) {
+      setPromoterName(user.displayName);
+    } else {
+      setError('Could not identify promoter name.');
     }
-  }, [searchParams, toast]);
+  }, [searchParams, toast, user]);
 
   const startGeneration = async () => {
     if (!analysis || !promoterName) return;
@@ -184,7 +183,7 @@ function CustomizeDPRContent() {
             >
                 <Banknote className="h-12 w-12 text-primary" />
                 <h3 className="font-semibold text-lg">Bank Loan</h3>
-                <ArrowRight className="text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Generate the full report optimized for bank loan applications.</p>
             </Card>
              <Card className="p-6 text-center cursor-not-allowed bg-muted/50 opacity-50 flex flex-col items-center justify-center gap-4">
                 <FileText className="h-12 w-12 text-muted-foreground" />

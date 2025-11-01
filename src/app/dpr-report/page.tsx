@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,9 @@ import {
   Save,
   Wand2,
   Sparkles,
+  Edit,
+  X,
+  ImageIcon,
 } from 'lucide-react';
 import {
   Dialog,
@@ -21,6 +24,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Card,
@@ -44,6 +48,7 @@ import {
   collection,
   serverTimestamp,
 } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { app } from '@/lib/firebase';
 import { FormattedText } from '@/components/financify/formatted-text';
 import { useToast } from '@/hooks/use-toast';
@@ -54,6 +59,8 @@ import RichTextEditor from '@/components/financify/rich-text-editor';
 
 
 const db = getFirestore(app);
+const storage = getStorage(app);
+
 
 type ReportData = {
   [key: string]: any;
@@ -184,6 +191,11 @@ function DPRReportContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeToolkit, setActiveToolkit] = useState<string | null>(null);
   const { user } = useAuth();
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageUploadChapter, setImageUploadChapter] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   const ideaTitle = searchParams.get('idea');
   const promoterName = user?.displayName || 'Entrepreneur';
@@ -235,6 +247,7 @@ function DPRReportContent() {
   const handleSaveChanges = () => {
     localStorage.setItem('generatedDPR', JSON.stringify(report));
     toast({ title: "Saved", description: "Your changes have been saved to this browser."});
+    setIsEditMode(false);
   };
 
   const handleToolkitAction = async (chapterKey: string, isRefinement: boolean) => {
@@ -277,6 +290,37 @@ function DPRReportContent() {
         setRefinementPrompt('');
     }
   }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !imageUploadChapter || !user || !report) {
+      return;
+    }
+    const file = e.target.files[0];
+    const chapterKey = imageUploadChapter;
+
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `dpr-images/${user.uid}/${Date.now()}-${file.name}`);
+      const uploadResult = await uploadBytes(storageRef, file);
+      const imageUrl = await getDownloadURL(uploadResult.ref);
+
+      const imageHtml = `<img src="${imageUrl}" alt="Image for ${dprChapters.find(c=>c.key === chapterKey)?.title}" style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;" />`;
+
+      const currentContent = report[chapterKey] || '';
+      const newContent = currentContent + imageHtml;
+
+      handleTextChange(chapterKey, newContent);
+      toast({ title: 'Image Uploaded', description: 'The image has been embedded in the section.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not upload the image.' });
+    } finally {
+      setIsUploading(false);
+      setImageUploadChapter(null);
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
+    }
+  };
   
   const handleTextChange = (chapterKey: string, value: string) => {
     setReport(prev => prev ? ({...prev, [chapterKey]: value}) : null);
@@ -291,22 +335,26 @@ function DPRReportContent() {
     const isFinancials = chapter.key === 'financialProjections';
 
     const renderEditableContent = () => {
-        if (isLoading || !report) {
-            return (
-                <div className="space-y-2">
-                    <Skeleton className="h-40 w-full" />
-                </div>
-            );
-        }
-
-        return (
-            <RichTextEditor
-                content={content || ''}
-                onChange={(newContent) => handleTextChange(chapter.key, newContent)}
-                editable={!isGenerating && !isFinancials}
-            />
-        );
+      if (isFinancials) return null;
+      if (isLoading || !report) {
+        return <div className="space-y-2"><Skeleton className="h-40 w-full" /></div>;
+      }
+      return (
+        <RichTextEditor
+            content={content || ''}
+            onChange={(newContent) => handleTextChange(chapter.key, newContent)}
+            editable={!isGenerating && !isFinancials}
+        />
+      );
     }
+
+    const renderStaticContent = () => {
+      if (isFinancials) return null;
+      if (isLoading || !report) {
+        return <div className="space-y-2"><Skeleton className="h-40 w-full" /></div>;
+      }
+      return <FormattedText text={content || 'Not generated yet.'} />;
+    };
     
     const renderFinancials = () => {
         if (typeof content !== 'object' || content === null) {
@@ -328,60 +376,65 @@ function DPRReportContent() {
                         <FinancialProjectionsBarChart data={content.yearlyProjections} />
                     </div>
                 </div>
-                {/* Other financial sections */}
             </div>
         );
     };
 
     return (
-      <div className={cn('space-y-4 print-break-before')}>
+      <div className="space-y-4">
         <CardHeader className="p-0 mb-4 border-b pb-4 flex flex-row justify-between items-start">
           <div>
             <CardTitle className="text-2xl md:text-3xl">{chapter.title}</CardTitle>
           </div>
-           <Dialog open={activeToolkit === chapter.key} onOpenChange={(isOpen) => setActiveToolkit(isOpen ? chapter.key : null)}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="no-print">
-                    <Wand2 className="mr-2" /> AI Toolkit
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>AI Toolkit: {chapter.title}</DialogTitle>
-                    <DialogDescription>
-                    Use the AI to generate or refine the content for this section.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                    <div className="space-y-2">
-                        <Button onClick={() => handleToolkitAction(chapter.key, false)} className="w-full" disabled={isGenerating}>
-                            {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : <Sparkles className="mr-2" />}
-                            {isFinancials ? 'Re-generate Section' : 'Auto-Generate Content'}
-                        </Button>
-                        <p className="text-xs text-muted-foreground text-center">Replaces the current content with a new version from scratch.</p>
-                    </div>
-                    {!isFinancials && (
-                    <div className="space-y-4">
-                        <Label htmlFor="refinement-prompt">Refine with AI</Label>
-                        <Textarea 
-                            id="refinement-prompt"
-                            value={refinementPrompt}
-                            onChange={(e) => setRefinementPrompt(e.target.value)}
-                            placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
-                        />
-                        <Button onClick={() => handleToolkitAction(chapter.key, true)} disabled={!refinementPrompt || !content || isGenerating} className="w-full">
-                           {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
-                            Refine
-                        </Button>
-                        <p className="text-xs text-muted-foreground text-center">Refines the existing text in the editor based on your prompt.</p>
-                    </div>
-                    )}
-                </div>
-            </DialogContent>
-          </Dialog>
+          {isEditMode && !isFinancials && (
+           <div className="flex gap-2 no-print">
+            <Button variant="outline" size="sm" onClick={() => { setImageUploadChapter(chapter.key); imageInputRef.current?.click(); }} disabled={isUploading}>
+              {isUploading && imageUploadChapter === chapter.key ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ImageIcon className="mr-2" />}
+              Image
+            </Button>
+            <Dialog open={activeToolkit === chapter.key} onOpenChange={(isOpen) => setActiveToolkit(isOpen ? chapter.key : null)}>
+              <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                      <Wand2 className="mr-2" /> AI Toolkit
+                  </Button>
+              </DialogTrigger>
+              <DialogContent>
+                  <DialogHeader>
+                      <DialogTitle>AI Toolkit: {chapter.title}</DialogTitle>
+                      <DialogDescription>
+                      Use the AI to generate or refine the content for this section.
+                      </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-6 py-4">
+                      <div className="space-y-2">
+                          <Button onClick={() => handleToolkitAction(chapter.key, false)} className="w-full" disabled={isGenerating}>
+                              {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : <Sparkles className="mr-2" />}
+                              Re-generate Section
+                          </Button>
+                          <p className="text-xs text-muted-foreground text-center">Replaces the current content with a new version from scratch.</p>
+                      </div>
+                      <div className="space-y-4">
+                          <Label htmlFor="refinement-prompt">Refine with AI</Label>
+                          <Textarea 
+                              id="refinement-prompt"
+                              value={refinementPrompt}
+                              onChange={(e) => setRefinementPrompt(e.target.value)}
+                              placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
+                          />
+                          <Button onClick={() => handleToolkitAction(chapter.key, true)} disabled={!refinementPrompt || !content || isGenerating} className="w-full">
+                             {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
+                              Refine
+                          </Button>
+                          <p className="text-xs text-muted-foreground text-center">Refines the existing text in the editor based on your prompt.</p>
+                      </div>
+                  </div>
+              </DialogContent>
+            </Dialog>
+           </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
-            {isFinancials ? renderFinancials() : renderEditableContent()}
+            {isFinancials ? renderFinancials() : (isEditMode ? renderEditableContent() : renderStaticContent())}
         </CardContent>
       </div>
     );
@@ -401,16 +454,23 @@ function DPRReportContent() {
           html, body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
           body * { visibility: hidden; }
           #print-section, #print-section * { visibility: visible; }
-          .tiptap p, .tiptap h1, .tiptap h2, .tiptap h3, .tiptap ul, .tiptap li { visibility: visible; }
+          .tiptap p, .tiptap h1, .tiptap h2, .tiptap h3, .tiptap ul, .tiptap li, .tiptap img { visibility: visible; }
           #print-section { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
           .no-print { display: none !important; }
-          .print-break-before { page-break-before: always; }
-          .print-no-break { page-break-inside: avoid; }
-          .print-cover-page { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; }
+          .print-break-before { break-before: always; }
+          .print-no-break { break-inside: avoid; }
+          .print-cover-page { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; break-after: always; }
           .tiptap { all: unset; }
           .ProseMirror { box-shadow: none; border: none; padding: 0; }
         }
       `}</style>
+      <input
+        type="file"
+        ref={imageInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleImageUpload}
+      />
 
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start no-print container mx-auto max-w-[210mm] px-4">
@@ -422,8 +482,15 @@ function DPRReportContent() {
       </div>
 
       <div className="flex gap-2 no-print container mx-auto max-w-[210mm] px-4">
-        <Button onClick={handleSaveChanges} disabled={isLoading || !!error}><Save className="mr-2" /> Save Changes</Button>
-        <Button variant="outline" onClick={handleExport} disabled={isLoading || !!error}><FileDown className="mr-2" /> Export to PDF</Button>
+        {isEditMode ? (
+          <>
+            <Button onClick={handleSaveChanges} disabled={isLoading || !!error}><Save className="mr-2" /> Save & Exit</Button>
+            <Button variant="ghost" onClick={() => setIsEditMode(false)}><X className="mr-2" /> Cancel</Button>
+          </>
+        ) : (
+          <Button onClick={() => setIsEditMode(true)} disabled={isLoading || !!error}><Edit className="mr-2" /> Edit Report</Button>
+        )}
+        <Button variant="outline" onClick={handleExport} disabled={isLoading || !!error || isEditMode}><FileDown className="mr-2" /> Export to PDF</Button>
       </div>
 
       {error && !isLoading && (
@@ -437,7 +504,7 @@ function DPRReportContent() {
       <div id="print-section">
         <div className="bg-card shadow-lg mx-auto w-[210mm] min-h-[297mm]">
           {/* Cover Page for Print */}
-          <div className="print-cover-page hidden print:flex flex-col items-center justify-center text-center">
+          <div className="print-cover-page hidden print:flex">
             <div className="space-y-4">
                 <h1 className="text-4xl font-bold">Detailed Project Report</h1>
                 <h2 className="text-2xl text-muted-foreground">{analysis?.title}</h2>
@@ -447,14 +514,14 @@ function DPRReportContent() {
           </div>
           
           {dprChapters.map((chapter, index) => (
-            <div key={chapter.key} className={cn("px-4 md:px-8 py-8", index > 0 && "print-break-before")}>
+            <div key={chapter.key} className={cn("px-8 md:px-12 py-8", index > 0 && "print-break-before")}>
               <Section chapter={chapter} />
             </div>
           ))}
         </div>
       </div>
       
-      {report && !isLoading && (
+      {report && !isLoading && !isEditMode &&(
         <div className="container mx-auto max-w-[210mm] px-4 py-8">
             <FeedbackSection ideaTitle={ideaTitle} />
         </div>
