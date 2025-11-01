@@ -132,50 +132,46 @@ const PortalCard = ({
   url: string;
   loginText: string;
 }) => (
-  <Dialog>
-    <DialogTrigger asChild>
-      <Card className="h-full flex flex-col hover:border-primary transition-colors cursor-pointer">
-        <CardHeader className="flex flex-row items-center gap-4">
-          <svg
-            className="w-12 h-12 text-primary"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 2L3 7V17L12 22L21 17V7L12 2Z"
-              stroke="currentColor"
-              strokeWidth="1"
-              strokeLinejoin="round"
-            ></path>
-            <path
-              d="M3.5 7.5L12 12.5L20.5 7.5"
-              stroke="currentColor"
-              strokeWidth="1"
-              strokeLinejoin="round"
-            ></path>
-            <path
-              d="M12 21.5V12.5"
-              stroke="currentColor"
-              strokeWidth="1"
-              strokeLinejoin="round"
-            ></path>
-          </svg>
-          <CardTitle className="text-lg">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1">
-          <p className="text-muted-foreground text-sm">{description}</p>
-        </CardContent>
-        <CardContent>
-          <Button asChild>
-             <a href={url} target="_blank" rel="noopener noreferrer">
-                 <LogIn className="mr-2 h-4 w-4" /> {loginText}
-             </a>
-          </Button>
-        </CardContent>
-      </Card>
-    </DialogTrigger>
-  </Dialog>
+  <Card className="h-full flex flex-col hover:border-primary transition-colors">
+    <CardHeader className="flex flex-row items-center gap-4">
+      <svg
+        className="w-12 h-12 text-primary"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 2L3 7V17L12 22L21 17V7L12 2Z"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        ></path>
+        <path
+          d="M3.5 7.5L12 12.5L20.5 7.5"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        ></path>
+        <path
+          d="M12 21.5V12.5"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinejoin="round"
+        ></path>
+      </svg>
+      <CardTitle className="text-lg">{title}</CardTitle>
+    </CardHeader>
+    <CardContent className="flex-1">
+      <p className="text-muted-foreground text-sm">{description}</p>
+    </CardContent>
+    <CardContent>
+      <Button asChild>
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <LogIn className="mr-2 h-4 w-4" /> {loginText}
+        </a>
+      </Button>
+    </CardContent>
+  </Card>
 );
 
 
@@ -884,4 +880,5 @@ export default function GrowthHubPage() {
   );
 }
 
+    
     
