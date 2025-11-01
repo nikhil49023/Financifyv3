@@ -161,13 +161,27 @@ export default function SignUpPage() {
   };
 
   const handleSignUp = async () => {
-    const finalField = currentStepData.field as keyof typeof formData;
-    if (!formData[finalField]) {
-      toast({
-        variant: 'destructive',
-        description: 'Please fill in the final field.',
-      });
-      return;
+    // Comprehensive validation before submitting
+    const requiredIndividualFields: (keyof typeof formData)[] = ['displayName', 'email', 'password'];
+    for (const field of requiredIndividualFields) {
+        if (!formData[field]) {
+            toast({ variant: 'destructive', description: `Please ensure the '${field}' field is filled out.` });
+            return;
+        }
+    }
+    if (formData.password.length < 6) {
+        toast({ variant: 'destructive', description: 'Password must be at least 6 characters.' });
+        return;
+    }
+
+    if (formData.role === 'msme') {
+        const requiredMsmeFields: (keyof typeof formData)[] = ['msmeName', 'msmeService', 'msmeLocation', 'ownerContact'];
+        for (const field of requiredMsmeFields) {
+            if (!formData[field]) {
+                toast({ variant: 'destructive', description: `Please ensure the '${field}' field is filled out.` });
+                return;
+            }
+        }
     }
 
     setIsLoading(true);
@@ -421,5 +435,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
-    
