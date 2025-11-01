@@ -14,7 +14,6 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
-  sendEmailVerification,
 } from 'firebase/auth';
 import {getFirestore, doc, setDoc, serverTimestamp} from 'firebase/firestore';
 import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
@@ -195,9 +194,6 @@ export default function SignUpPage() {
       const user = userCredential.user;
       await updateProfile(user, {displayName: formData.displayName});
 
-      // Send verification email
-      await sendEmailVerification(user);
-
       // Create a user profile document in Firestore
       const userDocRef = doc(db, 'users', user.uid);
       const privateProfileData: any = {
@@ -236,10 +232,10 @@ export default function SignUpPage() {
       toast({
         title: 'Account Created!',
         description:
-          'A verification email has been sent. Please check your inbox to complete your registration.',
+          'You are now logged in. Redirecting to your dashboard...',
       });
 
-      // The AuthProvider will handle redirection.
+      // The AuthProvider will handle redirection on successful login.
     } catch (error: any) {
       toast({
         variant: 'destructive',
