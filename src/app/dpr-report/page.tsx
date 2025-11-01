@@ -450,22 +450,21 @@ function DPRReportContent() {
                           </Button>
                           <p className="text-xs text-muted-foreground text-center">Replaces the current content with a new version from scratch.</p>
                       </div>
-                      {!isFinancials && (
-                          <div className="space-y-4">
-                              <Label htmlFor="refinement-prompt">Refine with AI</Label>
-                              <Textarea 
-                                  id="refinement-prompt"
-                                  value={refinementPrompt}
-                                  onChange={(e) => setRefinementPrompt(e.target.value)}
-                                  placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
-                              />
-                              <Button onClick={() => handleToolkitAction(chapter.key, true)} disabled={!refinementPrompt || !content || isGenerating} className="w-full">
-                                {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
-                                  Refine
-                              </Button>
-                              <p className="text-xs text-muted-foreground text-center">Refines the existing text based on your prompt.</p>
-                          </div>
-                      )}
+                      
+                      <div className="space-y-4">
+                          <Label htmlFor="refinement-prompt">Refine with AI</Label>
+                          <Textarea 
+                              id="refinement-prompt"
+                              value={refinementPrompt}
+                              onChange={(e) => setRefinementPrompt(e.target.value)}
+                              placeholder={isFinancials ? "e.g., 'Increase first year sales by 20%', 'Assume a higher initial investment for marketing...'" : "e.g., 'Make this more formal', 'Add more financial details'"}
+                          />
+                          <Button onClick={() => handleToolkitAction(chapter.key, true)} disabled={!refinementPrompt || !content || isGenerating} className="w-full">
+                            {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
+                              Refine
+                          </Button>
+                          <p className="text-xs text-muted-foreground text-center">Refines the existing text based on your prompt.</p>
+                      </div>
                   </div>
               </DialogContent>
             </Dialog>
@@ -593,5 +592,3 @@ export default function DPRReportPage() {
     </Suspense>
   );
 }
-
-    
