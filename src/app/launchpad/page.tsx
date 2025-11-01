@@ -534,19 +534,105 @@ export default function GrowthHubPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
         <Card className="lg:col-span-2">
-             <CardHeader>
+            <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl md:text-2xl">
                     <Briefcase />
-                    Marketplace
+                    MSME Marketplace
                 </CardTitle>
                 <CardDescription>
-                    Find and connect with services offered by MSMEs in the Artha community.
+                    Find and connect with services offered by other entrepreneurs in the Artha community.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                <div className="flex items-center justify-center p-10 bg-muted/50 rounded-lg">
-                    <p className="text-muted-foreground">Marketplace functionality coming soon.</p>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search by name, service, or location..." 
+                            className="pl-10"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                     <div className="space-y-2">
+                        <Select value={filterService} onValueChange={setFilterService}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by service..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {uniqueServices.map(service => (
+                                    <SelectItem key={service} value={service}>{service}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Select value={filterLocation} onValueChange={setFilterLocation}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by location..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {uniqueLocations.map(location => (
+                                    <SelectItem key={location} value={location}>{location}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
+                 <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => { setSearchQuery(''); setFilterService(''); setFilterLocation(''); }}
+                    className="text-xs"
+                >
+                    <X className="mr-2 h-3 w-3" /> Clear Filters
+                </Button>
+
+
+                {isLoadingMsmes ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+                    </div>
+                ) : filteredMsmes.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredMsmes.map((msme) => (
+                           <Card key={msme.id} className={cn("flex flex-col", categoryColors[msme.msmeService || 'Other'])}>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">{msme.msmeName}</CardTitle>
+                                    <CardDescription>{msme.msmeService}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-1 space-y-4">
+                                    <div className="flex items-center text-sm text-muted-foreground gap-2">
+                                        <User className="h-4 w-4" />
+                                        <span>{msme.displayName}</span>
+                                    </div>
+                                    <div className="flex items-center text-sm text-muted-foreground gap-2">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>{msme.msmeLocation}</span>
+                                    </div>
+                                    {msme.msmeWebsite && (
+                                        <div className="flex items-center text-sm text-muted-foreground gap-2">
+                                            <LinkIcon className="h-4 w-4" />
+                                            <a href={msme.msmeWebsite.startsWith('http') ? msme.msmeWebsite : `https://${msme.msmeWebsite}`} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">
+                                                {msme.msmeWebsite}
+                                            </a>
+                                        </div>
+                                    )}
+                                </CardContent>
+                                <CardFooter>
+                                    <Button onClick={() => handleContactClick(msme)} className={cn("w-full", categoryButtonColors[msme.msmeService || 'Other'])}>
+                                        <MessageSquare className="mr-2"/>
+                                        Contact
+                                    </Button>
+                                </CardFooter>
+                           </Card>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-10">
+                        <p className="text-muted-foreground">No matching MSMEs found. Try adjusting your filters.</p>
+                    </div>
+                )}
             </CardContent>
         </Card>
         
@@ -588,15 +674,26 @@ export default function GrowthHubPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PortalCard
-              title={translations.launchpad.statePortals.apmsmeone.title}
-              description={
-                translations.launchpad.statePortals.apmsmeone.description
-              }
-              url="https://apmsmeone.ap.gov.in/MSMEONE/LoginPages/HomeLogin.aspx"
-              loginText={translations.launchpad.statePortals.loginToPortal}
-            />
-            {/* Add more PortalCard components here as needed */}
+             <Card className="h-full flex flex-col hover:border-primary transition-colors">
+                <CardHeader className="flex flex-row items-center gap-4">
+                <svg className="w-12 h-12 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"></path>
+                    <path d="M3.5 7.5L12 12.5L20.5 7.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"></path>
+                    <path d="M12 21.5V12.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"></path>
+                </svg>
+                <CardTitle className="text-lg">{translations.launchpad.statePortals.apmsmeone.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1">
+                <p className="text-muted-foreground text-sm">{translations.launchpad.statePortals.apmsmeone.description}</p>
+                </CardContent>
+                <CardContent>
+                    <Button asChild>
+                        <a href="https://apmsmeone.ap.gov.in/MSMEONE/LoginPages/HomeLogin.aspx" target="_blank" rel="noopener noreferrer">
+                        <LogIn className="mr-2 h-4 w-4" /> {translations.launchpad.statePortals.loginToPortal}
+                        </a>
+                    </Button>
+                </CardContent>
+            </Card>
           </CardContent>
         </Card>
 
