@@ -31,6 +31,7 @@ import {
   Mail,
   MessageSquare,
   Filter,
+  MapPin,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -266,7 +267,7 @@ export default function GrowthHubPage() {
       const serviceMatch = filterService ? msme.msmeService === filterService : true;
       const locationMatch = filterLocation ? msme.msmeLocation === filterLocation : true;
 
-      return searchMatch && serviceMatch && locationMatch && msme.uid !== user?.uid;
+      return searchMatch && serviceMatch && locationMatch;
     }
   );
 
@@ -881,7 +882,3 @@ export default function GrowthHubPage() {
     </div>
   );
 }
-
-    
-    
-    
