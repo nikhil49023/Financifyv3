@@ -29,14 +29,28 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       // AuthProvider will handle redirection on success
     } catch (error: any) {
+      let description = 'An unexpected error occurred. Please try again.';
+      switch (error.code) {
+        case 'auth/user-not-found':
+          description = 'No account found with this email address.';
+          break;
+        case 'auth/wrong-password':
+          description = 'Incorrect password. Please try again.';
+          break;
+        case 'auth/invalid-credential':
+            description = 'Invalid credentials. Please check your email and password.';
+            break;
+        case 'auth/too-many-requests':
+            description = 'Too many login attempts. Please try again later.';
+            break;
+      }
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: description,
       });
       setIsLoading(false);
     }
-    // Don't set loading to false on success, as redirection will unmount the component
   };
 
   return (

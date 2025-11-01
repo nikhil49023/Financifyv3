@@ -231,16 +231,27 @@ export default function SignUpPage() {
 
       toast({
         title: 'Account Created!',
-        description:
-          'You are now logged in. Redirecting to your dashboard...',
+        description: 'You are now logged in. Redirecting to your dashboard...',
       });
 
       // The AuthProvider will handle redirection on successful login.
     } catch (error: any) {
+      let description = 'An unexpected error occurred. Please try again.';
+      switch (error.code) {
+          case 'auth/email-already-in-use':
+              description = 'This email address is already in use by another account.';
+              break;
+          case 'auth/invalid-email':
+              description = 'The email address is not valid.';
+              break;
+          case 'auth/weak-password':
+              description = 'The password is too weak. Please use at least 6 characters.';
+              break;
+      }
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: description,
       });
       setIsLoading(false);
     }
