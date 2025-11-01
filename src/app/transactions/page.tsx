@@ -76,6 +76,8 @@ import {
 import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import {app} from '@/lib/firebase';
 import { extractTransactionsAction } from '@/app/actions';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -168,8 +170,13 @@ export default function TransactionsPage() {
           setTransactions(fetchedTransactions);
           setLoadingData(false);
         },
-        error => {
+        async (error) => {
           console.error('Error fetching transactions:', error);
+          const permissionError = new FirestorePermissionError({
+            path: transactionsRef.path,
+            operation: 'list'
+          });
+          errorEmitter.emit('permission-error', permissionError);
           setLoadingData(false);
         }
       );
@@ -242,25 +249,34 @@ export default function TransactionsPage() {
       if (invoiceUrl) {
         transactionData.invoiceUrl = invoiceUrl;
       }
+      
+      const transactionsRef = collection(db, 'users', user.uid, 'transactions');
+      addDoc(transactionsRef, transactionData)
+      .then(() => {
+        setNewTransaction({
+            description: '',
+            date: '',
+            type: 'expense',
+            amount: '',
+        });
+        setInvoiceFile(null);
+        setAddTransactionDialogOpen(false);
+        invalidateDashboardCache();
+        toast({
+            title: 'Success',
+            description: translations.transactions.toasts.successAddTransaction,
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: transactionsRef.path,
+            operation: 'create',
+            requestResourceData: transactionData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw serverError;
+      })
 
-      await addDoc(
-        collection(db, 'users', user.uid, 'transactions'),
-        transactionData
-      );
-
-      setNewTransaction({
-        description: '',
-        date: '',
-        type: 'expense',
-        amount: '',
-      });
-      setInvoiceFile(null);
-      setAddTransactionDialogOpen(false);
-      invalidateDashboardCache();
-      toast({
-        title: 'Success',
-        description: translations.transactions.toasts.successAddTransaction,
-      });
     } catch (error) {
       console.error('Error adding transaction:', error);
       toast({

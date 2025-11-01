@@ -45,6 +45,8 @@ import {
 } from 'firebase/firestore';
 import {app} from '@/lib/firebase';
 import { generateInvestmentIdeaAnalysisAction } from '@/app/actions';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 
@@ -134,28 +136,36 @@ function InvestmentIdeaContent() {
           },
           {title, summary} as Partial<GenerateInvestmentIdeaAnalysisOutput>
         );
-
-      try {
-        const ideasRef = collection(db, 'users', user.uid, 'savedIdeas');
-        await addDoc(ideasRef, {
-          ...analysisToSave,
-          savedAt: serverTimestamp(),
-        });
+      
+      const ideasRef = collection(db, 'users', user.uid, 'savedIdeas');
+      
+      addDoc(ideasRef, {
+        ...analysisToSave,
+        savedAt: serverTimestamp(),
+      })
+      .then(() => {
         setIsSaved(true);
         toast({
           title: translations.investmentIdea._TITLE,
           description: translations.investmentIdea.ideaSavedSuccess,
         });
-      } catch (e) {
-        console.error('Error saving idea: ', e);
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: ideasRef.path,
+            operation: 'create',
+            requestResourceData: analysisToSave
+        });
+        errorEmitter.emit('permission-error', permissionError);
         toast({
           variant: 'destructive',
           title: 'Error',
           description: 'Could not save the idea. Please try again.',
         });
-      } finally {
+      })
+      .finally(() => {
         setIsSaving(false);
-      }
+      });
     },
     [user, toast, translations, sections, title, summary]
   );

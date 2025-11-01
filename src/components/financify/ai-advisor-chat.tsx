@@ -21,6 +21,8 @@ import {
 import {app} from '@/lib/firebase';
 import { generateRagAnswerAction } from '@/app/actions';
 import { FormattedText } from '@/components/financify/formatted-text';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 
@@ -56,6 +58,14 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
           doc => doc.data() as ExtractedTransaction
         );
         setTransactions(fetchedTransactions);
+      },
+      async (error) => {
+        console.error("AI Advisor transactions snapshot error", error);
+        const permissionError = new FirestorePermissionError({
+            path: transactionsRef.path,
+            operation: 'list'
+        });
+        errorEmitter.emit('permission-error', permissionError);
       });
       return () => unsubscribe();
     }

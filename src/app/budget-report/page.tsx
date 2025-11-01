@@ -24,6 +24,8 @@ import { useRouter } from 'next/navigation';
 import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import { generateBudgetReportAction } from '@/app/actions';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 
@@ -46,6 +48,15 @@ export default function BudgetReportPage() {
           const fetchedTransactions = snapshot.docs.map(doc => doc.data()) as ExtractedTransaction[];
           setTransactions(fetchedTransactions);
           setIsLoading(false);
+      },
+      async (error) => {
+        console.error("Budget report transactions snapshot error", error);
+        const permissionError = new FirestorePermissionError({
+            path: transactionsRef.path,
+            operation: 'list'
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsLoading(false);
       });
       return () => unsubscribe();
     } else {

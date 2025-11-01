@@ -237,6 +237,14 @@ export default function DashboardPage() {
             doc => doc.data() as ExtractedTransaction
           );
           setTransactions(fetchedTransactions);
+        },
+        async (error) => {
+            console.error("Transactions snapshot error", error);
+            const permissionError = new FirestorePermissionError({
+                path: transactionsRef.path,
+                operation: 'list'
+            });
+            errorEmitter.emit('permission-error', permissionError);
         })
       );
 
@@ -249,6 +257,15 @@ export default function DashboardPage() {
           );
           setBudgets(fetchedBudgets);
           setIsLoadingBudgets(false);
+        },
+        async (error) => {
+            console.error("Budgets snapshot error", error);
+            const permissionError = new FirestorePermissionError({
+                path: budgetsRef.path,
+                operation: 'list'
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsLoadingBudgets(false);
         })
       );
 
@@ -261,6 +278,15 @@ export default function DashboardPage() {
           );
           setSavingsGoals(fetchedGoals);
           setIsLoadingSavingsGoals(false);
+        },
+        async (error) => {
+            console.error("Savings goals snapshot error", error);
+            const permissionError = new FirestorePermissionError({
+                path: goalsRef.path,
+                operation: 'list'
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsLoadingSavingsGoals(false);
         })
       );
 

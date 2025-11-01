@@ -19,6 +19,8 @@ import { useLanguage } from '@/hooks/use-language';
 import { useRouter } from 'next/navigation';
 import { getFirestore, collection, onSnapshot } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 
@@ -43,6 +45,15 @@ export default function MyIdeasPage() {
       const unsubscribe = onSnapshot(ideasRef, (snapshot) => {
         const fetchedIdeas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as SavedIdea[];
         setIdeas(fetchedIdeas.sort((a, b) => b.savedAt.seconds - a.savedAt.seconds));
+        setLoadingIdeas(false);
+      },
+      async (error) => {
+        console.error("My Ideas snapshot error", error);
+        const permissionError = new FirestorePermissionError({
+            path: ideasRef.path,
+            operation: 'list'
+        });
+        errorEmitter.emit('permission-error', permissionError);
         setLoadingIdeas(false);
       });
       return () => unsubscribe();

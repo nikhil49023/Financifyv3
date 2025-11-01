@@ -75,6 +75,8 @@ import { generateFinBiteAction } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 
@@ -201,8 +203,14 @@ export default function GrowthHubPage() {
       const msmes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as (UserProfile & { id: string })[];
       setMsmeList(msmes);
       setIsLoadingMsmes(false);
-    }, (error) => {
+    },
+    async (error) => {
         console.error("Error fetching MSME profiles: ", error);
+        const permissionError = new FirestorePermissionError({
+            path: profilesRef.path,
+            operation: 'list'
+        });
+        errorEmitter.emit('permission-error', permissionError);
         toast({variant: 'destructive', title: 'Error', description: 'Could not load marketplace profiles.'});
         setIsLoadingMsmes(false);
     });
@@ -233,7 +241,7 @@ export default function GrowthHubPage() {
         msme.msmeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         msme.msmeService?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         msme.msmeLocation?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        msme.msmeDescription?.toLowerCase().includes(searchQuery.toLowerCase())
+        (msme as any).msmeDescription?.toLowerCase().includes(searchQuery.toLowerCase())
       );
       const serviceMatch = filterService ? msme.msmeService === filterService : true;
       const locationMatch = filterLocation ? msme.msmeLocation === filterLocation : true;
@@ -574,7 +582,7 @@ export default function GrowthHubPage() {
                                     <CardDescription>{msme.msmeService}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-1 space-y-4">
-                                     <p className="text-sm text-muted-foreground line-clamp-3">{msme.msmeDescription || 'No description provided.'}</p>
+                                     <p className="text-sm text-muted-foreground line-clamp-3">{(msme as any).msmeDescription || 'No description provided.'}</p>
                                     <div className="flex items-center text-sm text-muted-foreground gap-2">
                                         <User className="h-4 w-4" />
                                         <span>{msme.displayName}</span>
