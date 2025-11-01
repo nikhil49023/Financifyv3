@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
 import { generateDprAction } from '@/app/actions';
+import Link from 'next/link';
 
 const dprChapters = [
     { key: 'executiveSummary', title: 'Executive Summary', prompt: 'Summarize the entire business project, including its mission, product/service, target market, and financial highlights. This should be a concise overview.' },
@@ -247,3 +248,5 @@ export default function CustomizeDPRPage() {
         </Suspense>
     )
 }
+
+    
