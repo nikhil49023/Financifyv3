@@ -251,19 +251,7 @@ export default function BudgetReportPage() {
                     <FormattedText text={report.summary} />
                 </CardContent>
             </Card>
-             <div className="grid md:grid-cols-2 gap-6 print-grid-cols-2">
-                <Card>
-                    <CardHeader className="p-4 md:p-6">
-                        <CardTitle>Expense Breakdown</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 md:p-6 pt-0">
-                        {report.expenseBreakdown.length > 0 ? (
-                            <ProjectCostPieChart data={report.expenseBreakdown} />
-                        ) : (
-                            <p className="text-muted-foreground text-center py-10">No expense data to display.</p>
-                        )}
-                    </CardContent>
-                </Card>
+             <div className="space-y-6">
                 <Card>
                     <CardHeader className="p-4 md:p-6">
                         <CardTitle>Income Breakdown</CardTitle>
@@ -273,6 +261,18 @@ export default function BudgetReportPage() {
                             <ProjectCostPieChart data={report.incomeBreakdown} />
                         ) : (
                             <p className="text-muted-foreground text-center py-10">No income data to display.</p>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="p-4 md:p-6">
+                        <CardTitle>Expense Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                        {report.expenseBreakdown.length > 0 ? (
+                            <ProjectCostPieChart data={report.expenseBreakdown} />
+                        ) : (
+                            <p className="text-muted-foreground text-center py-10">No expense data to display.</p>
                         )}
                     </CardContent>
                 </Card>
