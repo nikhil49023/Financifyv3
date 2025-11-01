@@ -9,7 +9,8 @@ import {app} from '@/lib/firebase';
 import type {GenerateDprInput, GenerateDprOutput} from '@/ai/schemas/dpr';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, {model: 'gemini-2.5-flash-lite-preview-09-2025'});
+// Using 'gemini-2.0-flash-lite-001' as the available alias for gemini-2.5-flash
+const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
 
 export async function generateDpr(input: GenerateDprInput): Promise<GenerateDprOutput> {
   
