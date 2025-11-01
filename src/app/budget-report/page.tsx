@@ -65,12 +65,11 @@ export default function BudgetReportPage() {
   }, [isGenerating, progress]);
 
   const handleGenerateReport = async () => {
-    const expenseTransactions = transactions.filter(t => t.type === 'expense');
-    if (expenseTransactions.length === 0) {
+    if (transactions.length === 0) {
       toast({
         variant: 'destructive',
         title: 'Cannot Generate Report',
-        description: 'You must have at least one expense to generate a report.',
+        description: 'You must have at least one transaction to generate a report.',
       });
       return;
     }
@@ -79,7 +78,7 @@ export default function BudgetReportPage() {
     setError(null);
     
     try {
-        const result = await generateBudgetReportAction({ transactions: expenseTransactions });
+        const result = await generateBudgetReportAction({ transactions });
 
         if (!result.success) {
             throw new Error(result.error || 'Failed to generate report.');
@@ -106,6 +105,7 @@ export default function BudgetReportPage() {
   };
 
   const totalExpenses = report?.expenseBreakdown.reduce((acc, item) => acc + item.value, 0) || 0;
+  const totalIncome = report?.incomeBreakdown.reduce((acc, item) => acc + item.value, 0) || 0;
   
   if (isLoading) {
       return (
@@ -140,6 +140,9 @@ export default function BudgetReportPage() {
           .no-print {
             display: none !important;
           }
+          .print-grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
         }
       `}</style>
       
@@ -150,7 +153,7 @@ export default function BudgetReportPage() {
             Budget Report
           </h1>
           <p className="text-muted-foreground">
-            Generate a detailed analysis of your monthly expenses.
+            Generate a detailed analysis of your monthly finances.
           </p>
         </div>
          <Button variant="ghost" asChild className="-ml-4">
@@ -200,7 +203,10 @@ export default function BudgetReportPage() {
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-3/4" />
                 </div>
-                 <Skeleton className="h-72 w-full" />
+                 <div className="grid md:grid-cols-2 gap-4">
+                    <Skeleton className="h-72 w-full" />
+                    <Skeleton className="h-72 w-full" />
+                 </div>
             </CardContent>
          </Card>
       )}
@@ -229,10 +235,11 @@ export default function BudgetReportPage() {
         <div id="print-section" className="space-y-6">
             <Card>
                 <CardHeader className="p-4 md:p-6">
-                    <CardTitle>Monthly Expense Report</CardTitle>
+                    <CardTitle>Monthly Financial Report</CardTitle>
                     <CardDescription>
-                        An AI-generated analysis of your spending habits.
-                        Total expenses analyzed: <span className="font-bold text-primary">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(totalExpenses)}</span>
+                        An AI-generated analysis of your finances.
+                        Total Income: <span className="font-bold text-green-600">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(totalIncome)}</span>
+                        {' '}| Total Expenses: <span className="font-bold text-destructive">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(totalExpenses)}</span>
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -244,14 +251,32 @@ export default function BudgetReportPage() {
                     <FormattedText text={report.summary} />
                 </CardContent>
             </Card>
-             <Card>
-                <CardHeader className="p-4 md:p-6">
-                    <CardTitle>Expense Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 md:p-6 pt-0">
-                     <ProjectCostPieChart data={report.expenseBreakdown} />
-                </CardContent>
-            </Card>
+             <div className="grid md:grid-cols-2 gap-6 print-grid-cols-2">
+                <Card>
+                    <CardHeader className="p-4 md:p-6">
+                        <CardTitle>Expense Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                        {report.expenseBreakdown.length > 0 ? (
+                            <ProjectCostPieChart data={report.expenseBreakdown} />
+                        ) : (
+                            <p className="text-muted-foreground text-center py-10">No expense data to display.</p>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="p-4 md:p-6">
+                        <CardTitle>Income Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 md:p-6 pt-0">
+                        {report.incomeBreakdown.length > 0 ? (
+                            <ProjectCostPieChart data={report.incomeBreakdown} />
+                        ) : (
+                            <p className="text-muted-foreground text-center py-10">No income data to display.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
       )}
     </div>
