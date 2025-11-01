@@ -322,11 +322,10 @@ function DPRReportContent() {
       }, 
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          const imageHtml = `<img src="${downloadURL}" alt="Image for ${dprChapters.find(c=>c.key === chapterKey)?.title}" style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;" />`;
+          const imageHtml = `<p><img src="${downloadURL}" alt="Image for ${dprChapters.find(c=>c.key === chapterKey)?.title}" style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;" /></p>`;
           const currentContent = report[chapterKey] || '';
-          const newContent = currentContent + imageHtml;
-
-          handleTextChange(chapterKey, newContent);
+          
+          handleTextChange(chapterKey, currentContent + imageHtml);
           toast({ title: 'Image Uploaded', description: 'The image has been embedded in the section.' });
           
           setUploadProgress(0);
@@ -545,9 +544,9 @@ function DPRReportContent() {
           <div className="print-cover-page hidden print:flex">
             <div className="space-y-4">
                 <h1 className="text-4xl font-bold">Detailed Project Report</h1>
-                <h2 className="text-2xl text-muted-foreground">{analysis?.title}</h2>
+                <h2 className="text-2xl text-muted-foreground">${analysis?.title}</h2>
                 <p className="pt-12">Prepared for Banking & Financial Review</p>
-                <p>By {promoterName}</p>
+                <p>By ${promoterName}</p>
             </div>
           </div>
           
@@ -583,4 +582,3 @@ export default function DPRReportPage() {
     </Suspense>
   );
 }
-
