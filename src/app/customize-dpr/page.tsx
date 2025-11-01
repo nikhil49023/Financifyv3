@@ -12,12 +12,23 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import {
   ArrowLeft,
   ArrowRight,
   Banknote,
   FileText,
   Loader2,
   Sparkles,
+  Wand2,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +36,7 @@ import { Progress } from '@/components/ui/progress';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
 import { generateDprAction } from '@/app/actions';
 import Link from 'next/link';
+import { Label } from '@/components/ui/label';
 
 const dprChapters = [
     { key: 'executiveSummary', title: 'Executive Summary', prompt: 'Summarize the entire business project, including its mission, product/service, target market, and financial highlights. This should be a concise overview.' },
@@ -61,6 +73,9 @@ function CustomizeDPRContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [toolkitOpen, setToolkitOpen] = useState(false);
+  const [refinementPrompt, setRefinementPrompt] = useState('');
+
 
   useEffect(() => {
     const ideaTitle = searchParams.get('idea');
@@ -90,23 +105,28 @@ function CustomizeDPRContent() {
 
   }, [searchParams, toast]);
 
-  const handleAutoGenerate = async () => {
+  const handleGeneration = async (isRefinement = false) => {
     if (!analysis || !promoterName) return;
 
     setIsGenerating(true);
+    setToolkitOpen(false);
     const chapter = dprChapters[currentChapter];
+    const existingContent = report[chapter.key];
 
     try {
         const result = await generateDprAction({
             idea: analysis,
             promoterName: promoterName,
             section: chapter.key,
-            prompt: chapter.prompt,
+            basePrompt: chapter.prompt,
+            existingContent: isRefinement ? existingContent : undefined,
+            refinementPrompt: isRefinement ? refinementPrompt : undefined,
         });
 
         if (result.success) {
             const content = result.data.content;
             setReport(prev => ({...prev, [chapter.key]: content}));
+            toast({ title: 'Success', description: `Content for "${chapter.title}" has been ${isRefinement ? 'refined' : 'generated'}.` });
         } else {
             throw new Error(result.error || `Failed to generate ${chapter.title}`);
         }
@@ -119,10 +139,11 @@ function CustomizeDPRContent() {
         });
     } finally {
         setIsGenerating(false);
+        setRefinementPrompt('');
     }
   };
   
-  const handleTextChange = (e: React.ChangeEvent<Textarea>) => {
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const chapterKey = dprChapters[currentChapter].key;
       setReport(prev => ({...prev, [chapterKey]: e.target.value}));
   }
@@ -213,16 +234,59 @@ function CustomizeDPRContent() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    <Button onClick={handleAutoGenerate} disabled={isGenerating}>
-                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
-                        {isGenerating ? `Generating...` : `Auto-generate with AI`}
-                    </Button>
+                    <Dialog open={toolkitOpen} onOpenChange={setToolkitOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Wand2 className="mr-2 h-4 w-4" />
+                          AI Toolkit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>AI Toolkit: {chapter.title}</DialogTitle>
+                          <DialogDescription>
+                            Use the AI to generate or refine the content for this section.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6 py-4">
+                          <div className="space-y-2">
+                             <Button onClick={() => handleGeneration(false)} className="w-full">
+                              <Sparkles className="mr-2" />
+                              Auto-Generate Content
+                            </Button>
+                            <p className="text-xs text-muted-foreground text-center">Generates the initial content for this section from scratch.</p>
+                          </div>
+                          
+                           <div className="space-y-4">
+                            <Label htmlFor="refinement-prompt">Refine with AI</Label>
+                            <Textarea 
+                                id="refinement-prompt"
+                                value={refinementPrompt}
+                                onChange={(e) => setRefinementPrompt(e.target.value)}
+                                placeholder="e.g., 'Make this more formal', 'Add more financial details', 'Expand on the marketing plan...'"
+                            />
+                            <Button onClick={() => handleGeneration(true)} disabled={!refinementPrompt || !contentForChapter} className="w-full">
+                                Refine
+                            </Button>
+                            <p className="text-xs text-muted-foreground text-center">Refines the existing text in the editor based on your prompt.</p>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    {isGenerating && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin"/>
+                            <span>AI is writing...</span>
+                        </div>
+                    )}
+                    
                     <Textarea 
                         value={typeof contentForChapter === 'string' ? contentForChapter : JSON.stringify(contentForChapter, null, 2)}
                         onChange={(e) => handleTextChange(e as any)}
                         rows={isFinancials ? 20 : 10}
                         placeholder={isFinancials ? 'Financial data will be generated as a JSON object.' : 'AI-generated content will appear here, or you can write your own.'}
-                        disabled={isFinancials && isGenerating}
+                        disabled={isGenerating}
                     />
                      {isFinancials && <p className="text-sm text-muted-foreground">The financial projections section contains complex data and should be auto-generated. Manual editing is not recommended.</p>}
                 </div>
@@ -243,10 +307,8 @@ function CustomizeDPRContent() {
 
 export default function CustomizeDPRPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <CustomizeDPRContent />
         </Suspense>
     )
 }
-
-    

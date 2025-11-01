@@ -14,7 +14,9 @@ export const GenerateDprSectionInputSchema = z.object({
     idea: GenerateInvestmentIdeaAnalysisOutputSchema.describe("The full analysis object for the business idea."),
     promoterName: z.string().describe("The name of the entrepreneur."),
     section: z.string().describe("The specific section of the DPR to generate (e.g., 'executiveSummary')."),
-    prompt: z.string().describe("The detailed prompt for the AI to generate the content for this specific section.")
+    basePrompt: z.string().describe("The detailed base prompt for the AI to generate the content for this specific section from scratch."),
+    existingContent: z.union([z.string(), z.any()]).optional().describe("The existing content of the section to be refined."),
+    refinementPrompt: z.string().optional().describe("The user's custom prompt to refine the existing content.")
 });
 export type GenerateDprSectionInput = z.infer<typeof GenerateDprSectionInputSchema>;
 
