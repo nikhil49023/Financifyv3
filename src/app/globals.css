@@ -24,11 +24,11 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221 83% 53%;
-    --chart-1: 221 83% 53%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 142 76% 36%; /* Green for Income */
+    --chart-2: 0 84% 60%; /* Red for Expenses */
+    --chart-3: 221 83% 53%; /* Blue for Savings/Primary */
+    --chart-4: 38 92% 50%; /* Orange */
+    --chart-5: 279 80% 60%; /* Purple */
     --radius: 0.8rem;
   }
 
@@ -52,11 +52,11 @@
     --border: 217 32.6% 17.5%;
     --input: 217 32.6% 17.5%;
     --ring: 210 40% 98%;
-    --chart-1: 217 91% 60%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 142 71% 45%; /* Green */
+    --chart-2: 0 72% 51%; /* Red */
+    --chart-3: 217 91% 60%; /* Blue */
+    --chart-4: 38 92% 50%; /* Orange */
+    --chart-5: 279 80% 60%; /* Purple */
   }
 }
 

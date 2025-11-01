@@ -251,7 +251,7 @@ export default function BudgetReportPage() {
                     <FormattedText text={report.summary} />
                 </CardContent>
             </Card>
-             <div className="grid grid-cols-1 print-grid-cols-2 lg:grid-cols-2 gap-6">
+             <div className="space-y-6">
                 <Card>
                     <CardHeader className="p-4 md:p-6">
                         <CardTitle>Overall Breakdown</CardTitle>

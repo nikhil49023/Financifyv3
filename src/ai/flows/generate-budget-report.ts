@@ -72,10 +72,13 @@ ${transactionsList}
         }
     });
 
+    const savings = Math.max(0, totalIncome - totalExpenses);
+
     parsed.overallBreakdown = [
         { name: 'Total Income', value: totalIncome },
         { name: 'Total Expenses', value: totalExpenses },
-    ];
+        { name: 'Savings', value: savings }
+    ].filter(item => item.value > 0); // Only show items with a value
 
     // Ensure expense breakdown is always an array
     if (!parsed.expenseBreakdown) {
