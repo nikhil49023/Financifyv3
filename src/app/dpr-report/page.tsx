@@ -63,6 +63,8 @@ import { generateDprAction } from '../actions';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
 import RichTextEditor from '@/components/financify/rich-text-editor';
 import { Progress } from '@/components/ui/progress';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 const db = getFirestore(app);
@@ -108,29 +110,38 @@ const FeedbackSection = ({ ideaTitle }: { ideaTitle: string | null }) => {
     }
 
     setIsSubmitting(true);
-    try {
-      await addDoc(collection(db, 'dpr-feedback'), {
+    const feedbackData = {
         userId: user.uid,
         ideaTitle: ideaTitle,
         rating: rating,
         comment: comment,
         submittedAt: serverTimestamp(),
+      };
+
+    addDoc(collection(db, 'dpr-feedback'), feedbackData)
+      .then(() => {
+        toast({
+          title: 'Feedback Submitted',
+          description: 'Thank you for helping us improve!',
+        });
+        setIsSubmitted(true);
+      })
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: '/dpr-feedback',
+          operation: 'create',
+          requestResourceData: feedbackData
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({
+          variant: 'destructive',
+          title: 'Submission Failed',
+          description: 'Could not submit your feedback. Please try again.',
+        });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
-      toast({
-        title: 'Feedback Submitted',
-        description: 'Thank you for helping us improve!',
-      });
-      setIsSubmitted(true);
-    } catch (e) {
-      toast({
-        variant: 'destructive',
-        title: 'Submission Failed',
-        description: 'Could not submit your feedback. Please try again.',
-      });
-      console.error('Error submitting feedback:', e);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (isSubmitted) {
@@ -582,3 +593,5 @@ export default function DPRReportPage() {
     </Suspense>
   );
 }
+
+    

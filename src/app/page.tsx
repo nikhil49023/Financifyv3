@@ -88,6 +88,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { generateDashboardSummaryAction, generateFinBiteAction } from './actions';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 
@@ -357,27 +359,51 @@ export default function DashboardPage() {
       return;
     }
     const budgetsRef = collection(db, 'users', user.uid, 'budgets');
-    await addDoc(budgetsRef, {
+    const budgetData = {
       name: newBudgetName,
       amount: parseFloat(newBudgetAmount),
       createdAt: serverTimestamp(),
+    };
+
+    addDoc(budgetsRef, budgetData)
+    .then(() => {
+        setNewBudgetName('');
+        setNewBudgetAmount('');
+        setAddBudgetDialogOpen(false);
+        invalidateDashboardCache();
+        toast({title: 'Success', description: 'Budget added successfully.'});
+    })
+    .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: budgetsRef.path,
+            operation: 'create',
+            requestResourceData: budgetData
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not add budget.' });
     });
-    setNewBudgetName('');
-    setNewBudgetAmount('');
-    setAddBudgetDialogOpen(false);
-    invalidateDashboardCache();
-    toast({title: 'Success', description: 'Budget added successfully.'});
   };
 
   const handleDeleteBudget = async (budgetId: string) => {
     if (!user) return;
-    await deleteDoc(doc(db, 'users', user.uid, 'budgets', budgetId));
-    toast({
-      title: 'Budget Deleted',
-      description: 'The budget has been successfully removed.',
+    const docRef = doc(db, 'users', user.uid, 'budgets', budgetId);
+    deleteDoc(docRef)
+    .then(() => {
+        toast({
+          title: 'Budget Deleted',
+          description: 'The budget has been successfully removed.',
+        });
+        setBudgetToDelete(null);
+        invalidateDashboardCache();
+    })
+    .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'delete'
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not delete budget.' });
     });
-    setBudgetToDelete(null);
-    invalidateDashboardCache();
   };
 
   const handleAddGoal = async () => {
@@ -391,28 +417,52 @@ export default function DashboardPage() {
       return;
     }
     const goalsRef = collection(db, 'users', user.uid, 'savingsGoals');
-    await addDoc(goalsRef, {
+    const goalData = {
       name: newGoalName,
       targetAmount: parseFloat(newGoalAmount),
       createdAt: serverTimestamp(),
-    });
-    setNewGoalName('');
-    setNewGoalAmount('');
-    setAddGoalDialogOpen(false);
-    toast({
-      title: 'Success',
-      description: 'Savings Goal added successfully.',
+    };
+
+    addDoc(goalsRef, goalData)
+    .then(() => {
+        setNewGoalName('');
+        setNewGoalAmount('');
+        setAddGoalDialogOpen(false);
+        toast({
+          title: 'Success',
+          description: 'Savings Goal added successfully.',
+        });
+    })
+    .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: goalsRef.path,
+            operation: 'create',
+            requestResourceData: goalData
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not add goal.' });
     });
   };
 
   const handleDeleteGoal = async (goalId: string) => {
     if (!user) return;
-    await deleteDoc(doc(db, 'users', user.uid, 'savingsGoals', goalId));
-    toast({
-      title: 'Goal Deleted',
-      description: 'The savings goal has been successfully removed.',
+    const docRef = doc(db, 'users', user.uid, 'savingsGoals', goalId);
+    deleteDoc(docRef)
+    .then(() => {
+        toast({
+          title: 'Goal Deleted',
+          description: 'The savings goal has been successfully removed.',
+        });
+        setGoalToDelete(null);
+    })
+    .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'delete'
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not delete goal.' });
     });
-    setGoalToDelete(null);
   };
 
   // --- Memoized Computations ---
@@ -1043,3 +1093,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

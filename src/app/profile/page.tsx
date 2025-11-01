@@ -33,6 +33,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getFirestore, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { getAuth, deleteUser } from 'firebase/auth';
 import { app } from '@/lib/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -67,32 +69,51 @@ export default function ProfilePage() {
     const userDocRef = doc(db, 'users', user.uid);
     const msmeProfileRef = doc(db, 'msme-profiles', user.uid);
 
-    try {
-        const privateData = { ...userProfile, ...msmeData };
-        // Use setDoc with merge:true to update or create fields in private user doc
-        await setDoc(userDocRef, privateData, { merge: true });
-        
-        // Also update the public MSME profile
-        const publicData = {
-          uid: user.uid,
-          displayName: userProfile.displayName,
-          email: userProfile.email,
-          msmeName: msmeData.msmeName,
-          msmeService: msmeData.msmeService,
-          msmeLocation: msmeData.msmeLocation,
-          ownerContact: msmeData.ownerContact,
-          msmeWebsite: msmeData.msmeWebsite,
-        };
-        await setDoc(msmeProfileRef, publicData, { merge: true });
+    const privateData = { ...userProfile, ...msmeData };
+    const publicData = {
+      uid: user.uid,
+      displayName: userProfile.displayName,
+      email: userProfile.email,
+      msmeName: msmeData.msmeName,
+      msmeService: msmeData.msmeService,
+      msmeLocation: msmeData.msmeLocation,
+      ownerContact: msmeData.ownerContact,
+      msmeWebsite: msmeData.msmeWebsite,
+    };
 
-        toast({ title: 'Success', description: 'Your profile has been updated.'});
-        setEditDialogOpen(false);
-    } catch (e) {
-        console.error("Error updating profile:", e);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not update your profile.'});
-    } finally {
-        setIsSaving(false);
-    }
+    const privateUpdate = setDoc(userDocRef, privateData, { merge: true }).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+            requestResourceData: privateData
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw new Error('Failed to update private profile.');
+    });
+
+    const publicUpdate = setDoc(msmeProfileRef, publicData, { merge: true }).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: msmeProfileRef.path,
+            operation: 'update',
+            requestResourceData: publicData
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw new Error('Failed to update public MSME profile.');
+    });
+
+
+    Promise.all([privateUpdate, publicUpdate])
+        .then(() => {
+            toast({ title: 'Success', description: 'Your profile has been updated.'});
+            setEditDialogOpen(false);
+        })
+        .catch((error) => {
+            console.error("Error updating profile:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not update your profile.'});
+        })
+        .finally(() => {
+            setIsSaving(false);
+        });
   };
 
 
@@ -105,11 +126,27 @@ export default function ProfilePage() {
     if (!user) return;
     try {
       // First, delete Firestore data (private user doc and public msme profile)
-      await deleteDoc(doc(db, 'users', user.uid));
+      const userDocRef = doc(db, 'users', user.uid);
+      const deleteUserDoc = deleteDoc(userDocRef).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'delete' });
+        errorEmitter.emit('permission-error', permissionError);
+        throw new Error('Failed to delete user data.');
+      });
+
+      const operations = [deleteUserDoc];
+
       if (isMsme) {
-          await deleteDoc(doc(db, 'msme-profiles', user.uid));
+          const msmeProfileRef = doc(db, 'msme-profiles', user.uid);
+          const deleteMsmeDoc = deleteDoc(msmeProfileRef).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({ path: msmeProfileRef.path, operation: 'delete' });
+            errorEmitter.emit('permission-error', permissionError);
+            // Don't throw here to allow user deletion to proceed if only this fails
+          });
+          operations.push(deleteMsmeDoc);
       }
       
+      await Promise.all(operations);
+
       // Then, delete the user from Firebase Auth
       await deleteUser(user);
       
@@ -321,3 +358,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    

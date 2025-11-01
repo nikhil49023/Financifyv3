@@ -17,13 +17,13 @@ service cloud.firestore {
     // Rules for the 'users' collection (PRIVATE user data)
     match /users/{userId} {
       // Any authenticated user can create their own profile
-      allow create: if isSignedIn() && request.resource.id == request.auth.uid;
+      allow create: if isSignedIn() && isOwner(userId);
       
       // Only the owner can read or update their own private profile
       allow read, update: if isSignedIn() && isOwner(userId);
       
-      // Deletion of user profiles is disallowed for safety, should be handled by a server function
-      allow delete: if false;
+      // Only the owner can delete their own profile
+      allow delete: if isSignedIn() && isOwner(userId);
 
       // Subcollections remain private to the user
       match /transactions/{transactionId} {
@@ -47,8 +47,12 @@ service cloud.firestore {
     match /msme-profiles/{userId} {
         // Any authenticated user can read the public profiles for the marketplace
         allow read: if isSignedIn();
-        // Only the owner of the profile can create, update, or delete it
-        allow write, delete: if isSignedIn() && isOwner(userId);
+        
+        // A user can only create a public profile for themselves
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.uid == userId;
+        
+        // Only the owner of the profile can update or delete it
+        allow update, delete: if isSignedIn() && isOwner(userId);
     }
 
     // Community Ideas: Any authenticated user can read. Only the original contributor can create or delete.
@@ -67,3 +71,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
