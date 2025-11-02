@@ -65,40 +65,25 @@ This section provides resources and community connections to help you launch and
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Component Library**: [ShadCN/UI](httpss://ui.shadcn.com/)
 - **Database & Auth**: [Firebase](https://firebase.google.com/) (Cloud Firestore, Firebase Authentication)
-- **Generative AI**: [Sarvam AI](https://www.sarvam.ai/)
+- **Generative AI**: [Google AI (Gemini)](https://ai.google/)
 - **Icons**: [Lucide React](https://lucide.dev/guide/packages/lucide-react)
 
 ## 🛠️ Getting Started & Pushing to Your Own Repository
 
 To get this project's code into your own GitHub repository, follow these steps in your local terminal.
 
-### 1. Clone the Project
-First, clone the project from its current location to your local machine.
+### 1. Link to Your New Repository
+From your project's directory in your terminal, update the remote `origin` to point to your new repository.
 
 ```bash
-git clone https://github.com/nikhil49023/Artha.git
-cd Artha
+git remote set-url origin https://github.com/nikhil49023/Financifyv3.git
 ```
 
-### 2. Create a New Repository on GitHub
-Go to [GitHub](https://github.com/new) and create a **new, empty** repository. Give it any name you like. **Do not** initialize it with a README or any other files.
-
-After creating it, copy the repository's URL. It will look like this:
-`https://github.com/your-username/your-new-repo-name.git`
-
-### 3. Link to Your New Repository
-Back in your terminal (inside the `Artha` directory), update the remote `origin` to point to your new repository.
-
-```bash
-git remote set-url origin https://github.com/your-username/your-new-repo-name.git
-```
-*(Replace the URL with the one you copied from your new GitHub repo.)*
-
-### 4. Push the Code
-Finally, push all the code to your new repository.
+### 2. Push the Code
+Finally, push all the code to your new repository. The `-u` flag sets the new remote as the default for future pushes.
 
 ```bash
 git push -u origin main
 ```
 
-Now, your new GitHub repository will contain all the code for the Artha app.
+Now, your new GitHub repository at `https://github.com/nikhil49023/Financifyv3.git` will contain all the code for the Artha app.
