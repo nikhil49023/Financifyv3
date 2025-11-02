@@ -196,5 +196,3 @@ export function FinancialProjectionsBarChart({
     </Card>
   );
 }
-
-    
