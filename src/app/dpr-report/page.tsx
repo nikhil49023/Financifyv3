@@ -64,7 +64,6 @@ import {
   collection,
   serverTimestamp,
 } from 'firebase/firestore';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { app } from '@/lib/firebase';
 import { FormattedText } from '@/components/financify/formatted-text';
 import { useToast } from '@/hooks/use-toast';
@@ -72,13 +71,11 @@ import { Label } from '@/components/ui/label';
 import { generateDprAction } from '../actions';
 import type { GenerateInvestmentIdeaAnalysisOutput } from '@/ai/schemas/investment-idea-analysis';
 import RichTextEditor from '@/components/financify/rich-text-editor';
-import { Progress } from '@/components/ui/progress';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 
 type ReportData = {
@@ -222,10 +219,6 @@ function DPRReportContent() {
   
   const [activeEditor, setActiveEditor] = useState<string | null>(null);
 
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const [imageUploadChapter, setImageUploadChapter] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
   const [showExportWarning, setShowExportWarning] = useState(false);
   
   const ideaTitle = searchParams.get('idea');
@@ -330,45 +323,6 @@ function DPRReportContent() {
         setRefinementPrompt('');
     }
   }
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !imageUploadChapter || !user || !report) {
-      return;
-    }
-    const file = e.target.files[0];
-    const chapterKey = imageUploadChapter;
-
-    setUploadProgress(0);
-    const storageRef = ref(storage, `dpr-images/${user.uid}/${Date.now()}-${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      }, 
-      (error) => {
-        toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not upload the image.' });
-        setUploadProgress(0);
-        setImageUploadChapter(null);
-      }, 
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          const imageHtml = `<p><img src="${downloadURL}" alt="Image for ${dprChapters.find(c=>c.key === chapterKey)?.title}" style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;" /></p>`;
-          const currentContent = report[chapterKey] || '';
-          
-          handleTextChange(chapterKey, currentContent + imageHtml);
-          toast({ title: 'Image Uploaded', description: 'The image has been embedded in the section.' });
-          
-          setUploadProgress(0);
-          setImageUploadChapter(null);
-          if (imageInputRef.current) {
-            imageInputRef.current.value = '';
-          }
-        });
-      }
-    );
-  };
   
   const handleTextChange = (chapterKey: string, value: string) => {
     setReport(prev => prev ? ({...prev, [chapterKey]: value}) : null);
@@ -382,7 +336,6 @@ function DPRReportContent() {
     const content = report ? report[chapter.key] : null;
     const isFinancials = chapter.key === 'financialProjections';
     const isEditing = activeEditor === chapter.key;
-    const isUploading = uploadProgress > 0 && imageUploadChapter === chapter.key;
 
     const renderEditableContent = () => {
       if (isLoading || !report) {
@@ -392,7 +345,7 @@ function DPRReportContent() {
         <RichTextEditor
             content={content || ''}
             onChange={(newContent) => handleTextChange(chapter.key, newContent)}
-            editable={!isGenerating && !isUploading}
+            editable={!isGenerating}
         />
       );
     }
@@ -495,20 +448,10 @@ function DPRReportContent() {
             {isFinancials ? renderFinancials() : (isEditing ? renderEditableContent() : renderStaticContent())}
             {isEditing && (
               <div className="flex flex-col gap-2 mt-4 no-print">
-                {isUploading ? (
-                  <div className='flex items-center gap-4'>
-                    <Progress value={uploadProgress} className="w-full" />
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">{Math.round(uploadProgress)}%</span>
-                  </div>
-                ) : (
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" onClick={() => setActiveEditor(null)}>Cancel</Button>
                     <Button onClick={handleSaveChanges}>Save Changes</Button>
-                    <Button variant="outline" size="icon" onClick={() => { setImageUploadChapter(chapter.key); imageInputRef.current?.click(); }}>
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
                   </div>
-                )}
               </div>
             )}
         </CardContent>
@@ -540,13 +483,6 @@ function DPRReportContent() {
           .ProseMirror { box-shadow: none; border: none; padding: 0; }
         }
       `}</style>
-      <input
-        type="file"
-        ref={imageInputRef}
-        className="hidden"
-        accept="image/*"
-        onChange={handleImageUpload}
-      />
 
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start no-print container mx-auto max-w-[210mm] px-4">
