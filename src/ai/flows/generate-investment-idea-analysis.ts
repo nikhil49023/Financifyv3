@@ -14,7 +14,7 @@ import type {
 import { GenerateInvestmentIdeaAnalysisOutputSchema } from '@/ai/schemas/investment-idea-analysis';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, { model: 'gemini-2.0-flash-lite-001' });
+const model = getGenerativeModel(ai, { model: 'gemini-1.5-pro-latest' });
 
 
 export async function generateInvestmentIdeaAnalysis(
@@ -54,4 +54,3 @@ Do NOT include any other text, markdown, or explanations. Just the JSON object.
     throw new Error('Could not generate the idea analysis. The AI returned an invalid format.');
   }
 }
-

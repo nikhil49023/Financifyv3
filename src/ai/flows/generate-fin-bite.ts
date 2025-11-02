@@ -10,7 +10,7 @@ import {app} from '@/lib/firebase';
 import type {GenerateFinBiteOutput} from '@/ai/schemas/fin-bite';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
+const model = getGenerativeModel(ai, {model: 'gemini-1.5-pro-latest'});
 
 export async function generateFinBite(): Promise<GenerateFinBiteOutput> {
   const prompt = `You are "Financify," a specialized financial news anchor for early-stage entrepreneurs in India.
