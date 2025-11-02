@@ -13,7 +13,7 @@ import type {
 } from '@/ai/schemas/dashboard-summary';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, {model: 'gemini-2.0-flash-lite-001'});
+const model = getGenerativeModel(ai, {model: 'gemini-2.5-flash-lite'});
 
 // Helper to safely parse currency strings
 function parseCurrency(amount: string | number): number {

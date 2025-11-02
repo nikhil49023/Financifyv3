@@ -14,7 +14,7 @@ import type {
 import { GenerateInvestmentIdeaAnalysisOutputSchema } from '@/ai/schemas/investment-idea-analysis';
 
 const ai = getAI(app, { backend: new GoogleAIBackend() });
-const model = getGenerativeModel(ai, { model: 'gemini-2.0-flash-lite-001' });
+const model = getGenerativeModel(ai, { model: 'gemini-2.5-flash-lite' });
 
 
 export async function generateInvestmentIdeaAnalysis(
