@@ -23,6 +23,7 @@ import { generateRagAnswerAction } from '@/app/actions';
 import { FormattedText } from '@/components/financify/formatted-text';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Badge } from '@/components/ui/badge';
 
 const db = getFirestore(app);
 
@@ -155,7 +156,7 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
     <div className="flex-1 flex flex-col justify-between">
       <div className="flex-1 space-y-6 p-4 sm:p-6">
         <AnimatePresence>
-          {messages.map(message => (
+          {messages.map((message, index) => (
             <motion.div
               key={message.id}
               initial={{opacity: 0, y: 10}}
@@ -181,6 +182,11 @@ export default function AIAdvisorChat({initialMessage}: AIAdvisorChatProps) {
                 }`}
               >
                 {message.sender === 'user' ? <p>{message.text}</p> : <FormattedText text={message.text} />}
+                {message.sender === 'ai' && index === 0 && (
+                  <Badge variant="outline" className="mt-3 border-blue-200 bg-blue-50 text-blue-800 text-xs">
+                    Powered by Zoho RAG
+                  </Badge>
+                )}
               </div>
               {message.sender === 'user' && (
                 <Avatar className="h-8 w-8">
