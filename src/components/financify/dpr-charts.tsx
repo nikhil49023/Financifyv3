@@ -43,11 +43,11 @@ const formatCurrencyForChart = (value: number) => {
 };
 
 const COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  "hsl(259 39% 33%)", // primary
+  "hsl(0 100% 66%)",   // accent
+  "hsl(175 100% 49%)", // secondary-accent (Aqua Glow)
+  "hsl(280 40% 50%)", // A vibrant purple
+  "hsl(300 50% 60%)", // A complementary pink/magenta
   '#8884d8',
   '#82ca9d',
   '#ffc658',
@@ -182,12 +182,12 @@ export function FinancialProjectionsBarChart({
             <Legend />
             <Bar
               dataKey="sales"
-              fill="hsl(var(--chart-1))"
+              fill={COLORS[0]}
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="profit"
-              fill="hsl(var(--chart-2))"
+              fill={COLORS[1]}
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
