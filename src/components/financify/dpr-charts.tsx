@@ -48,6 +48,11 @@ const COLORS = [
   'hsl(var(--chart-3))',
   'hsl(var(--chart-4))',
   'hsl(var(--chart-5))',
+  '#8884d8',
+  '#82ca9d',
+  '#ffc658',
+  '#FF8042',
+  '#00C49F',
 ];
 
 const RADIAN = Math.PI / 180;
@@ -191,3 +196,5 @@ export function FinancialProjectionsBarChart({
     </Card>
   );
 }
+
+    
