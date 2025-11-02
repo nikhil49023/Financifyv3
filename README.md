@@ -1,6 +1,6 @@
-# Artha - Your Personal Finance & Business Mentor
+#Financify- Your Personal Finance & Business Mentor
 
-Artha is a modern, AI-powered financial management and business development application designed specifically for early-stage entrepreneurs and MSMEs in India. It combines essential financial tracking tools with a suite of AI-driven features to provide financial clarity, generate business plans, and foster community connections.
+Financify is a modern, AI-powered financial management and business development application designed specifically for early-stage entrepreneurs and MSMEs in India. It combines essential financial tracking tools with a suite of AI-driven features to provide financial clarity, generate business plans, and foster community connections.
 
 ![Artha Dashboard](https://storage.googleapis.com/studio-assets/readme-dashboard.png)
 
